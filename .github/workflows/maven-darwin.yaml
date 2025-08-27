@@ -1,0 +1,82 @@
+name: maven darwin
+
+on:
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: "15 7 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  maven-darwin:
+    outputs:
+      status: ${{ job.status }}
+    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        java-distribution: ["temurin"]
+        java-version: ["17", "21"]
+        senzingsdk-version: [production-v4, staging-v4]
+
+    steps:
+      - name: checkout repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: ${{ matrix.java-distribution }}
+          java-version: ${{ matrix.java-version }}
+
+      - name: install Senzing SDK
+        uses: senzing-factory/github-action-install-senzing-sdk@v3
+        with:
+          senzingsdk-version: ${{ matrix.senzingsdk-version }}
+
+      - name: configure environment
+        run: |
+          SENZING_PATH="${HOME}/senzing"
+          {
+            echo "DYLD_LIBRARY_PATH=${SENZING_PATH}/er/lib:${SENZING_PATH}/er/lib/macos"
+          } >> "$GITHUB_ENV"
+
+      - name: Build with Maven
+        run: |
+          # temp update broken file permissions
+          mvn clean install -B -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn -Pjacoco -Djacoco.haltOnFailure=false -Djacoco.ignoreFailure=true
+
+      - name: Jacoco Report to PR
+        id: jacoco
+        uses: madrapps/jacoco-report@v1.7.2
+        with:
+          fail-emoji: ":red_circle:"
+          min-coverage-changed-files: 80
+          min-coverage-overall: 80
+          pass-emoji: ":green_circle:"
+          paths: ${{ github.workspace }}/target/site/**/*.xml
+          skip-if-no-changes: true
+          title: Code Coverage
+          token: ${{ secrets.GITHUB_TOKEN }}
+          update-comment: true
+
+      - name: Fail PR if overall coverage is less than 80%
+        if: ${{ steps.jacoco.outputs.coverage-overall < 80.0 }}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            core.setFailed('Overall coverage is less than 80%!')
+
+  slack-notification:
+    needs: [maven-darwin]
+    if: ${{ always() && contains(fromJSON('["failure", "cancelled"]'), needs.maven-darwin.outputs.status ) && github.event_name == 'schedule' }}
+    secrets:
+      SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+    uses: senzing-factory/build-resources/.github/workflows/build-failure-slack-notification.yaml@v2
+    with:
+      job-status: ${{ needs.maven-darwin.outputs.status }}
