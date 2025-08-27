@@ -1,0 +1,1 @@
+# sz-sdk-java errors
