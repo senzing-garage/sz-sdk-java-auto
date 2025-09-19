@@ -27,7 +27,7 @@ jobs:
       - name: checkout repository
         uses: actions/checkout@v5
         with:
-          fetch-depth: 0
+          submodules: recursive
 
       - uses: actions/setup-java@v5
         with:
@@ -49,7 +49,7 @@ jobs:
 
       - name: Build with Maven
         run: |
-          mvn clean install -B -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn -Pjacoco -Djacoco.haltOnFailure=false -Djacoco.ignoreFailure=true
+          mvn clean install -e -B -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn -Pjacoco -Djacoco.haltOnFailure=false -Djacoco.ignoreFailure=true
 
       - name: Jacoco Report to PR
         id: jacoco
