@@ -2,7 +2,6 @@ package com.senzing.sdk.core.perpetual;
 
 import java.time.Duration;
 
-import com.senzing.sdk.SzEnvironment;
 import com.senzing.sdk.SzException;
 import com.senzing.util.LoggingUtilities;
 
@@ -28,7 +27,8 @@ class Reinitializer extends Thread {
     private static final int MAX_ERROR_COUNT = 5;
 
     /**
-     * The {@link SzEnvironment} to monitor and reinitialize.
+     * The {@link com.senzing.sdk.SzEnvironment} to monitor 
+     * and reinitialize.
      */
     private SzPerpetualCoreEnvironment env;
     
@@ -113,7 +113,7 @@ class Reinitializer extends Thread {
                     // ensure the config is current
                     this.env.ensureConfigCurrent();
 
-                } catch (InterruptedException|SzException e) {
+                } catch (InterruptedException | SzException e) {
                     errorCount++;
                     continue;
                 }
