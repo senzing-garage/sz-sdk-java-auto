@@ -52,7 +52,7 @@
     <dependency>
         <groupId>com.senzing</groupId>
         <artifactId>sz-sdk</artifactId>
-        <version>[4.1.0,5.0.0)</version>
+        <version>[4,5)</version>
         <scope>system</scope>
         <systemPath>${SENZING_PATH}/er/sdk/java/sz-sdk.jar</systemPath>
     </dependency>
