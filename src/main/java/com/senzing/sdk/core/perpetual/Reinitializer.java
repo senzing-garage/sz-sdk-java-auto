@@ -4,6 +4,7 @@ import java.time.Duration;
 
 import com.senzing.sdk.SzEnvironment;
 import com.senzing.sdk.SzException;
+import com.senzing.util.LoggingUtilities;
 
 /**
  * Background thread to refresh the configuration on the 
@@ -124,7 +125,8 @@ class Reinitializer extends Thread {
         } catch (Exception e) {
             System.err.println(
                 "Giving up on monitoring active configuration due to exception:");
-            e.printStackTrace();
+            System.err.println(e.getMessage());
+            System.err.println(LoggingUtilities.formatStackTrace(e.getStackTrace()));
 
         } finally {
             this.complete();
