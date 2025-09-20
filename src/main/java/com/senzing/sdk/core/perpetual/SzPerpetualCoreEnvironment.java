@@ -390,9 +390,9 @@ public class SzPerpetualCoreEnvironment extends SzCoreEnvironment {
      * @param <B> The {@link AbstractBuilder}-derived class of the
      *            implementation.
      */
-    public static abstract 
+    public abstract static 
     class AbstractBuilder<E extends SzPerpetualCoreEnvironment, 
-                          B extends AbstractBuilder<E,B>>
+                          B extends AbstractBuilder<E, B>>
         extends SzCoreEnvironment.AbstractBuilder<E, B> 
         implements Initializer
     {
@@ -628,7 +628,7 @@ public class SzPerpetualCoreEnvironment extends SzCoreEnvironment {
          * 
          * @param runnable The {@link Runnable} with which to construct with.
          */
-        public CoreThread(Runnable runnable) {
+        CoreThread(Runnable runnable) {
             super(runnable);
         }
     }
@@ -638,12 +638,17 @@ public class SzPerpetualCoreEnvironment extends SzCoreEnvironment {
      * thread-local {@link #RETRY_FLAG} if a method is retryable.
      */
     private static class RetryHandler implements InvocationHandler {
+        /**
+         * The target object for which to handle methods.
+         */
         private Object target = null;
 
         /**
          * Constructs with the target object.
+         * 
+         * @param target The target object for which to handle methods.
          */
-        public RetryHandler(Object target) {
+        RetryHandler(Object target) {
             this.target = target;
         }
 
@@ -1054,7 +1059,7 @@ public class SzPerpetualCoreEnvironment extends SzCoreEnvironment {
         }
 
         // check if reinitialized
-        if (result == true) {
+        if (result) {
             synchronized (this.monitor) {
                 this.configRefreshCount++;
             }
@@ -1234,7 +1239,9 @@ public class SzPerpetualCoreEnvironment extends SzCoreEnvironment {
         try {
             synchronized (this.monitor) {
                 // check if already destroyed
-                if (this.destroying) return;
+                if (this.destroying) {
+                    return;
+                }
 
                 // flag as destroying
                 this.destroying = true;
@@ -1428,9 +1435,9 @@ public class SzPerpetualCoreEnvironment extends SzCoreEnvironment {
 
                     // if we get here then try again
                     return this.executeWithBasicRetry(task);
-                }       
+                }
 
-            } catch (SzException|RuntimeException e) {
+            } catch (SzException | RuntimeException e) {
                 retryFailure = true;
                 throw e;
 
