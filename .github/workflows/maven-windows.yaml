@@ -59,7 +59,7 @@ jobs:
           cat $Env:log
           $Env:dump = Get-ChildItem -Path "D:\a\sz-sdk-java-perpetual\sz-sdk-java-perpetual -Include "*.mdmp" -File
           echo "[INFO] dump file is: $Env:dump"
-          echo "dump=$Env:dump" >> "$GITHUB_OUTPUT"
+          echo "dump=$Env:dump" >> $env:GITHUB_ENV
 
       - uses: actions/upload-artifact@v4
         if: always()
