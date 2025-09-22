@@ -53,10 +53,11 @@ jobs:
         if: always()
         continue-on-error: true
         run: |
-          $Env:log = ls -al D:\a\sz-sdk-java-perpetual\sz-sdk-java-perpetual | Select-String -Pattern '.log'
+          ls D:\a\sz-sdk-java-perpetual\sz-sdk-java-perpetual
+          $Env:log = ls D:\a\sz-sdk-java-perpetual\sz-sdk-java-perpetual | Select-String -Pattern '.log'
           echo "[INFO] log file is: $Env:log"
           cat $Env:log
-          $Env:dump = ls -al D:\a\sz-sdk-java-perpetual\sz-sdk-java-perpetual\ | Select-String -Pattern '.mdmp'
+          $Env:dump = ls D:\a\sz-sdk-java-perpetual\sz-sdk-java-perpetual\ | Select-String -Pattern '.mdmp'
           echo "[INFO] dump file is: $Env:dump"
           echo "dump=$Env:dump" >> "$GITHUB_OUTPUT"
 
