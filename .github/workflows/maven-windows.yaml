@@ -53,11 +53,12 @@ jobs:
         if: always()
         continue-on-error: true
         run: |
-          Get-ChildItem -Path "D:\a\sz-sdk-java-perpetual\sz-sdk-java-perpetual" -Include "*.log" -File
-          $Env:log = Get-ChildItem -Path "D:\a\sz-sdk-java-perpetual\sz-sdk-java-perpetual" -Include "*.log" -File
+          ls D:\a\sz-sdk-java-perpetual\sz-sdk-java-perpetual\
+          Get-ChildItem -Path D:\a\sz-sdk-java-perpetual\sz-sdk-java-perpetual\* -Include *.log -File
+          $Env:log = Get-ChildItem -Path D:\a\sz-sdk-java-perpetual\sz-sdk-java-perpetual\* -Include *.log -File
           echo "[INFO] log file is: $Env:log"
           cat $Env:log
-          $Env:dump = Get-ChildItem -Path "D:\a\sz-sdk-java-perpetual\sz-sdk-java-perpetual" -Include "*.mdmp" -File
+          $Env:dump = Get-ChildItem -Path D:\a\sz-sdk-java-perpetual\sz-sdk-java-perpetual\* -Include *.mdmp -File
           echo "[INFO] dump file is: $Env:dump"
           echo "dump=$Env:dump" >> $env:GITHUB_ENV
 
