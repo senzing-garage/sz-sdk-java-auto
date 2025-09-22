@@ -54,12 +54,12 @@ jobs:
         continue-on-error: true
         run: |
           D:\a\sz-sdk-java-perpetual\sz-sdk-java-perpetual\hs_err_pid8532.log
-          log=$(ls -al D:\a\sz-sdk-java-perpetual\sz-sdk-java-perpetual | grep '.log')
-          echo "[INFO] log file is: $log"
-          cat $log
-          dump=$(ls -al D:\a\sz-sdk-java-perpetual\sz-sdk-java-perpetual\ | grep '.mdmp')
-          echo "[INFO] dump file is: $dump"
-          echo "dump=$dump" >> "$GITHUB_OUTPUT"
+          $Env:log = ls -al D:\a\sz-sdk-java-perpetual\sz-sdk-java-perpetual | grep '.log'
+          echo "[INFO] log file is: $Env:log"
+          cat $Env:log
+          $Env:dump = ls -al D:\a\sz-sdk-java-perpetual\sz-sdk-java-perpetual\ | grep '.mdmp'
+          echo "[INFO] dump file is: $Env:dump"
+          echo "dump=$Env:dump" >> "$GITHUB_OUTPUT"
 
       - uses: actions/upload-artifact@v4
         if: always()
