@@ -137,16 +137,6 @@ public class WindowsAccessViolation {
             if (env != null) {
                 env.destroy();
             }
-            if (executor != null) {
-                executor.shutdown();
-                while (!executor.isTerminated()) {
-                    try {
-                        executor.awaitTermination(5, TimeUnit.SECONDS);
-                    } catch (InterruptedException ignore) {
-                        // do nothing
-                    }
-                }
-            }
         }
     }
 }
