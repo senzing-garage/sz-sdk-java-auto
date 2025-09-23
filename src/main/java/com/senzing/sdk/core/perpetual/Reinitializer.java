@@ -101,8 +101,10 @@ class Reinitializer extends Thread {
                     + (duration.getNano() / ONE_MILLION);
 
                 try {
-                    // sleep for the delay period
-                    this.wait(delay);
+                    synchronized (this) {
+                        // sleep for the delay period
+                        this.wait(delay);
+                    }
                     
                     // check if destroyed
                     if (this.env.isDestroyed()) {
