@@ -4,7 +4,6 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.time.Duration;
 
-import com.senzing.sdk.SzEnvironment;
 import com.senzing.sdk.SzException;
 
 /**
@@ -29,8 +28,7 @@ class Reinitializer extends Thread {
     private static final int MAX_ERROR_COUNT = 5;
 
     /**
-     * The {@link com.senzing.sdk.SzEnvironment} to monitor 
-     * and reinitialize.
+     * The {@link SzPerpetualCoreEnvironment} to monitor and reinitialize.
      */
     private SzPerpetualCoreEnvironment env;
     
@@ -40,9 +38,9 @@ class Reinitializer extends Thread {
     private boolean complete;
 
     /**
-     * Constructs with the {@link SzEnvironment}.
+     * Constructs with the {@link SzPerpetualCoreEnvironment}.
      *
-     * @param env The {@link SzEnvironment} to use.
+     * @param env The {@link SzPerpetualCoreEnvironment} to use.
      */
     Reinitializer(SzPerpetualCoreEnvironment env) {
         this.env        = env;
@@ -146,11 +144,13 @@ class Reinitializer extends Thread {
      *         array is <code>null</code>.
      */
     private static String formatStackTrace(StackTraceElement[] stackTrace) {
-        if (stackTrace == null) return null;
+        if (stackTrace == null) {
+            return null;
+        }
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
         for (StackTraceElement elem : stackTrace) {
-        pw.println(formatStackTrace(elem));
+            pw.println(formatStackTrace(elem));
         }
         return sw.toString();
     }
@@ -175,7 +175,7 @@ class Reinitializer extends Thread {
 
         String moduleName = elem.getModuleName();
         if (moduleName != null && moduleName.length() > 0) {
-        sb.append(moduleName).append("/");
+            sb.append(moduleName).append("/");
         }
         sb.append(elem.getClassName());
         sb.append(".");
@@ -186,9 +186,9 @@ class Reinitializer extends Thread {
         sb.append(":");
         int lineNumber = elem.getLineNumber();
         if (lineNumber < 0) {
-        sb.append("[unknown line]");
+            sb.append("[unknown line]");
         } else {
-        sb.append(lineNumber);
+            sb.append(lineNumber);
         }
         sb.append(")");
 
