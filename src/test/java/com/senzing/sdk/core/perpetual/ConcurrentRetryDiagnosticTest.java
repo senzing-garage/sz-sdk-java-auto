@@ -12,10 +12,10 @@ import java.time.Duration;
 @Execution(ExecutionMode.SAME_THREAD)
 public class ConcurrentRetryDiagnosticTest extends DiagnosticTest 
 {
-    private static final Integer CONCURRENCY = 4;
+    private static final Integer CONCURRENCY = null; //4;
 
 
-    private static final Duration DURATION = Duration.ofMillis(500);
+    private static final Duration DURATION = null; // Duration.ofMillis(500);
 
     @Override
     protected Integer getConcurrency() {

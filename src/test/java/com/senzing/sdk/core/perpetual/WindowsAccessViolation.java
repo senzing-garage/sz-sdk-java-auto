@@ -21,7 +21,6 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.time.Duration;
 import java.util.EnumSet;
-import java.util.concurrent.*;
 
 public class WindowsAccessViolation {
     private static final Integer CONCURRENCY = 4;
