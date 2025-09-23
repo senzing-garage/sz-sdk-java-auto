@@ -38,11 +38,6 @@ class Reinitializer extends Thread {
     private boolean complete;
 
     /**
-     * Flag indicating if this thread has completed execution.
-     */
-    private boolean completed = false;
-
-    /**
      * Constructs with the {@link SzEnvironment}.
      *
      * @param env The {@link SzEnvironment} to use.
@@ -71,18 +66,6 @@ class Reinitializer extends Thread {
      */
     synchronized boolean isComplete() {
         return this.complete;
-    }
-
-    /**
-     * Checks if this thread has processed the completion signal and
-     * has completed execution.
-     * 
-     * @return <tt>true</tt> if this thread has processed the completion
-     *         signal and has completed or if it has completed due to an 
-     *         error, otherwise <tt>false</tt>.
-     */
-    synchronized boolean isCompleted() {
-        return this.completed;
     }
 
     /**
@@ -119,7 +102,7 @@ class Reinitializer extends Thread {
 
                 try {
                     // sleep for the delay period
-                    Thread.sleep(delay);
+                    this.wait(delay);
                     
                     // check if destroyed
                     if (this.env.isDestroyed()) {
@@ -147,9 +130,6 @@ class Reinitializer extends Thread {
 
         } finally {
             this.complete();
-            synchronized (this) {
-                this.completed = true;
-            }
         }
     }
 

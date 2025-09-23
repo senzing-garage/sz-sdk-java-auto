@@ -1262,7 +1262,7 @@ public class SzPerpetualCoreEnvironment extends SzCoreEnvironment {
                         // do nothing
                     }
                 }
-                if (!this.reinitializer.isCompleted()) {
+                if (this.reinitializer.isAlive()) {
                     System.err.println("Failed to shutdown reinitializer thread: " 
                                        + this.reinitializer.getName());
                 }
