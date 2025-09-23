@@ -55,10 +55,18 @@ public class WindowsAccessViolation {
 
         try {
 
-            File tempDatabaseFile = File.createTempFile("G2C-", ".db");
+            File mainDatabaseFile = File.createTempFile("G2C-", ".db");
+            File resDatabaseFile = File.createTempFile("G2-", "-RES.db");
+            File featDatabaseFile = File.createTempFile("G2-", "-LIB_FEAT.db");
             Files.copy(dbTemplateFile.toPath(), 
-                    tempDatabaseFile.toPath(),
-                    StandardCopyOption.REPLACE_EXISTING);
+                       mainDatabaseFile.toPath(),
+                       StandardCopyOption.REPLACE_EXISTING);
+            Files.copy(dbTemplateFile.toPath(), 
+                       resDatabaseFile.toPath(),
+                       StandardCopyOption.REPLACE_EXISTING);
+            Files.copy(dbTemplateFile.toPath(), 
+                       featDatabaseFile.toPath(),
+                       StandardCopyOption.REPLACE_EXISTING);
 
             String settings = """
                     {
@@ -68,13 +76,33 @@ public class WindowsAccessViolation {
                             "CONFIGPATH": "%s"
                         },
                         "SQL": {
+                            "BACKEND": "HYBRID",
                             "CONNECTION": "sqlite3://na:na@/%s"
+                        },
+                        "HYBRID": {
+                            "RES_FEAT": "C1",
+                            "RES_FEAT_EKEY": "C1",
+                            "RES_FEAT_LKEY": "C1",
+                            "RES_FEAT_STAT": "C1",
+                            "LIB_FEAT": "C2",
+                            "LIB_FEAT_HKEY": "C2"
+                        },
+                        "C1": {
+                            "CLUSTER_SIZE": "1",
+                            "DB_1": "sqlite3://na:na@/%s"
+                        },
+                        "C2": {
+                            "CLUSTER_SIZE": "1",
+                            "DB_1": "sqlite3://na:na@/%s"
                         }
+
                     }
                     """.formatted(supportDir.getCanonicalPath().replace('\\', '/'),
                     resourceDir.getCanonicalPath().replace('\\', '/'),
                     configPath.getCanonicalPath().replace('\\', '/'),
-                    tempDatabaseFile.getCanonicalPath().replace('\\', '/'));
+                    mainDatabaseFile.getCanonicalPath().replace('\\', '/'),
+                    resDatabaseFile.getCanonicalPath().replace('\\', '/'),
+                    featDatabaseFile.getCanonicalPath().replace('\\', '/'));
 
     	    System.out.println();
             System.out.println(settings);
