@@ -19,13 +19,18 @@ import static com.senzing.sdk.SzFlag.SZ_ENTITY_INCLUDE_RECORD_SUMMARY;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
+import java.time.Duration;
 import java.util.EnumSet;
 import java.util.concurrent.*;
 
 public class WindowsAccessViolation {
+    private static final Integer CONCURRENCY = 4;
+
+
+    private static final Duration DURATION = Duration.ofMillis(500);
+
     public static void main(String[] args) {
         SzEnvironment env = null;
-        ExecutorService executor = null;
 
         if (args.length < 1) {
             System.err.println("Must specify the settings path");
@@ -116,16 +121,13 @@ public class WindowsAccessViolation {
             env.destroy();
             env = null;
 
-            env = SzCoreEnvironment.newBuilder().settings(settings).verboseLogging(false).build();
-            executor = Executors.newFixedThreadPool(4);
+            env = SzPerpetualCoreEnvironment.newPerpetualBuilder()
+                    .settings(settings).verboseLogging(false).concurrency(CONCURRENCY)
+                    .configRefreshPeriod(DURATION).build();
             
-            SzDiagnostic diagnostic = env.getDiagnostic();
-
-            Future<String> future = executor.submit(() -> {
-                return diagnostic.getRepositoryInfo();
-            });
-
-            System.out.println(future.get());
+            SzDiagnostic diagnostic = env.getDiagnostic()
+            ;
+            System.out.println(diagnostic.getRepositoryInfo());
 
 
         } catch (Exception e) {
