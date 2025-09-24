@@ -57,8 +57,6 @@ import static org.junit.jupiter.api.TestInstance.Lifecycle;
                                              .concurrency(this.getConcurrency())
                                              .configRefreshPeriod(this.getConfigRefreshPeriod())
                                              .build();
-
-        System.err.println("*********** COMPLETED INITIALIZATION OF ENVIRONMENT");
     }
     
     /**
@@ -81,8 +79,6 @@ import static org.junit.jupiter.api.TestInstance.Lifecycle;
         } finally {
             env.destroy();
         }
-
-        System.err.println("*********** COMPLETED REPOSITORY PREP");
     }
 
     @AfterAll

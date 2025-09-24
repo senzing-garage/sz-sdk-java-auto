@@ -662,33 +662,27 @@ public class SzPerpetualCoreEnvironment extends SzCoreEnvironment {
             // check if no annotation and just do a standard invocation
             if (retryable == null) {
                 try {
-                    System.err.println("ATTEMPTING NON-RETRYABLE METHOD: " + method);
                     result = method.invoke(target, args);
 
                 } catch (InvocationTargetException e) {
-                    System.err.println("FAILED NON-RETRYABLE METHOD: " + method);
                     // get the cause of the exception
                     throw e.getCause();
                 }
-                System.err.println("COMPLETED NON-RETRYABLE METHOD: " + method);
                 return result;
 
             } else {
                 Boolean initial = CONFIG_RETRY_FLAG.get();
                 CONFIG_RETRY_FLAG.set(Boolean.TRUE);
                 try {
-                    System.err.println("ATTEMPTING RETRYABLE METHOD: " + method);
                     result = method.invoke(target, args);
 
                 } catch (InvocationTargetException e) {
-                    System.err.println("FAILED RETRYABLE METHOD: " + method);
                     throw e.getCause();
 
                 } finally {
                     // set the flag back to what our caller set
                     CONFIG_RETRY_FLAG.set(initial);
                 }
-                System.err.println("COMPLETED RETRYABLE METHOD: " + method);
             }
 
             // check the result to see if we need to proxy it
