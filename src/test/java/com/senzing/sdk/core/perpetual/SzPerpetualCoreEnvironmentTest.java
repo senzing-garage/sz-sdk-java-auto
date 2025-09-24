@@ -1432,7 +1432,7 @@ public class SzPerpetualCoreEnvironmentTest extends AbstractPerpetualCoreTest {
                 // ensure we succeed if succeed on retry
                 MockRetryCallable mrc = new MockRetryCallable(true);
                 try {
-                    SzPerpetualCoreEnvironment.RETRY_FLAG.set(Boolean.TRUE);
+                    SzPerpetualCoreEnvironment.CONFIG_RETRY_FLAG.set(Boolean.TRUE);
                     Integer result = env.execute(mrc);
 
                     assertEquals(0, result, 
@@ -1443,13 +1443,13 @@ public class SzPerpetualCoreEnvironmentTest extends AbstractPerpetualCoreTest {
                          e);
 
                 } finally {
-                    SzPerpetualCoreEnvironment.RETRY_FLAG.set(Boolean.FALSE);
+                    SzPerpetualCoreEnvironment.CONFIG_RETRY_FLAG.set(Boolean.FALSE);
                 }
 
                 // ensure we fail if failing on retry
                 mrc = new MockRetryCallable(false);
                 try {
-                    SzPerpetualCoreEnvironment.RETRY_FLAG.set(Boolean.TRUE);
+                    SzPerpetualCoreEnvironment.CONFIG_RETRY_FLAG.set(Boolean.TRUE);
                     Integer result = env.execute(mrc);
 
                     fail("Unexpectedly succeeded when we should have failed on retry: " 
@@ -1464,13 +1464,13 @@ public class SzPerpetualCoreEnvironmentTest extends AbstractPerpetualCoreTest {
                                  + "error message.");
 
                 } finally {
-                    SzPerpetualCoreEnvironment.RETRY_FLAG.set(Boolean.FALSE);
+                    SzPerpetualCoreEnvironment.CONFIG_RETRY_FLAG.set(Boolean.FALSE);
                 }
 
                 // ensure we fail if not retrying
                 mrc = new MockRetryCallable(true);
                 try {
-                    SzPerpetualCoreEnvironment.RETRY_FLAG.set(Boolean.FALSE);
+                    SzPerpetualCoreEnvironment.CONFIG_RETRY_FLAG.set(Boolean.FALSE);
                     Integer result = env.execute(mrc);
 
                     fail("Unexpectedly succeeded when we should have "
@@ -1485,7 +1485,7 @@ public class SzPerpetualCoreEnvironmentTest extends AbstractPerpetualCoreTest {
                                 + "the expected error message.");
 
                 } finally {
-                    SzPerpetualCoreEnvironment.RETRY_FLAG.set(Boolean.FALSE);
+                    SzPerpetualCoreEnvironment.CONFIG_RETRY_FLAG.set(Boolean.FALSE);
                 }
 
             } finally {

@@ -76,7 +76,7 @@ public class SzPerpetualCoreEnvironment extends SzCoreEnvironment {
     /**
      * The thread-local retry flag.
      */
-    static final ThreadLocal<Boolean> RETRY_FLAG = new ThreadLocal<>() {
+    static final ThreadLocal<Boolean> CONFIG_RETRY_FLAG = new ThreadLocal<>() {
         protected Boolean initialValue() {
             return Boolean.FALSE;
         }
@@ -635,7 +635,7 @@ public class SzPerpetualCoreEnvironment extends SzCoreEnvironment {
 
     /**
      * The {@link InvocationHandler} implementation that sets the 
-     * thread-local {@link #RETRY_FLAG} if a method is retryable.
+     * thread-local {@link #CONFIG_RETRY_FLAG} if a method is retryable.
      */
     private static class RetryHandler implements InvocationHandler {
         /**
@@ -662,26 +662,33 @@ public class SzPerpetualCoreEnvironment extends SzCoreEnvironment {
             // check if no annotation and just do a standard invocation
             if (retryable == null) {
                 try {
-                    return method.invoke(target, args);
-
-                } catch (InvocationTargetException e) {
-                    // get the cause of the exception
-                    throw e.getCause();
-                }
-
-            } else {
-                Boolean initial = RETRY_FLAG.get();
-                RETRY_FLAG.set(Boolean.TRUE);
-                try {
+                    System.err.println("ATTEMPTING NON-RETRYABLE METHOD: " + method);
                     result = method.invoke(target, args);
 
                 } catch (InvocationTargetException e) {
+                    System.err.println("FAILED NON-RETRYABLE METHOD: " + method);
+                    // get the cause of the exception
+                    throw e.getCause();
+                }
+                System.err.println("COMPLETED NON-RETRYABLE METHOD: " + method);
+                return result;
+
+            } else {
+                Boolean initial = CONFIG_RETRY_FLAG.get();
+                CONFIG_RETRY_FLAG.set(Boolean.TRUE);
+                try {
+                    System.err.println("ATTEMPTING RETRYABLE METHOD: " + method);
+                    result = method.invoke(target, args);
+
+                } catch (InvocationTargetException e) {
+                    System.err.println("FAILED RETRYABLE METHOD: " + method);
                     throw e.getCause();
 
                 } finally {
                     // set the flag back to what our caller set
-                    RETRY_FLAG.set(initial);
+                    CONFIG_RETRY_FLAG.set(initial);
                 }
+                System.err.println("COMPLETED RETRYABLE METHOD: " + method);
             }
 
             // check the result to see if we need to proxy it
@@ -1400,7 +1407,7 @@ public class SzPerpetualCoreEnvironment extends SzCoreEnvironment {
                 // if we are not refreshing the configuration or the
                 // retry flag is not set then just execute the task
                 if (this.refreshMode == RefreshMode.DISABLED
-                    || (!Boolean.TRUE.equals(RETRY_FLAG.get()))) 
+                    || (!Boolean.TRUE.equals(CONFIG_RETRY_FLAG.get()))) 
                 {
                     return this.executeWithBasicRetry(task);
                 }
