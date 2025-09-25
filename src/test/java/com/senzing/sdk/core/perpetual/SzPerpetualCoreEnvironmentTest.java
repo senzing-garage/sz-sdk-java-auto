@@ -11,7 +11,9 @@ import java.util.Iterator;
 import java.util.Random;
 
 import java.util.concurrent.ThreadPoolExecutor;
+
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
@@ -20,7 +22,6 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.TestInstance;
-import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -29,6 +30,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.junit.jupiter.params.provider.Arguments;
 
+import static com.senzing.sdk.core.perpetual.SzPerpetualCoreEnvironment.DISABLED_CONCURRENCY;
 import static com.senzing.sdk.core.perpetual.SzPerpetualCoreEnvironment.DISABLED_CONFIG_REFRESH;
 import static com.senzing.sdk.core.perpetual.SzPerpetualCoreEnvironment.REACTIVE_CONFIG_REFRESH;
 import static com.senzing.sdk.core.perpetual.SzPerpetualCoreEnvironment.RefreshMode.*;
@@ -48,7 +50,7 @@ import com.senzing.sdk.SzProduct;
 import com.senzing.sdk.core.SzCoreEnvironment;
 import com.senzing.sdk.core.perpetual.SzPerpetualCoreEnvironment.CoreThread;
 import com.senzing.text.TextUtilities;
-import com.senzing.util.AsyncWorkerPool.Task;
+import com.senzing.sdk.SzConfig;
 import com.senzing.sdk.SzConfigManager;
 import com.senzing.sdk.SzEngine;
 import com.senzing.sdk.SzEnvironment;
@@ -57,6 +59,7 @@ import com.senzing.sdk.SzException;
 
 import static com.senzing.sdk.core.SzCoreEnvironment.*;
 import static com.senzing.sdk.test.SdkTest.*;
+import static com.senzing.sdk.core.perpetual.SzPerpetualCoreEnvironment.RefreshMode;
 
 @TestInstance(Lifecycle.PER_CLASS)
 @Execution(ExecutionMode.SAME_THREAD)
@@ -70,8 +73,6 @@ public class SzPerpetualCoreEnvironmentTest extends AbstractPerpetualCoreTest {
     private long configId2 = 0L;
 
     private long configId3 = 0L;
-
-    private long defaultConfigId = 0L;
 
     @BeforeAll public void initializeEnvironment() {
         this.beginTests();
@@ -95,9 +96,7 @@ public class SzPerpetualCoreEnvironmentTest extends AbstractPerpetualCoreTest {
             this.configId1 = configMgr.registerConfig(config1, "Config 1");
             this.configId2 = configMgr.registerConfig(config2, "Config 2");
             this.configId3 = configMgr.registerConfig(config3, "Config 3");
-
-            this.defaultConfigId = configMgr.getDefaultConfigId();
-
+            
         } catch (Exception e) {
             fail(e);
 
@@ -497,6 +496,121 @@ public class SzPerpetualCoreEnvironmentTest extends AbstractPerpetualCoreTest {
                     env.destroy();
                 }
             }    
+        });
+    }
+
+    void testSubmitTaskFailingCallable() {
+        this.performTest(() -> {
+            SzPerpetualCoreEnvironment env = null;
+            try {
+                env = SzPerpetualCoreEnvironment.newPerpetualBuilder()
+                                                .concurrency(DISABLED_CONCURRENCY)
+                                                .build();
+            
+                boolean fail = true;
+                Future<String> future = env.submitTask(() -> {
+                    if (fail) {
+                        throw new IllegalArgumentException("TEST");
+                    }
+                    return "SUCCESS";
+                });
+                try {
+                    future.get();
+
+                    fail("Unexpectedly succeeded future");
+
+                } catch (ExecutionException expected) {
+                    Throwable cause = expected.getCause();
+                    assertInstanceOf(IllegalArgumentException.class, cause,
+                                "Unexpected cause exception type");
+
+                    assertEquals("TEST", cause.getMessage(),
+                                 "Unexpected cause exception message");
+                                 
+                } catch (Exception e) {
+                    fail("Unexpected exception", e);
+                }
+            } finally {
+                if (env != null) {
+                    env.destroy();
+                }
+            }
+
+        });
+    }
+
+
+    void testSubmitTaskFailingRunnable() {
+        this.performTest(() -> {
+            SzPerpetualCoreEnvironment env = null;
+            try {
+                env = SzPerpetualCoreEnvironment.newPerpetualBuilder()
+                                                .concurrency(DISABLED_CONCURRENCY)
+                                                .build();
+            
+                Future<?> future = env.submitTask(() -> {
+                    throw new IllegalArgumentException("TEST");
+                });
+                try {
+                    future.get();
+
+                    fail("Unexpectedly succeeded future");
+
+                } catch (ExecutionException expected) {
+                    Throwable cause = expected.getCause();
+                    assertInstanceOf(IllegalArgumentException.class, cause,
+                                "Unexpected cause exception type");
+
+                    assertEquals("TEST", cause.getMessage(),
+                                 "Unexpected cause exception message");
+
+                } catch (Exception e) {
+                    fail("Unexpected exception", e);
+                }
+            } finally {
+                if (env != null) {
+                    env.destroy();
+                }
+            }
+
+        });
+    }
+
+
+    void testSubmitTaskFailingRunnableResult() {
+        this.performTest(() -> {
+            SzPerpetualCoreEnvironment env = null;
+            try {
+                env = SzPerpetualCoreEnvironment.newPerpetualBuilder()
+                                                .concurrency(DISABLED_CONCURRENCY)
+                                                .build();
+            
+                Future<String> future = env.submitTask(() -> {
+                    throw new IllegalArgumentException("TEST");
+                }, "SUCCESS");
+
+                try {
+                    future.get();
+
+                    fail("Unexpectedly succeeded future");
+
+                } catch (ExecutionException expected) {
+                    Throwable cause = expected.getCause();
+                    assertInstanceOf(IllegalArgumentException.class, cause,
+                                "Unexpected cause exception type");
+
+                    assertEquals("TEST", cause.getMessage(),
+                                 "Unexpected cause exception message");
+
+                } catch (Exception e) {
+                    fail("Unexpected exception", e);
+                }
+            } finally {
+                if (env != null) {
+                    env.destroy();
+                }
+            }
+
         });
     }
 
@@ -1244,11 +1358,19 @@ public class SzPerpetualCoreEnvironmentTest extends AbstractPerpetualCoreTest {
                                                 .settings(settings)
                                                 .instanceName(instanceName)
                                                 .build();
+
+                // check if we should init the engine first
+                if (initEngine) {
+                    env.getEngine();
+                }
     
+                // get the default config ID
+                long defaultConfigId = env.getConfigManager().getDefaultConfigId();
+
                 // get the active config
                 long activeConfigId = env.getActiveConfigId();
     
-                assertEquals(this.defaultConfigId, activeConfigId,
+                assertEquals(defaultConfigId, activeConfigId,
                     "The active config ID is not as expected: " + info);
                         
             } catch (Exception e) {
@@ -1372,15 +1494,52 @@ public class SzPerpetualCoreEnvironmentTest extends AbstractPerpetualCoreTest {
     }
 
     private static class MockEnvironment extends SzPerpetualCoreEnvironment {
-        public MockEnvironment(String instanceName, String settings) {
+        private int configIndex = 0;
+
+        private boolean bumpOnReinitialize = false;
+        
+        public MockEnvironment(String instanceName, String settings) 
+            throws SzException
+        {
             super(SzPerpetualCoreEnvironment.newPerpetualBuilder()
                     .settings(settings).instanceName(instanceName)
                     .configRefreshPeriod(REACTIVE_CONFIG_REFRESH));
+            
+            // revert the default config
+            SzConfigManager configMgr = this.getConfigManager();
+            configMgr.setDefaultConfig(
+                configMgr.createConfig().export());
+
+            // ensure we initialize
+            this.getEngine();
+
+        }
+
+        public void setBumpOnReinitialize(boolean bump) {
+            this.bumpOnReinitialize = bump;
         }
 
         protected boolean ensureConfigCurrent() throws SzException {
-            super.ensureConfigCurrent();
-            return true;
+            this.bumpConfig(); // ensure config is out of sync
+            return super.ensureConfigCurrent();
+        }
+
+        @Override
+        public void reinitialize(long configId) throws SzException {
+            super.reinitialize(configId);
+            if (this.bumpOnReinitialize) {
+                this.bumpConfig(); // keep the config out of sync
+            }
+        }
+
+        private void bumpConfig() throws SzException {
+            SzConfigManager configMgr = this.getConfigManager();
+            SzConfig config = configMgr.createConfig(configMgr.getDefaultConfigId());
+            String dataSource = ("DUMMY_SOURCE_" 
+                + TextUtilities.randomAlphanumericText(5) 
+                + "-" + (++configIndex)).toUpperCase();
+            config.registerDataSource(dataSource);
+            configMgr.setDefaultConfig(config.export(), "Added " + dataSource);
         }
     }
 
@@ -1394,6 +1553,12 @@ public class SzPerpetualCoreEnvironmentTest extends AbstractPerpetualCoreTest {
                  TextUtilities.randomAlphanumericText(20));
         }
 
+        public MockRetryCallable(int failureCount) 
+        {
+            this(failureCount,
+                 TextUtilities.randomAlphanumericText(20));
+        }
+
         public MockRetryCallable(boolean    succeedOnRetry, 
                                  String     errorMessage) 
         {
@@ -1401,6 +1566,14 @@ public class SzPerpetualCoreEnvironmentTest extends AbstractPerpetualCoreTest {
             this.retryList.add(Boolean.FALSE);
             this.retryList.add(succeedOnRetry);
             this.errorMessage   = errorMessage;
+        }
+
+        public MockRetryCallable(int failureCount, String errorMessage) {
+            this.retryList = new LinkedList<>();
+            for (int index = 0; index < failureCount; index++) {
+                this.retryList.add(Boolean.FALSE);
+            }
+            this.errorMessage = errorMessage;
         }
 
         public String getErrorMessage() {
@@ -1439,7 +1612,7 @@ public class SzPerpetualCoreEnvironmentTest extends AbstractPerpetualCoreTest {
                         "Unexpectedly succeeded on first try");
 
                 } catch (SzException e) {
-                    fail("Failed retry when expected successs on retry: " + e.getErrorCode(), 
+                    fail("Failed retry when expected success on retry: " + e.getErrorCode(), 
                          e);
 
                 } finally {
@@ -1488,10 +1661,320 @@ public class SzPerpetualCoreEnvironmentTest extends AbstractPerpetualCoreTest {
                     SzPerpetualCoreEnvironment.CONFIG_RETRY_FLAG.set(Boolean.FALSE);
                 }
 
+            } catch (SzException e) { 
+                fail("Unexpected exception", e);
+
             } finally {
                 if (env != null) {
                     env.destroy();
                 }
+            }
+        });
+    }
+
+    @Test
+    public void constructNegativeConcurrencyTest() {
+        this.performTest(() -> {
+            try {
+                new SzPerpetualCoreEnvironment(
+                    new SzPerpetualCoreEnvironment.Builder() {
+                        public Integer getConcurrency() {
+                            return -1;
+                        }
+                });
+
+                fail("Unexpectedly succeeded environment construction");
+
+            } catch (IllegalArgumentException expected) {
+                // do nothing
+            } catch (Exception e) {
+                fail("Unexpected exception", e);
+            }
+        });
+    }
+
+    @Test
+    public void constructNegativeMaxRetriesTest() {
+        this.performTest(() -> {
+            try {
+                new SzPerpetualCoreEnvironment(
+                    new SzPerpetualCoreEnvironment.Builder() {
+                        public int getMaxBasicRetries() {
+                            return -1;
+                        }
+                });
+
+                fail("Unexpectedly succeeded environment construction");
+
+            } catch (IllegalArgumentException expected) {
+                // do nothing
+            } catch (Exception e) {
+                fail("Unexpected exception", e);
+            }
+        });
+    }
+
+    @Test
+    public void constructNegativeConfigRefreshPeriodTest() {
+        this.performTest(() -> {
+            try {
+                new SzPerpetualCoreEnvironment(
+                    new SzPerpetualCoreEnvironment.Builder() {
+                        public Duration getConfigRefreshPeriod() {
+                            return Duration.ofSeconds(-1);
+                        }
+                });
+
+                fail("Unexpectedly succeeded environment construction");
+
+            } catch (IllegalArgumentException expected) {
+                // do nothing
+            } catch (Exception e) {
+                fail("Unexpected exception", e);
+            }
+        });
+    }
+
+    @Test
+    public void builderFixedConfigWithRefreshTest() {
+        this.performTest(() -> {
+            SzEnvironment env = null;
+            try {
+                Duration period = Duration.ofMinutes(30);
+                env = SzPerpetualCoreEnvironment.newPerpetualBuilder()
+                                                .configId(12L)
+                                                .configRefreshPeriod(period)
+                                                .build();
+                
+                fail("Unexpected success despite conflicting builder settings");
+
+            } catch (IllegalStateException expected) {
+                // do nothing
+            } catch (Exception e) {
+                fail("Unexpected exception for conflicting builder settings",e);
+
+            } finally {
+                if (env != null) {
+                    env.destroy();
+                }
+            }
+        });
+    }
+
+    public List<Integer> getConcurrencyParameters() {
+        List<Integer> result = new ArrayList<>();
+        result.add(null);
+        result.add(0);
+        result.add(1);
+        result.add(4);
+        result.add(-1);
+        result.add(-10);
+        return result;
+    }
+
+    @ParameterizedTest
+    @MethodSource("getConcurrencyParameters")
+    public void builderConcurrencyTest(Integer concurrency) {
+        this.performTest(() -> {
+            SzPerpetualCoreEnvironment env = null;
+
+            try {
+                SzPerpetualCoreEnvironment.Builder builder 
+                    = SzPerpetualCoreEnvironment.newPerpetualBuilder()
+                                                .concurrency(concurrency);
+
+                if (concurrency != null && concurrency < 0) {
+                    fail("Unexpected success for concurrency: " + concurrency);
+                }
+
+                assertEquals(concurrency, builder.getConcurrency(),
+                             "Result from getConcurrency() is not as expected");
+                
+                // build the environment
+                env = builder.build();
+
+                // check the concurrency
+                int expected = (concurrency == null) ? 0
+                             : ((concurrency != 0) ? concurrency
+                                : Runtime.getRuntime().availableProcessors());
+
+                assertEquals(expected, env.getConcurrency(),
+                             "Environment concurrency is not as expected: " + concurrency);
+
+            } catch (IllegalArgumentException e) {
+                if (concurrency == null || concurrency > 0) {
+                    fail("Unexpected exception for concurrency: " + concurrency, e);
+                }
+
+            } catch (Exception e) {
+                fail("Unexpected exception for concurrency: " + concurrency, e);
+
+            } finally {
+                if (env != null) {
+                    env.destroy();
+                }
+            }
+        });
+    }
+
+    public List<Duration> getConfigRefreshPeriodParameters() {
+        List<Duration> result = new ArrayList<>();
+        result.add(null);
+        result.add(Duration.ofSeconds(0));
+        result.add(Duration.ofSeconds(5000));
+        result.add(Duration.ofSeconds(-1));
+        result.add(Duration.ofSeconds(-10));
+        return result;
+    }
+
+    @ParameterizedTest
+    @MethodSource("getConfigRefreshPeriodParameters")
+    public void builderConfigRefreshPeriodTest(Duration duration) {
+        this.performTest(() -> {
+            SzPerpetualCoreEnvironment env = null;
+
+            try {
+                SzPerpetualCoreEnvironment.Builder builder 
+                    = SzPerpetualCoreEnvironment.newPerpetualBuilder()
+                                                .configRefreshPeriod(duration);
+                                                
+                if (duration != null && duration.isNegative()) {
+                    fail("Unexpected success for config refresh period: " + duration);
+                }
+
+                assertEquals(duration, builder.getConfigRefreshPeriod(),
+                             "Result from getConfigRefreshPeriod() is not as expected");
+                
+                // build the environment
+                env = builder.build();
+
+                // check the value from the SzEnvironment
+                assertEquals(duration, env.getConfigRefreshPeriod(),
+                             "Environment config refresh period is not as expected");
+
+                RefreshMode expectedMode = (duration == null)
+                    ? RefreshMode.DISABLED
+                    : (duration.isZero() ? RefreshMode.REACTIVE : RefreshMode.PROACTIVE);
+                
+                assertEquals(expectedMode, env.getConfigRefreshMode(),
+                             "Environment config refresh mode is not as expected");
+
+            } catch (IllegalArgumentException e) {
+                if (duration == null || !duration.isNegative()) {
+                    fail("Unexpected exception for config refresh period: " + duration, e);
+                }
+
+            } catch (Exception e) {
+                fail("Unexpected exception for config refresh period: " + duration, e);
+
+            } finally {
+                if (env != null) {
+                    env.destroy();
+                }
+            }
+        });
+    }
+
+    public List<Integer> getMaxBasicRetryParameters() {
+        List<Integer> result = new ArrayList<>();
+        result.add(0);
+        result.add(1);
+        result.add(4);
+        result.add(-1);
+        result.add(-10);
+        return result;
+    }
+
+    @ParameterizedTest
+    @MethodSource("getMaxBasicRetryParameters")
+    public void builderMaxBasicRetryTest(int maxRetries) {
+        this.performTest(() -> {
+            SzPerpetualCoreEnvironment env = null;
+
+            try {
+                SzPerpetualCoreEnvironment.Builder builder 
+                    = SzPerpetualCoreEnvironment.newPerpetualBuilder()
+                                                .maxBasicRetries(maxRetries);
+                
+                if (maxRetries < 0) {
+                    fail("Unexpected success for max retries: " + maxRetries);
+                }
+
+                assertEquals(maxRetries, builder.getMaxBasicRetries(),
+                             "Result from getMaxBasicRetries() is not as expected");
+                
+                // build the environment
+                env = builder.build();
+
+                // check the value from the environment
+                assertEquals(maxRetries, env.getMaxBasicRetries(),
+                             "Environment max basic retries is not as expected");
+                             
+            } catch (IllegalArgumentException e) {
+                if (maxRetries > 0) {
+                    fail("Unexpected exception for max retries: " + maxRetries, e);
+                }
+
+            } catch (Exception e) {
+                fail("Unexpected exception for max retries: " + maxRetries, e);
+
+            } finally {
+                if (env != null) {
+                    env.destroy();
+                }
+            }
+        });
+    }
+
+    @Test
+    public void formatStackTraceTest() {
+        this.performTest(() -> {
+            StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
+
+            Reinitializer.formatStackTrace(stackTrace);
+        });
+    }
+
+    @Test
+    public void maxReinitializeTest() {
+        this.performTest(() -> {
+            String instanceName = this.getInstanceName();
+            String settings = this.getRepoSettings();
+
+            MockEnvironment env = null;
+            int refreshCount = -1;
+            boolean executing = false;
+            try {
+                env = new MockEnvironment(instanceName, settings);
+
+                refreshCount = env.getConfigRefreshCount();
+                env.setBumpOnReinitialize(true);
+
+                assertEquals(refreshCount, 0, "Unexpected initial refresh count");
+
+                MockRetryCallable mrc = new MockRetryCallable(
+                    SzPerpetualCoreEnvironment.MAX_REINITIALIZE_COUNT + 1);
+
+                SzPerpetualCoreEnvironment.CONFIG_RETRY_FLAG.set(Boolean.TRUE);
+                executing = true;
+                env.execute(mrc);
+                
+                fail("Unexpectedly succeeded despite mocked exceptions");
+
+            } catch (SzException e) { 
+                if (executing) {
+                    assertEquals(SzPerpetualCoreEnvironment.MAX_REINITIALIZE_COUNT,
+                                 env.getConfigRefreshCount(),
+                                "Unexpected config refresh count");
+                } else {
+                    fail("Unexpected exception", e);
+                }
+
+            } finally {
+                if (env != null) {
+                    env.destroy();
+                }
+                SzPerpetualCoreEnvironment.CONFIG_RETRY_FLAG.set(Boolean.FALSE);
             }
         });
     }

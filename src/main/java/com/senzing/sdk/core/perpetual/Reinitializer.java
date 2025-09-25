@@ -145,7 +145,7 @@ class Reinitializer extends Thread {
      *         StackTraceElement} instances or <code>null</code> if the specified
      *         array is <code>null</code>.
      */
-    private static String formatStackTrace(StackTraceElement[] stackTrace) {
+    static String formatStackTrace(StackTraceElement[] stackTrace) {
         if (stackTrace == null) {
             return null;
         }
@@ -165,7 +165,7 @@ class Reinitializer extends Thread {
      * 
      * @return The formatted {@link String} describing the {@link StackTraceElement}.
      */
-    private static String formatStackTrace(StackTraceElement elem) {
+    static String formatStackTrace(StackTraceElement elem) {
         StringBuilder sb = new StringBuilder();
         sb.append("        at ");
         

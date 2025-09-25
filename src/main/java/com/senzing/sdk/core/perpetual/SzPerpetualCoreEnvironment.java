@@ -118,7 +118,7 @@ public class SzPerpetualCoreEnvironment extends SzCoreEnvironment {
      * latest default configuration ID before giving up.  This ensures
      * we never get an infinite loop in the case of race conditions.
      */
-    private static final int MAX_REINITIALIZE_COUNT = 5;
+    static final int MAX_REINITIALIZE_COUNT = 5;
 
     /**
      * The number of seconds to wait for shutdown of the internal
@@ -657,7 +657,7 @@ public class SzPerpetualCoreEnvironment extends SzCoreEnvironment {
         {
             SzConfigRetryable retryable 
                 = method.getAnnotation(SzConfigRetryable.class);
- 
+
             Object result = null;
             // check if no annotation and just do a standard invocation
             if (retryable == null) {
@@ -668,7 +668,6 @@ public class SzPerpetualCoreEnvironment extends SzCoreEnvironment {
                     // get the cause of the exception
                     throw e.getCause();
                 }
-                return result;
 
             } else {
                 Boolean initial = CONFIG_RETRY_FLAG.get();
@@ -828,53 +827,69 @@ public class SzPerpetualCoreEnvironment extends SzCoreEnvironment {
     {
         super(initializer);
 
-        this.readWriteLock  = new ReentrantReadWriteLock(true);
+        try {
+            this.readWriteLock  = new ReentrantReadWriteLock(true);
 
-        // determine the number of threads we need in the thread pool
-        Integer threadCount = initializer.getConcurrency();
-        if (threadCount == null) {
-            threadCount = 0;
-        } else if (threadCount == 0) {
-            threadCount = Runtime.getRuntime().availableProcessors();
+            // determine the number of threads we need in the thread pool
+            Integer threadCount = initializer.getConcurrency();
+            if (threadCount == null) {
+                threadCount = 0;
+            } else if (threadCount == 0) {
+                threadCount = Runtime.getRuntime().availableProcessors();
 
-        } else if (threadCount < 0) {
-            throw new IllegalArgumentException(
-                "The concurrency cannot be negative: " + threadCount);
-        }
-        this.concurrency = threadCount;
+            } else if (threadCount < 0) {
+                throw new IllegalArgumentException(
+                    "The concurrency cannot be negative: " + threadCount);
+            }
+            this.concurrency = threadCount;
 
-        // determine the maximum number of basic retries
-        this.maxBasicRetries = initializer.getMaxBasicRetries();
+            // determine the maximum number of basic retries
+            this.maxBasicRetries = initializer.getMaxBasicRetries();
 
-        if (this.maxBasicRetries < 0) {
-            throw new IllegalArgumentException(
-                "The maximum number of basic retries cannot be negative: "
-                + this.maxBasicRetries);
-        }
+            if (this.maxBasicRetries < 0) {
+                throw new IllegalArgumentException(
+                    "The maximum number of basic retries cannot be negative: "
+                    + this.maxBasicRetries);
+            }
 
-        // determine the configuration refresh period and mode
-        this.configRefreshPeriod = initializer.getConfigRefreshPeriod();
-        
-        if (this.configRefreshPeriod == null) {
-            this.refreshMode = RefreshMode.DISABLED;
-        } else if (this.configRefreshPeriod.isZero()) {
-            this.refreshMode = RefreshMode.REACTIVE;
-        } else if (this.configRefreshPeriod.isNegative()) {
-            throw new IllegalArgumentException(
-                "The configuration refresh period cannot be negative: "
-                + this.configRefreshPeriod);
-        } else {
-            this.refreshMode = RefreshMode.PROACTIVE;
-        }
+            // determine the configuration refresh period and mode
+            this.configRefreshPeriod = initializer.getConfigRefreshPeriod();
+            
+            if (this.configRefreshPeriod == null) {
+                this.refreshMode = RefreshMode.DISABLED;
+            } else if (this.configRefreshPeriod.isZero()) {
+                this.refreshMode = RefreshMode.REACTIVE;
+            } else if (this.configRefreshPeriod.isNegative()) {
+                throw new IllegalArgumentException(
+                    "The configuration refresh period cannot be negative: "
+                    + this.configRefreshPeriod);
+            } else {
+                this.refreshMode = RefreshMode.PROACTIVE;
+            }
 
-        // setup the executor service
-        this.coreExecutor = (threadCount == 0) ? null
-            : Executors.newFixedThreadPool(threadCount, THREAD_FACTORY);
+            // setup the executor service
+            this.coreExecutor = (threadCount == 0) ? null
+                : Executors.newFixedThreadPool(threadCount, THREAD_FACTORY);
 
-        // setup the background configuration refresh if needed
-        if (this.refreshMode == RefreshMode.PROACTIVE) {
-            this.reinitializer = new Reinitializer(this);
-            this.reinitializer.start();
+            // setup the background configuration refresh if needed
+            if (this.refreshMode == RefreshMode.PROACTIVE) {
+                this.reinitializer = new Reinitializer(this);
+                this.reinitializer.start();
+            }
+            
+        } catch (RuntimeException e) {
+            // cleanup anything we might have initialized
+            if (this.coreExecutor != null) {
+                this.coreExecutor.shutdown();
+            }
+            if (this.reinitializer != null) {
+                this.reinitializer.complete();
+            }
+
+            // CRITICAL: unregister this instance as active
+            this.destroying = true;
+            super.destroy();
+            throw e;
         }
     }
 
@@ -1027,7 +1042,6 @@ public class SzPerpetualCoreEnvironment extends SzCoreEnvironment {
         boolean result = false;
         SzConfigManager configMgr = this.getConfigManager();
 
-
         // NOTE: there is a possibility for a race condition here
         // where the active config ID or default config ID change
         // after we retrieved them.  If the active config ID changes
@@ -1052,18 +1066,16 @@ public class SzPerpetualCoreEnvironment extends SzCoreEnvironment {
             }
 
             // attempt to reinitialize
-            this.reinitialize(
-                this.getConfigManager().getDefaultConfigId());
+            long configId = configMgr.getDefaultConfigId();
+            this.reinitialize(configId);
 
-            // set the result to true, but loop through to double-check
-            result = true;
-        }
-
-        // check if reinitialized
-        if (result) {
+            // increment the configuration refresh count
             synchronized (this.monitor) {
                 this.configRefreshCount++;
             }
+
+            // set the result to true, but loop through to double-check
+            result = true;
         }
 
         // return the result
@@ -1390,7 +1402,12 @@ public class SzPerpetualCoreEnvironment extends SzCoreEnvironment {
         Lock lock = null;
         Boolean initialFlag = RETRIED_FLAG.get();
         RETRIED_FLAG.set(Boolean.FALSE); // clear the flag
+        boolean log = task.getClass().getName().endsWith("MockRetryCallable");
         try {
+            if (log) {
+                System.err.println();
+                System.err.println("-------------------");
+            }
             lock = this.acquireReadLock();
             this.ensureNotDestroyed();
 
@@ -1403,11 +1420,17 @@ public class SzPerpetualCoreEnvironment extends SzCoreEnvironment {
                 if (this.refreshMode == RefreshMode.DISABLED
                     || (!Boolean.TRUE.equals(CONFIG_RETRY_FLAG.get()))) 
                 {
+                    if (log) {
+                        System.err.println("Executing without retry...");
+                    }
                     return this.executeWithBasicRetry(task);
                 }
 
                 // otherwise execute and trap any SzException
                 try {
+                    if (log) {
+                        System.err.println("Executing with retry...");
+                    }
                     return this.executeWithBasicRetry(task);
                     
                 } catch (SzException e) {
@@ -1416,7 +1439,13 @@ public class SzPerpetualCoreEnvironment extends SzCoreEnvironment {
                     boolean configUpdated = false;
                     try {
                         // refresh the configuration
-                        configUpdated = ensureConfigCurrent();
+                        if (log) {
+                            System.err.println("Updating config...");
+                        }
+                        configUpdated = this.ensureConfigCurrent();
+                        if (log) {
+                            System.err.println("Updated config: " + configUpdated);
+                        }
 
                     } catch (SzException e2) {
                         e2.printStackTrace();
@@ -1435,6 +1464,9 @@ public class SzPerpetualCoreEnvironment extends SzCoreEnvironment {
                     RETRIED_FLAG.set(Boolean.TRUE);
 
                     // if we get here then try again
+                    if (log) {
+                        System.err.println("**** RETRYING....");
+                    }
                     return this.executeWithBasicRetry(task);
                 }
 
