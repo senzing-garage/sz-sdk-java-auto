@@ -91,7 +91,7 @@ class Reinitializer extends Thread {
 
                 // check if zero or null (we should not really get here since 
                 // this thread should not be started if the delay is zero)
-                if (duration == null || duration.isZero()) {
+                if (duration == null || duration.isZero() || this.env.isDestroyed()) {
                     this.complete();
                     continue;
                 }

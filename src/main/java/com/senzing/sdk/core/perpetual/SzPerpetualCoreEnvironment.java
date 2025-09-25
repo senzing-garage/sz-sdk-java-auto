@@ -1025,6 +1025,40 @@ public class SzPerpetualCoreEnvironment extends SzCoreEnvironment {
     }
 
     /**
+     * Helper to trap destroyed states without throwing an exception.
+     * Usually the destroyed state is trapped later.
+     */
+    class TrapDestroyed<T> {
+        private T destroyedResult = null;
+
+        private Callable<T> callable = null;
+
+        TrapDestroyed(Callable<T> callable) {
+            this(callable, null);
+        }
+
+        TrapDestroyed(Callable<T> callable, T destroyedResult) {
+            this.callable = callable;
+            this.destroyedResult = destroyedResult;
+        }
+
+        public T call() throws SzException {
+            try {
+                return this.callable.call();
+            } catch (IllegalStateException e) {
+                if (SzPerpetualCoreEnvironment.this.isDestroyed()) {
+                    return this.destroyedResult;
+                }
+                throw e;
+            } catch (SzException|RuntimeException e) {
+                throw e;
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    /**
      * Protected method to ensure the active configuration ID is the same
      * as the default configuration ID.  This will check if they are out
      * of sync and, if so, reinitialize with the default configuration ID.
@@ -1042,6 +1076,12 @@ public class SzPerpetualCoreEnvironment extends SzCoreEnvironment {
         boolean result = false;
         SzConfigManager configMgr = this.getConfigManager();
 
+        TrapDestroyed<Long> getActiveConfigId = new TrapDestroyed<>(
+            () -> this.getActiveConfigId(), -1L);
+
+        TrapDestroyed<Long> getDefaultConfigId = new TrapDestroyed<>(
+            () -> configMgr.getDefaultConfigId(), -1L);
+
         // NOTE: there is a possibility for a race condition here
         // where the active config ID or default config ID change
         // after we retrieved them.  If the active config ID changes
@@ -1050,24 +1090,38 @@ public class SzPerpetualCoreEnvironment extends SzCoreEnvironment {
         // config ID changes then we will just update again on the 
         // next go around of the loop until the maximum tries exceeded
         for (int tryCount = 0;
-             (tryCount <= MAX_REINITIALIZE_COUNT
-              && (this.getActiveConfigId() != configMgr.getDefaultConfigId()));
-            tryCount++)
+             (tryCount <= MAX_REINITIALIZE_COUNT && (!this.isDestroyed()));
+             tryCount++)
         {
+            // get the active and default config ID's
+            long activeConfigId = getActiveConfigId.call();
+            long defaultConfigId = getDefaultConfigId.call();
+            
+            // see if there is no need to refresh the configuration
+            if (this.isDestroyed() || (activeConfigId == defaultConfigId)) {
+                break;
+            }
+
             // check if we have exceeded our number of retries
             if (tryCount >= MAX_REINITIALIZE_COUNT) {
                 throw new SzException(
                     "Could not reinitialize to the latest default "
                     + "configuration ID after " + tryCount 
                     + " attempts.  activeConfigId=[ " 
-                    + this.getActiveConfigId()
+                    + activeConfigId
                     + " ], defaultConfigId=[ "
-                    + configMgr.getDefaultConfigId() + " ]");
+                    + defaultConfigId + " ]");
             }
 
-            // attempt to reinitialize
-            long configId = configMgr.getDefaultConfigId();
-            this.reinitialize(configId);
+            // attempt to reinitialize (we may be destroyed at this point)
+            try {
+                this.reinitialize(defaultConfigId);
+            } catch (IllegalStateException e) {
+                if (this.isDestroyed()) {
+                    break;
+                }
+                throw e;
+            }
 
             // increment the configuration refresh count
             synchronized (this.monitor) {
@@ -1402,12 +1456,7 @@ public class SzPerpetualCoreEnvironment extends SzCoreEnvironment {
         Lock lock = null;
         Boolean initialFlag = RETRIED_FLAG.get();
         RETRIED_FLAG.set(Boolean.FALSE); // clear the flag
-        boolean log = task.getClass().getName().endsWith("MockRetryCallable");
         try {
-            if (log) {
-                System.err.println();
-                System.err.println("-------------------");
-            }
             lock = this.acquireReadLock();
             this.ensureNotDestroyed();
 
@@ -1420,17 +1469,11 @@ public class SzPerpetualCoreEnvironment extends SzCoreEnvironment {
                 if (this.refreshMode == RefreshMode.DISABLED
                     || (!Boolean.TRUE.equals(CONFIG_RETRY_FLAG.get()))) 
                 {
-                    if (log) {
-                        System.err.println("Executing without retry...");
-                    }
                     return this.executeWithBasicRetry(task);
                 }
 
                 // otherwise execute and trap any SzException
                 try {
-                    if (log) {
-                        System.err.println("Executing with retry...");
-                    }
                     return this.executeWithBasicRetry(task);
                     
                 } catch (SzException e) {
@@ -1439,14 +1482,8 @@ public class SzPerpetualCoreEnvironment extends SzCoreEnvironment {
                     boolean configUpdated = false;
                     try {
                         // refresh the configuration
-                        if (log) {
-                            System.err.println("Updating config...");
-                        }
                         configUpdated = this.ensureConfigCurrent();
-                        if (log) {
-                            System.err.println("Updated config: " + configUpdated);
-                        }
-
+ 
                     } catch (SzException e2) {
                         e2.printStackTrace();
                         // if we fail to refresh the config then
@@ -1464,9 +1501,6 @@ public class SzPerpetualCoreEnvironment extends SzCoreEnvironment {
                     RETRIED_FLAG.set(Boolean.TRUE);
 
                     // if we get here then try again
-                    if (log) {
-                        System.err.println("**** RETRYING....");
-                    }
                     return this.executeWithBasicRetry(task);
                 }
 

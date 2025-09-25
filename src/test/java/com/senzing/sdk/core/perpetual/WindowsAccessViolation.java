@@ -12,7 +12,7 @@ public class WindowsAccessViolation {
     private static final Integer CONCURRENCY = 4;
 
 
-    private static final Duration DURATION = Duration.ofMillis(500);
+    private static final Duration DURATION = Duration.ofMillis(510);
 
     public static void main(String[] args) {
         SzEnvironment env = null;
@@ -130,6 +130,11 @@ public class WindowsAccessViolation {
                 SzDiagnostic diagnostic = env.getDiagnostic();
             
                 diagnostic.getRepositoryInfo();
+                try {
+                    Thread.sleep(10L);
+                } catch (InterruptedException ignore) {
+                    // do nothing
+                }
             }
 
 
