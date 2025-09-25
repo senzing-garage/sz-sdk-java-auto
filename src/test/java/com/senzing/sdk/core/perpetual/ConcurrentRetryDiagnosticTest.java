@@ -15,7 +15,7 @@ public class ConcurrentRetryDiagnosticTest extends DiagnosticTest
     private static final Integer CONCURRENCY = 4;
 
 
-    private static final Duration DURATION = Duration.ofMillis(5010);
+    private static final Duration DURATION = Duration.ofMillis(510);
 
     @Override
     protected Integer getConcurrency() {

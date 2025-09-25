@@ -1106,13 +1106,14 @@ public class SzPerpetualCoreEnvironment extends SzCoreEnvironment {
 
             // check if we have exceeded our number of retries
             if (tryCount >= MAX_REINITIALIZE_COUNT) {
-                throw new SzException(
-                    "Could not reinitialize to the latest default "
-                    + "configuration ID after " + tryCount 
-                    + " attempts.  activeConfigId=[ " 
-                    + activeConfigId
-                    + " ], defaultConfigId=[ "
+                System.err.println(
+                    "*** WARNING: Default configuration is constantly changing.  Could not reinitialize "
+                    + "to the latest default configuration ID after " + tryCount + " attempts.  "
+                    + "activeConfigId=[ " + activeConfigId + " ], defaultConfigId=[ " 
                     + defaultConfigId + " ]");
+
+                // allow the caller to retry anyway since we did update the config
+                return true;
             }
 
             // attempt to reinitialize (we may be destroyed at this point)
