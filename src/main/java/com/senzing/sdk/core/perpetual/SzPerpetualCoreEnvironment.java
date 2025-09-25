@@ -1155,8 +1155,8 @@ public class SzPerpetualCoreEnvironment extends SzCoreEnvironment {
             ClassLoader classLoader = this.getClass().getClassLoader();
             RetryHandler handler = new RetryHandler(engine);
             this.engine = (SzEngine) Proxy.newProxyInstance(classLoader, interfaces, handler);
+            return this.engine;
         }
-        return this.engine;
     }
 
     /**
@@ -1179,8 +1179,8 @@ public class SzPerpetualCoreEnvironment extends SzCoreEnvironment {
             ClassLoader classLoader = this.getClass().getClassLoader();
             RetryHandler handler = new RetryHandler(product);
             this.product = (SzProduct) Proxy.newProxyInstance(classLoader, interfaces, handler);
+            return this.product;
         }
-        return this.product;
     }
 
     /**
@@ -1204,8 +1204,8 @@ public class SzPerpetualCoreEnvironment extends SzCoreEnvironment {
             RetryHandler handler = new RetryHandler(configManager);
             this.configManager = (SzConfigManager) 
                 Proxy.newProxyInstance(classLoader, interfaces, handler);
+            return this.configManager;
         }
-        return this.configManager;
     }
 
     /**
@@ -1229,8 +1229,8 @@ public class SzPerpetualCoreEnvironment extends SzCoreEnvironment {
             RetryHandler handler = new RetryHandler(diagnostic);
             this.diagnostic = (SzDiagnostic) 
                 Proxy.newProxyInstance(classLoader, interfaces, handler);
+            return this.diagnostic;
         }
-        return this.diagnostic;
     }
 
     /**
