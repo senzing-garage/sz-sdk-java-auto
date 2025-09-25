@@ -1027,6 +1027,8 @@ public class SzPerpetualCoreEnvironment extends SzCoreEnvironment {
     /**
      * Helper to trap destroyed states without throwing an exception.
      * Usually the destroyed state is trapped later.
+     * 
+     * @param <T> The type returned by the callable.
      */
     class TrapDestroyed<T> {
         private T destroyedResult = null;
