@@ -155,7 +155,7 @@
               </systemProperties>
             </configuration>
           </execution>
-          <!-- execution>
+          <execution>
             <id>reproduce-windows-access-violation</id>
             <phase>process-test-classes</phase>
             <goals>
@@ -171,7 +171,7 @@
                 <argument>${SENZING_PATH}</argument>
               </arguments>
             </configuration>
-          </execution -->
+          </execution>
         </executions>
       </plugin>
       <plugin>
