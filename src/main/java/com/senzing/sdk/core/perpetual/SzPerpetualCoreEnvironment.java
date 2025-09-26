@@ -21,6 +21,7 @@ import com.senzing.sdk.SzEngine;
 import com.senzing.sdk.SzException;
 import com.senzing.sdk.SzProduct;
 import com.senzing.sdk.SzRetryableException;
+import com.senzing.sdk.SzEnvironmentDestroyedException;
 import com.senzing.sdk.core.SzCoreEnvironment;
 
 import static java.util.concurrent.CompletableFuture.completedFuture;
