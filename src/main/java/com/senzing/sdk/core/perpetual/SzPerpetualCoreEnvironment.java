@@ -1032,19 +1032,48 @@ public class SzPerpetualCoreEnvironment extends SzCoreEnvironment {
      * @param <T> The type returned by the callable.
      */
     class TrapDestroyed<T> {
+        /**
+         * The result to return if destroyed.
+         */
         private T destroyedResult = null;
 
+        /**
+         * The {@link Callable} to call.
+         */
         private Callable<T> callable = null;
 
+        /**
+         * Constructs with the {@link Callable} and uses
+         * <code>null</code> as the result if destroyed.
+         * 
+         * @param callable The {@link Callable} to execute.
+         */
         TrapDestroyed(Callable<T> callable) {
             this(callable, null);
         }
 
+        /**
+         * Constructs with the {@link Callable} and the
+         * specified value to return if destroyed.
+         * 
+         * @param callable The {@link Callable} to execute.
+         * @param destroyedResult The value to return if destroyed.
+         */
         TrapDestroyed(Callable<T> callable, T destroyedResult) {
             this.callable = callable;
             this.destroyedResult = destroyedResult;
         }
 
+        /**
+         * Calls the function and traps any {@link SzEnvironmentDestroyedException}
+         * and returns the destroyed result if encountered.
+         * 
+         * @return The result from the {@link Callable} or the destroyed
+         *         result if destroyed.
+         * 
+         * @throws SzException If the specified {@link Callable} throws an
+         *                     {@link SzException}.
+         */
         public T call() throws SzException {
             try {
                 return this.callable.call();
