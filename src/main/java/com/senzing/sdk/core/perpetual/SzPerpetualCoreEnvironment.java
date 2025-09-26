@@ -1081,7 +1081,7 @@ public class SzPerpetualCoreEnvironment extends SzCoreEnvironment {
             } catch (SzEnvironmentDestroyedException e) {
                 return this.destroyedResult;
 
-            } catch (SzException|RuntimeException e) {
+            } catch (SzException | RuntimeException e) {
                 throw e;
 
             } catch (Exception e) {
