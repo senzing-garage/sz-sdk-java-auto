@@ -595,7 +595,7 @@ public class SzPerpetualCoreEnvironment extends SzCoreEnvironment {
          * 
          * @throws IllegalStateException If another active {@link SzCoreEnvironment}
          *                               instance exists when this method is
-         *                               invoked or if there is an explicit
+         *                               invoked <b>OR</b> if there is an explicit
          *                               configuration ID and the configuration
          *                               refresh period is <b>not</b> 
          *                               <code>null</code>.
@@ -1011,14 +1011,14 @@ public class SzPerpetualCoreEnvironment extends SzCoreEnvironment {
 
     /**
      * Ensures this instance is still active and if not will throw 
-     * an {@link IllegalStateException}.
+     * an {@link SzEnvironmentDestroyedException}.
      *
-     * @throws IllegalStateException If this instance is not active.
+     * @throws SzEnvironmentDestroyedException If this instance is not active.
      */
-    void ensureNotDestroyed() throws IllegalStateException {
+    void ensureNotDestroyed() throws SzEnvironmentDestroyedException {
         synchronized (this.monitor) {
             if (this.destroying) {
-                throw new IllegalStateException(
+                throw new SzEnvironmentDestroyedException(
                     "This instance has already been destroyed.");
             }            
         }
@@ -1047,13 +1047,13 @@ public class SzPerpetualCoreEnvironment extends SzCoreEnvironment {
         public T call() throws SzException {
             try {
                 return this.callable.call();
-            } catch (IllegalStateException e) {
-                if (SzPerpetualCoreEnvironment.this.isDestroyed()) {
-                    return this.destroyedResult;
-                }
-                throw e;
+
+            } catch (SzEnvironmentDestroyedException e) {
+                return this.destroyedResult;
+
             } catch (SzException|RuntimeException e) {
                 throw e;
+
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
@@ -1119,11 +1119,9 @@ public class SzPerpetualCoreEnvironment extends SzCoreEnvironment {
             // attempt to reinitialize (we may be destroyed at this point)
             try {
                 this.reinitialize(defaultConfigId);
-            } catch (IllegalStateException e) {
-                if (this.isDestroyed()) {
-                    break;
-                }
-                throw e;
+
+            } catch (SzEnvironmentDestroyedException e) {
+                break;
             }
 
             // increment the configuration refresh count
@@ -1454,7 +1452,7 @@ public class SzPerpetualCoreEnvironment extends SzCoreEnvironment {
      */
     @Override
     protected <T> T execute(Callable<T> task) 
-        throws SzException, IllegalStateException
+        throws SzException, SzEnvironmentDestroyedException
     {
         Lock lock = null;
         Boolean initialFlag = RETRIED_FLAG.get();
