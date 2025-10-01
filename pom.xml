@@ -59,7 +59,7 @@
     <dependency>
       <groupId>com.senzing</groupId>
       <artifactId>senzing-commons</artifactId>
-      <version>4.0.0-beta.1.1</version>
+      <version>4.0.0-beta.1.2</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -70,7 +70,7 @@
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter</artifactId>
-      <version>5.12.2</version>
+      <version>6.0.0</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -100,7 +100,7 @@
     <dependency>
       <groupId>org.xerial</groupId>
       <artifactId>sqlite-jdbc</artifactId>
-      <version>3.49.1.0</version>
+      <version>3.50.3.0</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -155,23 +155,6 @@
               </systemProperties>
             </configuration>
           </execution>
-          <!-- execution>
-            <id>reproduce-windows-access-violation</id>
-            <phase>process-test-classes</phase>
-            <goals>
-              <goal>exec</goal>
-            </goals>
-            <configuration>
-              <executable>${project.build.directory}/java-wrapper/bin/java-wrapper.bat</executable>
-              <workingDirectory>${project.build.directory}</workingDirectory>              
-              <arguments>
-                <argument>-cp</argument>
-                <argument>${SENZING_PATH}${file.separator}er${file.separator}sdk${file.separator}java${file.separator}sz-sdk.jar${path.separator}${project.build.directory}${file.separator}classes${path.separator}${project.build.directory}${file.separator}test-classes</argument>
-                <argument>com.senzing.sdk.core.perpetual.WindowsAccessViolation</argument>
-                <argument>${SENZING_PATH}</argument>
-              </arguments>
-            </configuration>
-          </execution -->
         </executions>
       </plugin>
       <plugin>
@@ -208,7 +191,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-enforcer-plugin</artifactId>
-        <version>3.5.0</version>
+        <version>3.6.1</version>
         <executions>
           <execution>
             <id>enforce</id>
@@ -226,7 +209,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.14.0</version>
+        <version>3.14.1</version>
         <configuration>
           <compilerArgs>
             <arg>-Xlint:unchecked</arg>
@@ -292,7 +275,7 @@
             <link>https://garage.senzing.com/sz-sdk-java/</link>
           </links>
         </configuration>
-        <version>3.11.2</version>
+        <version>3.12.0</version>
         <executions>
           <execution>
             <id>attach-javadocs</id>
@@ -309,7 +292,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-gpg-plugin</artifactId>
-        <version>3.2.7</version>
+        <version>3.2.8</version>
         <executions>
           <execution>
             <id>sign-artifacts</id>
@@ -402,7 +385,7 @@
           <plugin>
             <groupId>com.github.spotbugs</groupId>
             <artifactId>spotbugs-maven-plugin</artifactId>
-            <version>4.9.5.0</version>
+            <version>4.9.6.0</version>
             <configuration>
               <plugins>
                 <plugin>
