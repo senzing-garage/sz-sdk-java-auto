@@ -7,13 +7,14 @@ on:
       - "[0-9]+.[0-9]+.[0-9]+-[a-z]+.[0-9]+.[0-9]+"
   workflow_dispatch:
 
-permissions:
-  contents: write
+permissions: {}
 
 jobs:
   docs:
     outputs:
       status: ${{ job.status }}
+    permissions:
+      contents: write
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -27,6 +28,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v5
         with:
+          persist-credentials: false
           submodules: recursive
 
       - uses: actions/setup-java@v5

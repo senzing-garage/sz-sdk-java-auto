@@ -8,14 +8,15 @@ on:
   schedule:
     - cron: "15 7 * * *"
 
-permissions:
-  contents: read
-  pull-requests: write
+permissions: {}
 
 jobs:
   maven-linux:
     outputs:
       status: ${{ job.status }}
+    permissions:
+      contents: read
+      pull-requests: write
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -28,6 +29,7 @@ jobs:
       - name: checkout repository
         uses: actions/checkout@v5
         with:
+          persist-credentials: false
           submodules: recursive
 
       - uses: actions/setup-java@v5
