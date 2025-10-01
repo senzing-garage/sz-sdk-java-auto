@@ -1,4 +1,4 @@
-package com.senzing.sdk.core.perpetual;
+package com.senzing.sdk.core.auto;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -8,7 +8,7 @@ import com.senzing.sdk.SzException;
 
 /**
  * Background thread to refresh the configuration on the 
- * {@link SzPerpetualCoreEnvironment}.
+ * {@link SzAutoCoreEnvironment}.
  */
 class Reinitializer extends Thread {
     /**
@@ -28,9 +28,9 @@ class Reinitializer extends Thread {
     private static final int MAX_ERROR_COUNT = 5;
 
     /**
-     * The {@link SzPerpetualCoreEnvironment} to monitor and reinitialize.
+     * The {@link SzAutoCoreEnvironment} to monitor and reinitialize.
      */
-    private SzPerpetualCoreEnvironment env;
+    private SzAutoCoreEnvironment env;
     
     /**
      * Flag indicating if the thread should complete or continue monitoring.
@@ -38,11 +38,11 @@ class Reinitializer extends Thread {
     private boolean complete;
 
     /**
-     * Constructs with the {@link SzPerpetualCoreEnvironment}.
+     * Constructs with the {@link SzAutoCoreEnvironment}.
      *
-     * @param env The {@link SzPerpetualCoreEnvironment} to use.
+     * @param env The {@link SzAutoCoreEnvironment} to use.
      */
-    Reinitializer(SzPerpetualCoreEnvironment env) {
+    Reinitializer(SzAutoCoreEnvironment env) {
         this.env        = env;
         this.complete   = false;
     }

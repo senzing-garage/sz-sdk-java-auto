@@ -1,4 +1,4 @@
-package com.senzing.sdk.core.perpetual;
+package com.senzing.sdk.core.auto;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -7,7 +7,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestMethodOrder;
-import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -20,15 +19,17 @@ import static org.junit.jupiter.api.TestInstance.Lifecycle;
 import com.senzing.sdk.SzEngine;
 import com.senzing.sdk.SzRecordKey;
 import com.senzing.sdk.core.SzCoreEnvironment;
+import com.senzing.sdk.core.auto.SzAutoCoreEnvironment;
 import com.senzing.sdk.SzException;
 import com.senzing.sdk.test.StandardTestDataLoader;
-import com.senzing.sdk.test.SzEngineWriteTest;
-import com.senzing.sdk.test.SzRecord;
+import com.senzing.sdk.test.SzEngineWhyTest;
+import com.senzing.sdk.test.SzEntityLookup;
 import com.senzing.sdk.test.TestDataLoader;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 import static com.senzing.sdk.SzFlag.*;
+import static com.senzing.sdk.test.SzEngineWhyTest.TestData.*;
 
 /**
  * Unit tests for {@link SzCoreDiagnostic}.
@@ -36,13 +37,13 @@ import static com.senzing.sdk.SzFlag.*;
 @TestInstance(Lifecycle.PER_CLASS)
 @Execution(ExecutionMode.SAME_THREAD)
 @TestMethodOrder(OrderAnnotation.class)
-public class EngineWriteTest 
-    extends AbstractPerpetualCoreTest 
-    implements SzEngineWriteTest
+public class EngineWhyTest 
+    extends AbstractAutoCoreTest 
+    implements SzEngineWhyTest
 {
     private TestData testData = new TestData();
 
-    private SzPerpetualCoreEnvironment env = null;
+    private SzAutoCoreEnvironment env = null;
 
     @Override
     public TestData getTestData() {
@@ -52,17 +53,18 @@ public class EngineWriteTest
     @Override
     public SzEngine getEngine() throws SzException {
         return this.env.getEngine();
-    }
+    }    
 
     @BeforeAll
     public void initializeEnvironment() {
         this.beginTests();
         this.initializeTestEnvironment();
+
         String settings = this.getRepoSettings();
         
         String instanceName = this.getClass().getSimpleName();
         
-        this.env = SzPerpetualCoreEnvironment.newPerpetualBuilder()
+        this.env = SzAutoCoreEnvironment.newAutoBuilder()
                                              .instanceName(instanceName)
                                              .settings(settings)
                                              .verboseLogging(false)
@@ -92,7 +94,7 @@ public class EngineWriteTest
             env.destroy();
         }
     }
-    
+
     @AfterAll
     public void teardownEnvironment() {
         try {
@@ -106,197 +108,153 @@ public class EngineWriteTest
         }
     }
 
-    public List<Arguments> getRecordPreviewDefaultArguments() {
-        List<Arguments> baseArgs = this.getRecordPreviewArguments();
+    public List<Arguments> getWhySearchDefaultParameters() {
+        List<Arguments> whySearchParams = this.getWhySearchParameters();
 
-        List<Arguments> defaultArgs = new ArrayList<>(baseArgs.size());
+        List<Arguments> defaultParams = new ArrayList<>(whySearchParams.size());
 
-        baseArgs.forEach(args -> {
+        whySearchParams.forEach(args -> {
             Object[] arr = args.get();
 
+            // skip the parameters that expect exceptions
             if (arr[arr.length - 1] != null) return;
-            defaultArgs.add(Arguments.of(arr[0]));
+
+            defaultParams.add(Arguments.of(arr[1], arr[2], arr[3], arr[4]));
         });
 
-        return defaultArgs;
+        return defaultParams;
     }
 
     @ParameterizedTest
-    @MethodSource("getRecordPreviewDefaultArguments")
-    @Order(150)
-    public void testRecordPreviewDefaults(SzRecord record)
+    @MethodSource("getWhySearchDefaultParameters")
+    public void testWhySearchDefaults(String        attributes,
+                                      SzRecordKey   recordKey,
+                                      long          entityId,
+                                      String        searchProfile)
     {
         this.performTest(() -> {
             try {
                 SzEngine engine = (SzEngine) this.env.getEngine();
 
-                String defaultResult = engine.getRecordPreview(record.toString());
+                String defaultResult = (searchProfile == null)
+                    ? engine.whySearch(attributes, entityId)
+                    : engine.whySearch(attributes, entityId, searchProfile);
 
-                String explicitResult = engine.getRecordPreview(
-                    record.toString(), SZ_RECORD_PREVIEW_DEFAULT_FLAGS);
-                    
+                String explicitResult = (searchProfile == null)
+                    ? engine.whySearch(attributes,
+                                       entityId,   
+                                       SZ_WHY_SEARCH_DEFAULT_FLAGS)
+                    : engine.whySearch(attributes,
+                                       entityId,
+                                       searchProfile,
+                                       SZ_WHY_SEARCH_DEFAULT_FLAGS);
+
                 assertEquals(explicitResult, defaultResult,
                     "Explicitly setting default flags yields a different result "
                     + "than omitting the flags parameter to the SDK function.");
-            
+
+            } catch (Exception e) {
+                fail("Unexpectedly failed why-search operation", e);
+            }
+        });
+    }
+
+    public static List<Arguments> getRecordCombinations() {
+        List<Arguments> result = new ArrayList<>(RECORD_KEYS.size() * RECORD_KEYS.size());
+
+        RECORD_KEYS.forEach(key1 -> {
+                RECORD_KEYS.forEach(key2 -> {
+                        if (key1.equals(key2)) return;
+                        result.add(Arguments.of(key1, key2));
+                });
+        });
+
+        return result;
+    }
+
+    public static List<Arguments> getRecordKeyParameters() {
+        List<Arguments> result = new ArrayList<>(RECORD_KEYS.size());
+
+        RECORD_KEYS.forEach(key -> {
+                result.add(Arguments.of(key));
+        });
+
+        return result;
+    }
+
+
+    @ParameterizedTest
+    @MethodSource("getRecordCombinations")
+    public void testWhyEntitiesDefaults(SzRecordKey recordKey1,
+                                        SzRecordKey recordKey2)
+    {
+        this.performTest(() -> {
+            try {
+                SzEntityLookup lookup = this.getTestData().getEntityLookup();
+
+                SzEngine engine = (SzEngine) this.env.getEngine();
+
+                long entityId1 = lookup.getMapByRecordKey().get(recordKey1);
+                long entityId2 = lookup.getMapByRecordKey().get(recordKey2);
+
+                String defaultResult = engine.whyEntities(entityId1, entityId2);
+
+                String explicitResult = engine.whyEntities(
+                    entityId1, entityId2, SZ_WHY_ENTITIES_DEFAULT_FLAGS);
+                
+                assertEquals(explicitResult, defaultResult,
+                    "Explicitly setting default flags yields a different result "
+                    + "than omitting the flags parameter to the SDK function.");
+
+            } catch (Exception e) {
+                fail("Unexpectedly failed analyzing why entities", e);
+            }
+        });
+    }
+
+    @ParameterizedTest
+    @MethodSource("getRecordKeyParameters")
+    public void testWhyRecordInEntityDefaults(SzRecordKey recordKey) {
+        this.performTest(() -> {
+            try {
+                SzEngine engine = (SzEngine) this.env.getEngine();
+
+                String defaultResult = engine.whyRecordInEntity(recordKey);
+                
+                String explicitResult = engine.whyRecordInEntity(
+                        recordKey, SZ_WHY_RECORD_IN_ENTITY_DEFAULT_FLAGS);
+
+                assertEquals(explicitResult, defaultResult,
+                    "Explicitly setting default flags yields a different result "
+                    + "than omitting the flags parameter to the SDK function.");
+
+            } catch (Exception e) {
+                fail("Unexpectedly failed analyzing why record in entity", e);
+            }
+        });
+    }
+
+    @ParameterizedTest
+    @MethodSource("getRecordCombinations")
+    public void TestWhyRecordsDefaults(SzRecordKey recordKey1,
+                                       SzRecordKey recordKey2)
+    {
+        this.performTest(() -> {
+            try {
+                SzEngine engine = (SzEngine) this.env.getEngine();
+
+                String defaultResult = engine.whyRecords(recordKey1, recordKey2);
+                
+                String explicitResult = engine.whyRecords(recordKey1,
+                                                          recordKey2,
+                                                          SZ_WHY_RECORDS_DEFAULT_FLAGS);
+
+                assertEquals(explicitResult, defaultResult,
+                    "Explicitly setting default flags yields a different result "
+                    + "than omitting the flags parameter to the SDK function.");
+
             } catch (Exception e) {
                 fail("Unexpectedly failed getting entity by record", e);
-            }
-        });
-    }    
-
-    public List<Arguments> getAddRecordDefaultArguments() {
-        List<Arguments> baseArgs = this.getAddRecordArguments();
-
-        List<Arguments> defaultArgs = new ArrayList<>(baseArgs.size());
-
-        baseArgs.forEach(args -> {
-            Object[] arr = args.get();
-
-            if (arr[arr.length - 1] != null) return;
-            defaultArgs.add(Arguments.of(arr[0], arr[1]));
-        });
-
-        return defaultArgs;
-    }
-
-    @ParameterizedTest
-    @MethodSource("getAddRecordDefaultArguments")
-    @Order(250)
-    public void testAddRecordDefaults(SzRecordKey recordKey, SzRecord record)
-    {
-        this.performTest(() -> {
-            try {
-                SzEngine engine = (SzEngine) this.env.getEngine();
-
-                String defaultResult = engine.addRecord(recordKey, record.toString());
-
-                String explicitResult = engine.addRecord(
-                    recordKey, record.toString(), SZ_ADD_RECORD_DEFAULT_FLAGS);
-                    
-                assertEquals(explicitResult, defaultResult,
-                    "Explicitly setting default flags yields a different result "
-                    + "than omitting the flags parameter to the SDK function.");
-
-            } catch (Exception e) {
-                fail("Unexpectedly failed adding record", e);
-            }
-        });
-    }    
-
-    public List<Arguments> getReevaluateRecordDefaultArguments() {
-        List<Arguments> baseArgs = this.getReevaluateRecordArguments();
-
-        List<Arguments> defaultArgs = new ArrayList<>(baseArgs.size());
-
-        baseArgs.forEach(args -> {
-            Object[] arr = args.get();
-
-            if (arr[arr.length - 1] != null) return;
-            defaultArgs.add(Arguments.of(arr[0]));
-        });
-
-        return defaultArgs;
-    }
-
-    @ParameterizedTest
-    @MethodSource("getReevaluateRecordDefaultArguments")
-    @Order(450)
-    public void testReevaluateRecordDefaults(SzRecordKey recordKey)
-    {
-        this.performTest(() -> {
-            try {
-                SzEngine engine = (SzEngine) this.env.getEngine();
-
-                String defaultResult = engine.reevaluateRecord(recordKey);
-                
-                String explicitResult = engine.reevaluateRecord(
-                    recordKey, SZ_REEVALUATE_RECORD_DEFAULT_FLAGS);
-                    
-                assertEquals(explicitResult, defaultResult,
-                    "Explicitly setting default flags yields a different result "
-                    + "than omitting the flags parameter to the SDK function.");
-
-            } catch (Exception e) {
-                fail("Unexpectedly failed reevaluating record", e);
-            }
-        });
-    }    
-
-    public List<Arguments> getReevaluateEntityDefaultArguments() {
-        List<Arguments> baseArgs = this.getReevaluateEntityArguments();
-
-        List<Arguments> defaultArgs = new ArrayList<>(baseArgs.size());
-
-        baseArgs.forEach(args -> {
-            Object[] arr = args.get();
-
-            if (arr[arr.length - 1] != null) return;
-            defaultArgs.add(Arguments.of(arr[0]));
-        });
-
-        return defaultArgs;
-    }
-
-    @ParameterizedTest
-    @MethodSource("getReevaluateEntityDefaultArguments")
-    @Order(550)
-    public void testReevaluateEntityDefaults(long entityId)
-    {
-        this.performTest(() -> {
-            try {
-                SzEngine engine = (SzEngine) this.env.getEngine();
-
-                String defaultResult = engine.reevaluateEntity(entityId);
-                
-                String explicitResult = engine.reevaluateEntity(
-                    entityId, SZ_REEVALUATE_ENTITY_DEFAULT_FLAGS);
-                    
-                assertEquals(explicitResult, defaultResult,
-                    "Explicitly setting default flags yields a different result "
-                    + "than omitting the flags parameter to the SDK function.");
-            
-            } catch (Exception e) {
-                fail("Unexpectedly failed reevaluating entity", e);
-            }
-        });
-    }    
-
-    public List<Arguments> getDeleteRecordDefaultArguments() {
-        List<Arguments> baseArgs = this.getDeleteRecordArguments();
-
-        List<Arguments> defaultArgs = new ArrayList<>(baseArgs.size());
-
-        baseArgs.forEach(args -> {
-            Object[] arr = args.get();
-
-            if (arr[arr.length - 1] != null) return;
-            defaultArgs.add(Arguments.of(arr[0]));
-        });
-
-        return defaultArgs;
-    }
-
-    @ParameterizedTest
-    @MethodSource("getDeleteRecordDefaultArguments")
-    @Order(650)
-    public void testDeleteRecordDefaults(SzRecordKey recordKey)
-    {
-        this.performTest(() -> {
-            try {
-                SzEngine engine = (SzEngine) this.env.getEngine();
-
-                String defaultResult = engine.deleteRecord(recordKey);
-                
-                String explicitResult = engine.deleteRecord(
-                    recordKey, SZ_DELETE_RECORD_DEFAULT_FLAGS);
-                    
-                assertEquals(explicitResult, defaultResult,
-                    "Explicitly setting default flags yields a different result "
-                    + "than omitting the flags parameter to the SDK function.");
-
-            } catch (Exception e) {
-                fail("Unexpectedly failed deleting record", e);
             }
         });
     }

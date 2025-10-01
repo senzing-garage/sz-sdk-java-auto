@@ -1,4 +1,4 @@
-package com.senzing.sdk.core.perpetual;
+package com.senzing.sdk.core.auto;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -26,6 +26,7 @@ import com.senzing.sdk.SzProduct;
 import com.senzing.sdk.SzRecordKey;
 import com.senzing.sdk.SzRecordKeys;
 import com.senzing.sdk.core.SzCoreEnvironment;
+import com.senzing.sdk.core.auto.SzAutoCoreEnvironment;
 import com.senzing.sdk.test.StandardTestDataLoader;
 import com.senzing.sdk.test.SzRecord;
 import com.senzing.sdk.test.SzRecord.SzFullName;
@@ -89,13 +90,13 @@ import static com.senzing.util.JsonUtilities.*;
 @TestInstance(Lifecycle.PER_CLASS)
 @Execution(ExecutionMode.SAME_THREAD)
 @TestMethodOrder(OrderAnnotation.class)
-public class ConfigRetryTest extends AbstractPerpetualCoreTest 
+public class ConfigRetryTest extends AbstractAutoCoreTest 
 {
-    private static class MockEnvironment extends SzPerpetualCoreEnvironment {
+    private static class MockEnvironment extends SzAutoCoreEnvironment {
         private static ThreadLocal<SzException> MOCK_FAILURE = new ThreadLocal<>();
 
         public MockEnvironment(String instanceName, String settings) {
-            super(SzPerpetualCoreEnvironment.newPerpetualBuilder()
+            super(SzAutoCoreEnvironment.newAutoBuilder()
                     .settings(settings).instanceName(instanceName)
                     .configRefreshPeriod(REACTIVE_CONFIG_REFRESH));
         }

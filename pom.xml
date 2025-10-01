@@ -2,15 +2,16 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.senzing</groupId>
-  <artifactId>sz-sdk-java-perpetual</artifactId>
+  <artifactId>sz-sdk-java-auto</artifactId>
   <packaging>jar</packaging>
-  <version>0.1.0</version>
-  <name>Senzing Java Core Perpetual SDK</name>
+  <version>0.2.0</version>
+  <name>Senzing Java Automatic Core SDK</name>
   <description>
-    The Java Core Perpetual SDK provides enhancements over the Java Core SDK for usage
-    in a long-running multi-threaded server-side process.
+    The Java Automatic Core SDK provides enhancements over the Java Core SDK
+    by providing automatic handling of several functions that are useful when
+    used in a long-running multi-threaded server-side process.
   </description>
-  <url>http://github.com/senzing-garage/sz-sdk-java-perpetual</url>
+  <url>http://github.com/senzing-garage/sz-sdk-java-auto</url>
   <licenses>
     <license>
       <name>The Apache License, Version 2.0</name>
@@ -36,9 +37,9 @@
     </developer>
   </developers>
   <scm>
-    <connection>scm:git:git://github.com/senzing-garage/sz-sdk-java-perpetual.git</connection>
-    <developerConnection>scm:git:ssh://github.com:senzing-garage/sz-sdk-java-perpetual.git</developerConnection>
-    <url>http://github.com/senzing-garage/sz-sdk-java-perpetual/tree/main</url>
+    <connection>scm:git:git://github.com/senzing-garage/sz-sdk-java-auto.git</connection>
+    <developerConnection>scm:git:ssh://github.com:senzing-garage/sz-sdk-java-auto.git</developerConnection>
+    <url>http://github.com/senzing-garage/sz-sdk-java-auto/tree/main</url>
   </scm>
   <properties>
     <gpg.skip>true</gpg.skip> <!-- skip GPG unless release profile -->

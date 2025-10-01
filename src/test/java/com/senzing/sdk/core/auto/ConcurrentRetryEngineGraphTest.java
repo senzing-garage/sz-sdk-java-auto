@@ -1,19 +1,16 @@
-package com.senzing.sdk.core.perpetual;
+package com.senzing.sdk.core.auto;
 
 import org.junit.jupiter.api.TestInstance;
-import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
 
-import static org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
 import static org.junit.jupiter.api.TestInstance.Lifecycle;
 
 import java.time.Duration;
 
 @TestInstance(Lifecycle.PER_CLASS)
 @Execution(ExecutionMode.SAME_THREAD)
-@TestMethodOrder(OrderAnnotation.class)
-public class ConcurrentRetryConfigManagerTest extends ConfigManagerTest
+public class ConcurrentRetryEngineGraphTest extends EngineGraphTest
 {
     private static final Integer CONCURRENCY = 4;
 

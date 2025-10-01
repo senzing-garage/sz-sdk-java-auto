@@ -1,4 +1,4 @@
-package com.senzing.sdk.core.perpetual;
+package com.senzing.sdk.core.auto;
 
 import java.util.List;
 import java.io.IOException;
@@ -30,10 +30,6 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.junit.jupiter.params.provider.Arguments;
 
-import static com.senzing.sdk.core.perpetual.SzPerpetualCoreEnvironment.DISABLED_CONCURRENCY;
-import static com.senzing.sdk.core.perpetual.SzPerpetualCoreEnvironment.DISABLED_CONFIG_REFRESH;
-import static com.senzing.sdk.core.perpetual.SzPerpetualCoreEnvironment.REACTIVE_CONFIG_REFRESH;
-import static com.senzing.sdk.core.perpetual.SzPerpetualCoreEnvironment.RefreshMode.*;
 import static org.junit.jupiter.api.TestInstance.Lifecycle;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -48,7 +44,9 @@ import org.junit.jupiter.api.Test;
 
 import com.senzing.sdk.SzProduct;
 import com.senzing.sdk.core.SzCoreEnvironment;
-import com.senzing.sdk.core.perpetual.SzPerpetualCoreEnvironment.CoreThread;
+import com.senzing.sdk.core.auto.Reinitializer;
+import com.senzing.sdk.core.auto.SzAutoCoreEnvironment;
+import com.senzing.sdk.core.auto.SzAutoCoreEnvironment.CoreThread;
 import com.senzing.text.TextUtilities;
 import com.senzing.sdk.SzConfig;
 import com.senzing.sdk.SzConfigManager;
@@ -58,12 +56,16 @@ import com.senzing.sdk.SzDiagnostic;
 import com.senzing.sdk.SzException;
 
 import static com.senzing.sdk.core.SzCoreEnvironment.*;
+import static com.senzing.sdk.core.auto.SzAutoCoreEnvironment.DISABLED_CONCURRENCY;
+import static com.senzing.sdk.core.auto.SzAutoCoreEnvironment.DISABLED_CONFIG_REFRESH;
+import static com.senzing.sdk.core.auto.SzAutoCoreEnvironment.REACTIVE_CONFIG_REFRESH;
+import static com.senzing.sdk.core.auto.SzAutoCoreEnvironment.RefreshMode;
+import static com.senzing.sdk.core.auto.SzAutoCoreEnvironment.RefreshMode.*;
 import static com.senzing.sdk.test.SdkTest.*;
-import static com.senzing.sdk.core.perpetual.SzPerpetualCoreEnvironment.RefreshMode;
 
 @TestInstance(Lifecycle.PER_CLASS)
 @Execution(ExecutionMode.SAME_THREAD)
-public class SzPerpetualCoreEnvironmentTest extends AbstractPerpetualCoreTest {
+public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest {
     private static final String EMPLOYEES_DATA_SOURCE = "EMPLOYEES";
     
     private static final String CUSTOMERS_DATA_SOURCE = "CUSTOMERS";
@@ -116,10 +118,10 @@ public class SzPerpetualCoreEnvironmentTest extends AbstractPerpetualCoreTest {
     @Test
     void testNewDefaultBuilder() {
         this.performTest(() -> {    
-            SzPerpetualCoreEnvironment env  = null;
+            SzAutoCoreEnvironment env  = null;
             
             try {
-                env = SzPerpetualCoreEnvironment.newPerpetualBuilder().build();
+                env = SzAutoCoreEnvironment.newAutoBuilder().build();
     
                 assertEquals(0, env.getConcurrency(), 
                     "Environment concurrency is NOT disabled");
@@ -145,11 +147,11 @@ public class SzPerpetualCoreEnvironmentTest extends AbstractPerpetualCoreTest {
         this.performTest(() -> {
             String settings = this.getRepoSettings();
             
-            SzPerpetualCoreEnvironment env  = null;
+            SzAutoCoreEnvironment env  = null;
             
             try {
-                SzPerpetualCoreEnvironment.Builder builder 
-                    = SzPerpetualCoreEnvironment.newPerpetualBuilder();
+                SzAutoCoreEnvironment.Builder builder 
+                    = SzAutoCoreEnvironment.newAutoBuilder();
                 
                 Duration configRefreshPeriod = Duration.ofMillis(duration);
                 
@@ -192,13 +194,13 @@ public class SzPerpetualCoreEnvironmentTest extends AbstractPerpetualCoreTest {
     @Test
     void testSingletonViolation() {
         this.performTest(() -> {
-            SzPerpetualCoreEnvironment env1 = null;
-            SzPerpetualCoreEnvironment env2 = null;
+            SzAutoCoreEnvironment env1 = null;
+            SzAutoCoreEnvironment env2 = null;
             try {
-                env1 = (new SzPerpetualCoreEnvironment.Builder()).build();
+                env1 = (new SzAutoCoreEnvironment.Builder()).build();
     
                 try {
-                    env2 = SzPerpetualCoreEnvironment.newPerpetualBuilder()
+                    env2 = SzAutoCoreEnvironment.newAutoBuilder()
                                                      .settings(DEFAULT_SETTINGS)
                                                      .build();
         
@@ -224,12 +226,12 @@ public class SzPerpetualCoreEnvironmentTest extends AbstractPerpetualCoreTest {
     void testMixedSingletonViolation() {
         this.performTest(() -> {
             SzCoreEnvironment env1 = null;
-            SzPerpetualCoreEnvironment env2 = null;
+            SzAutoCoreEnvironment env2 = null;
             try {
                 env1 = SzCoreEnvironment.newBuilder().build();
     
                 try {
-                    env2 = SzPerpetualCoreEnvironment.newPerpetualBuilder()
+                    env2 = SzAutoCoreEnvironment.newAutoBuilder()
                                                      .settings(DEFAULT_SETTINGS)
                                                      .build();
         
@@ -254,17 +256,17 @@ public class SzPerpetualCoreEnvironmentTest extends AbstractPerpetualCoreTest {
     @Test
     void testSingletonAdherence() {
         this.performTest(() -> {
-            SzPerpetualCoreEnvironment env1 = null;
-            SzPerpetualCoreEnvironment env2 = null;
+            SzAutoCoreEnvironment env1 = null;
+            SzAutoCoreEnvironment env2 = null;
             try {
-                env1 = SzPerpetualCoreEnvironment.newPerpetualBuilder()
+                env1 = SzAutoCoreEnvironment.newAutoBuilder()
                                                  .instanceName("Instance 1")
                                                  .build();
     
                 env1.destroy();
                 env1 = null;
     
-                env2 = SzPerpetualCoreEnvironment.newPerpetualBuilder()
+                env2 = SzAutoCoreEnvironment.newAutoBuilder()
                                                  .instanceName("Instance 2")
                                                  .settings(DEFAULT_SETTINGS)
                                                  .build();
@@ -287,7 +289,7 @@ public class SzPerpetualCoreEnvironmentTest extends AbstractPerpetualCoreTest {
     void testMixedSingletonAdherence() {
         this.performTest(() -> {
             SzCoreEnvironment env1 = null;
-            SzPerpetualCoreEnvironment env2 = null;
+            SzAutoCoreEnvironment env2 = null;
             try {
                 env1 = SzCoreEnvironment.newBuilder()
                                         .instanceName("Instance 1")
@@ -296,7 +298,7 @@ public class SzPerpetualCoreEnvironmentTest extends AbstractPerpetualCoreTest {
                 env1.destroy();
                 env1 = null;
     
-                env2 = SzPerpetualCoreEnvironment.newPerpetualBuilder()
+                env2 = SzAutoCoreEnvironment.newAutoBuilder()
                                                  .instanceName("Instance 2")
                                                  .settings(DEFAULT_SETTINGS)
                                                  .build();
@@ -318,11 +320,11 @@ public class SzPerpetualCoreEnvironmentTest extends AbstractPerpetualCoreTest {
     @Test
     void testDestroy() {
         this.performTest(() -> {
-            SzPerpetualCoreEnvironment env1 = null;
-            SzPerpetualCoreEnvironment env2 = null;
+            SzAutoCoreEnvironment env1 = null;
+            SzAutoCoreEnvironment env2 = null;
             try {
                 // get the first environment
-                env1 = SzPerpetualCoreEnvironment.newPerpetualBuilder()
+                env1 = SzAutoCoreEnvironment.newAutoBuilder()
                                                  .instanceName("Instance 1")
                                                  .build();
     
@@ -339,7 +341,7 @@ public class SzPerpetualCoreEnvironmentTest extends AbstractPerpetualCoreTest {
                 env1 = null;
                 
                 // create a second environment instance
-                env2 = SzPerpetualCoreEnvironment.newPerpetualBuilder()
+                env2 = SzAutoCoreEnvironment.newAutoBuilder()
                                                  .instanceName("Instance 2")
                                                  .settings(DEFAULT_SETTINGS)
                                                  .build();
@@ -389,7 +391,7 @@ public class SzPerpetualCoreEnvironmentTest extends AbstractPerpetualCoreTest {
     void testExecute(int threadCount, int concurrencyParam, String expected) {
         Integer concurrency = (concurrencyParam == 0) ? null : concurrencyParam;
         this.performTest(() -> {
-            SzPerpetualCoreEnvironment env  = null;
+            SzAutoCoreEnvironment env  = null;
 
             final IdentityHashMap<Thread,Integer> threadMap = new IdentityHashMap<>();
 
@@ -399,11 +401,11 @@ public class SzPerpetualCoreEnvironmentTest extends AbstractPerpetualCoreTest {
     
             List<Future<String>> futures = new ArrayList<>(threadCount);
             try {
-                env  = SzPerpetualCoreEnvironment.newPerpetualBuilder()
+                env  = SzAutoCoreEnvironment.newAutoBuilder()
                                                  .concurrency(concurrency)
                                                  .build();
     
-                final SzPerpetualCoreEnvironment environment = env;
+                final SzAutoCoreEnvironment environment = env;
     
                 Callable<String> task = () -> {
                     synchronized (threadMap) {
@@ -501,9 +503,9 @@ public class SzPerpetualCoreEnvironmentTest extends AbstractPerpetualCoreTest {
 
     void testSubmitTaskFailingCallable() {
         this.performTest(() -> {
-            SzPerpetualCoreEnvironment env = null;
+            SzAutoCoreEnvironment env = null;
             try {
-                env = SzPerpetualCoreEnvironment.newPerpetualBuilder()
+                env = SzAutoCoreEnvironment.newAutoBuilder()
                                                 .concurrency(DISABLED_CONCURRENCY)
                                                 .build();
             
@@ -542,9 +544,9 @@ public class SzPerpetualCoreEnvironmentTest extends AbstractPerpetualCoreTest {
 
     void testSubmitTaskFailingRunnable() {
         this.performTest(() -> {
-            SzPerpetualCoreEnvironment env = null;
+            SzAutoCoreEnvironment env = null;
             try {
-                env = SzPerpetualCoreEnvironment.newPerpetualBuilder()
+                env = SzAutoCoreEnvironment.newAutoBuilder()
                                                 .concurrency(DISABLED_CONCURRENCY)
                                                 .build();
             
@@ -579,9 +581,9 @@ public class SzPerpetualCoreEnvironmentTest extends AbstractPerpetualCoreTest {
 
     void testSubmitTaskFailingRunnableResult() {
         this.performTest(() -> {
-            SzPerpetualCoreEnvironment env = null;
+            SzAutoCoreEnvironment env = null;
             try {
-                env = SzPerpetualCoreEnvironment.newPerpetualBuilder()
+                env = SzAutoCoreEnvironment.newAutoBuilder()
                                                 .concurrency(DISABLED_CONCURRENCY)
                                                 .build();
             
@@ -621,7 +623,7 @@ public class SzPerpetualCoreEnvironmentTest extends AbstractPerpetualCoreTest {
     void testSubmitTaskCallable(int threadCount, int concurrencyParam, String expected) {
         Integer concurrency = (concurrencyParam == 0) ? null : concurrencyParam;
         this.performTest(() -> {
-            SzPerpetualCoreEnvironment env  = null;
+            SzAutoCoreEnvironment env  = null;
 
             final IdentityHashMap<Thread,Integer> threadMap = new IdentityHashMap<>();
 
@@ -631,11 +633,11 @@ public class SzPerpetualCoreEnvironmentTest extends AbstractPerpetualCoreTest {
     
             List<Future<String>> futures = new ArrayList<>(threadCount);
             try {
-                env  = SzPerpetualCoreEnvironment.newPerpetualBuilder()
+                env  = SzAutoCoreEnvironment.newAutoBuilder()
                                                  .concurrency(concurrency)
                                                  .build();
     
-                final SzPerpetualCoreEnvironment environment = env;
+                final SzAutoCoreEnvironment environment = env;
     
                 Callable<String> task = () -> {
                     synchronized (threadMap) {
@@ -750,7 +752,7 @@ public class SzPerpetualCoreEnvironmentTest extends AbstractPerpetualCoreTest {
     void testSubmitTaskRunnableResult(int threadCount, int concurrencyParam, String expected) {
         Integer concurrency = (concurrencyParam == 0) ? null : concurrencyParam;
         this.performTest(() -> {
-            SzPerpetualCoreEnvironment env  = null;
+            SzAutoCoreEnvironment env  = null;
 
             final IdentityHashMap<Thread,Integer> threadMap = new IdentityHashMap<>();
 
@@ -760,11 +762,11 @@ public class SzPerpetualCoreEnvironmentTest extends AbstractPerpetualCoreTest {
     
             List<Future<String>> futures = new ArrayList<>(threadCount);
             try {
-                env  = SzPerpetualCoreEnvironment.newPerpetualBuilder()
+                env  = SzAutoCoreEnvironment.newAutoBuilder()
                                                  .concurrency(concurrency)
                                                  .build();
     
-                final SzPerpetualCoreEnvironment environment = env;
+                final SzAutoCoreEnvironment environment = env;
     
                 Runnable task = () -> {
                     synchronized (threadMap) {
@@ -877,7 +879,7 @@ public class SzPerpetualCoreEnvironmentTest extends AbstractPerpetualCoreTest {
     void testSubmitTaskRunnable(int threadCount, int concurrencyParam) {
         Integer concurrency = (concurrencyParam == 0) ? null : concurrencyParam;
         this.performTest(() -> {
-            SzPerpetualCoreEnvironment env  = null;
+            SzAutoCoreEnvironment env  = null;
 
             final IdentityHashMap<Thread,Integer> threadMap = new IdentityHashMap<>();
 
@@ -886,11 +888,11 @@ public class SzPerpetualCoreEnvironmentTest extends AbstractPerpetualCoreTest {
                 new LinkedBlockingQueue<>(), THREAD_FACTORY);
     
             try {
-                env  = SzPerpetualCoreEnvironment.newPerpetualBuilder()
+                env  = SzAutoCoreEnvironment.newAutoBuilder()
                                                  .concurrency(concurrency)
                                                  .build();
     
-                final SzPerpetualCoreEnvironment environment = env;
+                final SzAutoCoreEnvironment environment = env;
     
                 Runnable task = () -> {
                     synchronized (threadMap) {
@@ -988,9 +990,9 @@ public class SzPerpetualCoreEnvironmentTest extends AbstractPerpetualCoreTest {
     @ValueSource(strings = {"Foo", "Bar", "Phoo", "Phoox"})
     void testExecuteFail(String expected) {
         this.performTest(() -> {
-            SzPerpetualCoreEnvironment env  = null;
+            SzAutoCoreEnvironment env  = null;
             try {
-                env  = SzPerpetualCoreEnvironment.newPerpetualBuilder().build();
+                env  = SzAutoCoreEnvironment.newAutoBuilder().build();
     
                 try {
                    env.execute(() -> {
@@ -1017,7 +1019,7 @@ public class SzPerpetualCoreEnvironmentTest extends AbstractPerpetualCoreTest {
     @Test
     void testDestroyRaceConditions() {
         this.performTest(() -> {
-            SzPerpetualCoreEnvironment env = SzPerpetualCoreEnvironment.newPerpetualBuilder().build();
+            SzAutoCoreEnvironment env = SzAutoCoreEnvironment.newAutoBuilder().build();
 
             final Object monitor = new Object();
             final Exception[] failures = { null, null, null };
@@ -1105,11 +1107,11 @@ public class SzPerpetualCoreEnvironmentTest extends AbstractPerpetualCoreTest {
     @Test
     void testGetActiveInstance() {
         this.performTest(() -> {
-            SzPerpetualCoreEnvironment env1 = null;
-            SzPerpetualCoreEnvironment env2 = null;
+            SzAutoCoreEnvironment env1 = null;
+            SzAutoCoreEnvironment env2 = null;
             try {
                 // get the first environment
-                env1 = SzPerpetualCoreEnvironment.newPerpetualBuilder()
+                env1 = SzAutoCoreEnvironment.newAutoBuilder()
                                                  .instanceName("Instance 1")
                                                  .build();
     
@@ -1128,7 +1130,7 @@ public class SzPerpetualCoreEnvironmentTest extends AbstractPerpetualCoreTest {
                            "Active instance found when there should be none: " + active);
                             
                 // create a second Environment instance
-                env2 = SzPerpetualCoreEnvironment.newPerpetualBuilder()
+                env2 = SzAutoCoreEnvironment.newAutoBuilder()
                                                  .instanceName("Instance 2")
                                                  .settings(DEFAULT_SETTINGS)
                                                  .build();
@@ -1164,10 +1166,10 @@ public class SzPerpetualCoreEnvironmentTest extends AbstractPerpetualCoreTest {
         this.performTest(() -> {
             String settings = this.getRepoSettings();
             
-            SzPerpetualCoreEnvironment env  = null;
+            SzAutoCoreEnvironment env  = null;
             
             try {
-                env = SzPerpetualCoreEnvironment.newPerpetualBuilder()
+                env = SzAutoCoreEnvironment.newAutoBuilder()
                                                 .instanceName("GetConfigManager Instance")
                                                 .settings(settings)
                                                 .verboseLogging(false)
@@ -1200,7 +1202,7 @@ public class SzPerpetualCoreEnvironmentTest extends AbstractPerpetualCoreTest {
             SzCoreEnvironment env  = null;
             
             try {
-                env = SzPerpetualCoreEnvironment.newPerpetualBuilder()
+                env = SzAutoCoreEnvironment.newAutoBuilder()
                                                 .instanceName("GetDiagnostic Instance")
                                                 .settings(settings)
                                                 .verboseLogging(false)
@@ -1233,7 +1235,7 @@ public class SzPerpetualCoreEnvironmentTest extends AbstractPerpetualCoreTest {
             SzCoreEnvironment env  = null;
             
             try {
-                env = SzPerpetualCoreEnvironment.newPerpetualBuilder()
+                env = SzAutoCoreEnvironment.newAutoBuilder()
                                                 .instanceName("GetEngine Instance")
                                                 .settings(settings)
                                                 .verboseLogging(false)
@@ -1267,7 +1269,7 @@ public class SzPerpetualCoreEnvironmentTest extends AbstractPerpetualCoreTest {
                 SzCoreEnvironment env  = null;
                 
                 try {
-                    env = SzPerpetualCoreEnvironment.newPerpetualBuilder()
+                    env = SzAutoCoreEnvironment.newAutoBuilder()
                                                     .instanceName("GetProduct Instance")
                                                     .settings(settings)
                                                     .verboseLogging(false)
@@ -1310,7 +1312,7 @@ public class SzPerpetualCoreEnvironmentTest extends AbstractPerpetualCoreTest {
     @MethodSource("getActiveConfigIdParams")
     public void testGetActiveConfigId(long configId, boolean initEngine) {
         this.performTest(() -> {
-            SzPerpetualCoreEnvironment env  = null;
+            SzAutoCoreEnvironment env  = null;
 
             String info = "configId=[ " + configId + " ], initEngine=[ " 
                     + initEngine + " ]";
@@ -1320,7 +1322,7 @@ public class SzPerpetualCoreEnvironmentTest extends AbstractPerpetualCoreTest {
                 String instanceName = this.getInstanceName(
                     "ActiveConfig-" + configId);
     
-                env = SzPerpetualCoreEnvironment.newPerpetualBuilder()
+                env = SzAutoCoreEnvironment.newAutoBuilder()
                                                 .settings(settings)
                                                 .instanceName(instanceName)
                                                 .configId(configId)
@@ -1345,7 +1347,7 @@ public class SzPerpetualCoreEnvironmentTest extends AbstractPerpetualCoreTest {
     @ValueSource(booleans = { true, false})
     public void testGetActiveConfigIdDefault(boolean initEngine) {
         this.performTest(() -> {
-            SzPerpetualCoreEnvironment env  = null;
+            SzAutoCoreEnvironment env  = null;
         
             String info = "initEngine=[ " + initEngine + " ]";
     
@@ -1354,7 +1356,7 @@ public class SzPerpetualCoreEnvironmentTest extends AbstractPerpetualCoreTest {
                 String instanceName = this.getInstanceName(
                     "ActiveConfigDefault");
                     
-                env = SzPerpetualCoreEnvironment.newPerpetualBuilder()
+                env = SzAutoCoreEnvironment.newAutoBuilder()
                                                 .settings(settings)
                                                 .instanceName(instanceName)
                                                 .build();
@@ -1420,7 +1422,7 @@ public class SzPerpetualCoreEnvironmentTest extends AbstractPerpetualCoreTest {
     @Test
     public void testExecuteException() {
         this.performTest(() -> {
-            SzPerpetualCoreEnvironment env = SzPerpetualCoreEnvironment.newPerpetualBuilder().build();
+            SzAutoCoreEnvironment env = SzAutoCoreEnvironment.newAutoBuilder().build();
             try {
                 env.execute(() -> {
                     throw new IOException("Test exception");
@@ -1444,7 +1446,7 @@ public class SzPerpetualCoreEnvironmentTest extends AbstractPerpetualCoreTest {
                                  boolean    initDiagnostic) 
     {
         this.performTest(() -> {
-            SzPerpetualCoreEnvironment env = null;
+            SzAutoCoreEnvironment env = null;
             
             String info = "startConfig=[ " + startConfig + " ], endConfig=[ " 
                  + endConfig + " ], initEngine=[ " + initEngine
@@ -1454,7 +1456,7 @@ public class SzPerpetualCoreEnvironmentTest extends AbstractPerpetualCoreTest {
                 String settings = this.getRepoSettings();
                 String instanceName = this.getInstanceName("Reinitialize");
     
-                env = SzPerpetualCoreEnvironment.newPerpetualBuilder()
+                env = SzAutoCoreEnvironment.newAutoBuilder()
                                                 .settings(settings)
                                                 .instanceName(instanceName)
                                                 .configId(startConfig)
@@ -1493,7 +1495,7 @@ public class SzPerpetualCoreEnvironmentTest extends AbstractPerpetualCoreTest {
         });
     }
 
-    private static class MockEnvironment extends SzPerpetualCoreEnvironment {
+    private static class MockEnvironment extends SzAutoCoreEnvironment {
         private int configIndex = 0;
 
         private boolean bumpOnReinitialize = false;
@@ -1501,7 +1503,7 @@ public class SzPerpetualCoreEnvironmentTest extends AbstractPerpetualCoreTest {
         public MockEnvironment(String instanceName, String settings) 
             throws SzException
         {
-            super(SzPerpetualCoreEnvironment.newPerpetualBuilder()
+            super(SzAutoCoreEnvironment.newAutoBuilder()
                     .settings(settings).instanceName(instanceName)
                     .configRefreshPeriod(REACTIVE_CONFIG_REFRESH));
             
@@ -1594,7 +1596,7 @@ public class SzPerpetualCoreEnvironmentTest extends AbstractPerpetualCoreTest {
     @Test
     public void mockRetryTest() {
         this.performTest(() -> {
-            SzPerpetualCoreEnvironment env = null;
+            SzAutoCoreEnvironment env = null;
     
             try {
                 String settings = this.getRepoSettings();
@@ -1605,7 +1607,7 @@ public class SzPerpetualCoreEnvironmentTest extends AbstractPerpetualCoreTest {
                 // ensure we succeed if succeed on retry
                 MockRetryCallable mrc = new MockRetryCallable(true);
                 try {
-                    SzPerpetualCoreEnvironment.CONFIG_RETRY_FLAG.set(Boolean.TRUE);
+                    SzAutoCoreEnvironment.CONFIG_RETRY_FLAG.set(Boolean.TRUE);
                     Integer result = env.execute(mrc);
 
                     assertEquals(0, result, 
@@ -1616,13 +1618,13 @@ public class SzPerpetualCoreEnvironmentTest extends AbstractPerpetualCoreTest {
                          e);
 
                 } finally {
-                    SzPerpetualCoreEnvironment.CONFIG_RETRY_FLAG.set(Boolean.FALSE);
+                    SzAutoCoreEnvironment.CONFIG_RETRY_FLAG.set(Boolean.FALSE);
                 }
 
                 // ensure we fail if failing on retry
                 mrc = new MockRetryCallable(false);
                 try {
-                    SzPerpetualCoreEnvironment.CONFIG_RETRY_FLAG.set(Boolean.TRUE);
+                    SzAutoCoreEnvironment.CONFIG_RETRY_FLAG.set(Boolean.TRUE);
                     Integer result = env.execute(mrc);
 
                     fail("Unexpectedly succeeded when we should have failed on retry: " 
@@ -1637,13 +1639,13 @@ public class SzPerpetualCoreEnvironmentTest extends AbstractPerpetualCoreTest {
                                  + "error message.");
 
                 } finally {
-                    SzPerpetualCoreEnvironment.CONFIG_RETRY_FLAG.set(Boolean.FALSE);
+                    SzAutoCoreEnvironment.CONFIG_RETRY_FLAG.set(Boolean.FALSE);
                 }
 
                 // ensure we fail if not retrying
                 mrc = new MockRetryCallable(true);
                 try {
-                    SzPerpetualCoreEnvironment.CONFIG_RETRY_FLAG.set(Boolean.FALSE);
+                    SzAutoCoreEnvironment.CONFIG_RETRY_FLAG.set(Boolean.FALSE);
                     Integer result = env.execute(mrc);
 
                     fail("Unexpectedly succeeded when we should have "
@@ -1658,7 +1660,7 @@ public class SzPerpetualCoreEnvironmentTest extends AbstractPerpetualCoreTest {
                                 + "the expected error message.");
 
                 } finally {
-                    SzPerpetualCoreEnvironment.CONFIG_RETRY_FLAG.set(Boolean.FALSE);
+                    SzAutoCoreEnvironment.CONFIG_RETRY_FLAG.set(Boolean.FALSE);
                 }
 
             } catch (SzException e) { 
@@ -1676,8 +1678,8 @@ public class SzPerpetualCoreEnvironmentTest extends AbstractPerpetualCoreTest {
     public void constructNegativeConcurrencyTest() {
         this.performTest(() -> {
             try {
-                new SzPerpetualCoreEnvironment(
-                    new SzPerpetualCoreEnvironment.Builder() {
+                new SzAutoCoreEnvironment(
+                    new SzAutoCoreEnvironment.Builder() {
                         public Integer getConcurrency() {
                             return -1;
                         }
@@ -1697,8 +1699,8 @@ public class SzPerpetualCoreEnvironmentTest extends AbstractPerpetualCoreTest {
     public void constructNegativeMaxRetriesTest() {
         this.performTest(() -> {
             try {
-                new SzPerpetualCoreEnvironment(
-                    new SzPerpetualCoreEnvironment.Builder() {
+                new SzAutoCoreEnvironment(
+                    new SzAutoCoreEnvironment.Builder() {
                         public int getMaxBasicRetries() {
                             return -1;
                         }
@@ -1718,8 +1720,8 @@ public class SzPerpetualCoreEnvironmentTest extends AbstractPerpetualCoreTest {
     public void constructNegativeConfigRefreshPeriodTest() {
         this.performTest(() -> {
             try {
-                new SzPerpetualCoreEnvironment(
-                    new SzPerpetualCoreEnvironment.Builder() {
+                new SzAutoCoreEnvironment(
+                    new SzAutoCoreEnvironment.Builder() {
                         public Duration getConfigRefreshPeriod() {
                             return Duration.ofSeconds(-1);
                         }
@@ -1741,7 +1743,7 @@ public class SzPerpetualCoreEnvironmentTest extends AbstractPerpetualCoreTest {
             SzEnvironment env = null;
             try {
                 Duration period = Duration.ofMinutes(30);
-                env = SzPerpetualCoreEnvironment.newPerpetualBuilder()
+                env = SzAutoCoreEnvironment.newAutoBuilder()
                                                 .configId(12L)
                                                 .configRefreshPeriod(period)
                                                 .build();
@@ -1776,11 +1778,11 @@ public class SzPerpetualCoreEnvironmentTest extends AbstractPerpetualCoreTest {
     @MethodSource("getConcurrencyParameters")
     public void builderConcurrencyTest(Integer concurrency) {
         this.performTest(() -> {
-            SzPerpetualCoreEnvironment env = null;
+            SzAutoCoreEnvironment env = null;
 
             try {
-                SzPerpetualCoreEnvironment.Builder builder 
-                    = SzPerpetualCoreEnvironment.newPerpetualBuilder()
+                SzAutoCoreEnvironment.Builder builder 
+                    = SzAutoCoreEnvironment.newAutoBuilder()
                                                 .concurrency(concurrency);
 
                 if (concurrency != null && concurrency < 0) {
@@ -1831,11 +1833,11 @@ public class SzPerpetualCoreEnvironmentTest extends AbstractPerpetualCoreTest {
     @MethodSource("getConfigRefreshPeriodParameters")
     public void builderConfigRefreshPeriodTest(Duration duration) {
         this.performTest(() -> {
-            SzPerpetualCoreEnvironment env = null;
+            SzAutoCoreEnvironment env = null;
 
             try {
-                SzPerpetualCoreEnvironment.Builder builder 
-                    = SzPerpetualCoreEnvironment.newPerpetualBuilder()
+                SzAutoCoreEnvironment.Builder builder 
+                    = SzAutoCoreEnvironment.newAutoBuilder()
                                                 .configRefreshPeriod(duration);
                                                 
                 if (duration != null && duration.isNegative()) {
@@ -1889,11 +1891,11 @@ public class SzPerpetualCoreEnvironmentTest extends AbstractPerpetualCoreTest {
     @MethodSource("getMaxBasicRetryParameters")
     public void builderMaxBasicRetryTest(int maxRetries) {
         this.performTest(() -> {
-            SzPerpetualCoreEnvironment env = null;
+            SzAutoCoreEnvironment env = null;
 
             try {
-                SzPerpetualCoreEnvironment.Builder builder 
-                    = SzPerpetualCoreEnvironment.newPerpetualBuilder()
+                SzAutoCoreEnvironment.Builder builder 
+                    = SzAutoCoreEnvironment.newAutoBuilder()
                                                 .maxBasicRetries(maxRetries);
                 
                 if (maxRetries < 0) {
@@ -1953,9 +1955,9 @@ public class SzPerpetualCoreEnvironmentTest extends AbstractPerpetualCoreTest {
                 assertEquals(refreshCount, 0, "Unexpected initial refresh count");
 
                 MockRetryCallable mrc = new MockRetryCallable(
-                    SzPerpetualCoreEnvironment.MAX_REINITIALIZE_COUNT + 1);
+                    SzAutoCoreEnvironment.MAX_REINITIALIZE_COUNT + 1);
 
-                SzPerpetualCoreEnvironment.CONFIG_RETRY_FLAG.set(Boolean.TRUE);
+                SzAutoCoreEnvironment.CONFIG_RETRY_FLAG.set(Boolean.TRUE);
                 executing = true;
                 env.execute(mrc);
                 
@@ -1963,7 +1965,7 @@ public class SzPerpetualCoreEnvironmentTest extends AbstractPerpetualCoreTest {
 
             } catch (SzException e) { 
                 if (executing) {
-                    assertEquals(SzPerpetualCoreEnvironment.MAX_REINITIALIZE_COUNT,
+                    assertEquals(SzAutoCoreEnvironment.MAX_REINITIALIZE_COUNT,
                                  env.getConfigRefreshCount(),
                                 "Unexpected config refresh count");
                 } else {
@@ -1974,7 +1976,7 @@ public class SzPerpetualCoreEnvironmentTest extends AbstractPerpetualCoreTest {
                 if (env != null) {
                     env.destroy();
                 }
-                SzPerpetualCoreEnvironment.CONFIG_RETRY_FLAG.set(Boolean.FALSE);
+                SzAutoCoreEnvironment.CONFIG_RETRY_FLAG.set(Boolean.FALSE);
             }
         });
     }

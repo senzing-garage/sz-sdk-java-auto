@@ -1,4 +1,4 @@
-# sz-sdk-java-perpetual
+# sz-sdk-java-auto
 
 If you are beginning your journey with [Senzing],
 please start with [Senzing Quick Start guides].

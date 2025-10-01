@@ -1,4 +1,4 @@
-package com.senzing.sdk.core.perpetual;
+package com.senzing.sdk.core.auto;
 
 import java.util.List;
 import java.util.Set;
@@ -23,6 +23,7 @@ import com.senzing.sdk.SzFlag;
 import com.senzing.sdk.SzRecordKey;
 import com.senzing.sdk.SzRecordKeys;
 import com.senzing.sdk.core.SzCoreEnvironment;
+import com.senzing.sdk.core.auto.SzAutoCoreEnvironment;
 import com.senzing.sdk.SzEntityIds;
 import com.senzing.sdk.SzException;
 import com.senzing.sdk.test.StandardTestDataLoader;
@@ -40,10 +41,10 @@ import static com.senzing.sdk.SzFlag.*;
 @Execution(ExecutionMode.SAME_THREAD)
 @TestMethodOrder(OrderAnnotation.class)
 public class EngineGraphTest 
-    extends AbstractPerpetualCoreTest 
+    extends AbstractAutoCoreTest 
     implements SzEngineGraphTest
 {
-    private SzPerpetualCoreEnvironment env = null;
+    private SzAutoCoreEnvironment env = null;
 
     private TestData testData = new TestData();
 
@@ -65,7 +66,7 @@ public class EngineGraphTest
         
         String instanceName = this.getClass().getSimpleName();
         
-        this.env = SzPerpetualCoreEnvironment.newPerpetualBuilder()
+        this.env = SzAutoCoreEnvironment.newAutoBuilder()
                                              .instanceName(instanceName)
                                              .settings(settings)
                                              .verboseLogging(false)

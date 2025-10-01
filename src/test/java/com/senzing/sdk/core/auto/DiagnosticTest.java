@@ -1,4 +1,4 @@
-package com.senzing.sdk.core.perpetual;
+package com.senzing.sdk.core.auto;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.AfterAll;
@@ -9,6 +9,7 @@ import org.junit.jupiter.api.parallel.ExecutionMode;
 
 import com.senzing.sdk.SzException;
 import com.senzing.sdk.core.SzCoreEnvironment;
+import com.senzing.sdk.core.auto.SzAutoCoreEnvironment;
 import com.senzing.sdk.test.StandardTestDataLoader;
 import com.senzing.sdk.test.SzDiagnosticTest;
 import com.senzing.sdk.test.TestDataLoader;
@@ -24,10 +25,10 @@ import static org.junit.jupiter.api.TestInstance.Lifecycle;
  @Execution(ExecutionMode.SAME_THREAD)
  @TestMethodOrder(OrderAnnotation.class)
  public class DiagnosticTest 
-    extends AbstractPerpetualCoreTest 
+    extends AbstractAutoCoreTest 
     implements SzDiagnosticTest
 {
-    private SzPerpetualCoreEnvironment env = null;
+    private SzAutoCoreEnvironment env = null;
 
     private TestData testData = new TestData();
 
@@ -50,7 +51,7 @@ import static org.junit.jupiter.api.TestInstance.Lifecycle;
         
         String instanceName = this.getClass().getSimpleName();
 
-        this.env = SzPerpetualCoreEnvironment.newPerpetualBuilder()
+        this.env = SzAutoCoreEnvironment.newAutoBuilder()
                                              .instanceName(instanceName)
                                              .settings(settings)
                                              .verboseLogging(false)

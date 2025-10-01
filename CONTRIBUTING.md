@@ -83,7 +83,7 @@ The variables are used throughout the installation procedure.
 
 ```console
 export GIT_ACCOUNT=senzing-garage
-export GIT_REPOSITORY=sz-sdk-java-perpetual
+export GIT_REPOSITORY=sz-sdk-java-auto
 ```
 
 Synthesize environment variables.
