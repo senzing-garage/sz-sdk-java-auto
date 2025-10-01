@@ -1,4 +1,4 @@
-package com.senzing.sdk.core.perpetual;
+package com.senzing.sdk.core.auto;
 
 import java.time.Duration;
 import java.util.Set;
@@ -73,7 +73,7 @@ import java.lang.reflect.Proxy;
  *  </li>
  * </ul>
  */
-public class SzPerpetualCoreEnvironment extends SzCoreEnvironment {
+public class SzAutoCoreEnvironment extends SzCoreEnvironment {
     /**
      * The thread-local retry flag.
      */
@@ -177,7 +177,7 @@ public class SzPerpetualCoreEnvironment extends SzCoreEnvironment {
      * active configuration ID} is compared to the current 
      * {@linkplain com.senzing.sdk.SzConfigManager#getDefaultConfigId()
      * default configuration ID} and if they are out of sync, the 
-     * {@link SzPerpetualCoreEnvironment} is {@linkplain 
+     * {@link SzAutoCoreEnvironment} is {@linkplain 
      * com.senzing.sdk.SzEnvironment#reinitialize(long) reinitialized}
      * with the current default configuration ID.
      * </p>
@@ -209,15 +209,15 @@ public class SzPerpetualCoreEnvironment extends SzCoreEnvironment {
 
     /**
      * Provides an interface for initializing an instance of
-     * {@link SzPerpetualCoreEnvironment}.
+     * {@link SzAutoCoreEnvironment}.
      * 
      * <p>
-     * This interface is not needed to use {@link SzPerpetualCoreEnvironment}.
-     * It is only needed if you are extending {@link SzPerpetualCoreEnvironment}.
+     * This interface is not needed to use {@link SzAutoCoreEnvironment}.
+     * It is only needed if you are extending {@link SzAutoCoreEnvironment}.
      * </p>
      * 
      * <p>
-     * This is provided for derived classes of {@link SzPerpetualCoreEnvironment}
+     * This is provided for derived classes of {@link SzAutoCoreEnvironment}
      * to initialize their super class and is typically implemented by
      * extending {@link AbstractBuilder} in creating a derived
      * builder implementation.
@@ -233,7 +233,7 @@ public class SzPerpetualCoreEnvironment extends SzCoreEnvironment {
          * active configuration ID} is compared to the current 
          * {@linkplain com.senzing.sdk.SzConfigManager#getDefaultConfigId()
          * default configuration ID} and if they are out of sync, the 
-         * {@link SzPerpetualCoreEnvironment} is {@linkplain 
+         * {@link SzAutoCoreEnvironment} is {@linkplain 
          * com.senzing.sdk.SzEnvironment#reinitialize(long) reinitialized}
          * with the current default configuration ID.
          * </p>
@@ -248,7 +248,7 @@ public class SzPerpetualCoreEnvironment extends SzCoreEnvironment {
          * other than {@link RefreshMode#DISABLED} if the {@linkplain 
          * #getConfigId() configuration ID} is a non-null value.  An
          * exception will be thrown if attempting to construct an {@link 
-         * SzPerpetualCoreEnvironment} with an explicit configuration ID
+         * SzAutoCoreEnvironment} with an explicit configuration ID
          * with configuration refresh enabled.
          * </p>
          * 
@@ -384,15 +384,15 @@ public class SzPerpetualCoreEnvironment extends SzCoreEnvironment {
     /**
      * Extends {@link SzCoreEnvironment.AbstractBuilder} to provide
      * additional initialization properties for {@link 
-     * SzPerpetualCoreEnvironment}.
+     * SzAutoCoreEnvironment}.
      * 
-     * @param <E> The {@link SzPerpetualCoreEnvironment}-derived class
+     * @param <E> The {@link SzAutoCoreEnvironment}-derived class
      *            built by instances of this class.
      * @param <B> The {@link AbstractBuilder}-derived class of the
      *            implementation.
      */
     public abstract static 
-    class AbstractBuilder<E extends SzPerpetualCoreEnvironment, 
+    class AbstractBuilder<E extends SzAutoCoreEnvironment, 
                           B extends AbstractBuilder<E, B>>
         extends SzCoreEnvironment.AbstractBuilder<E, B> 
         implements Initializer
@@ -572,10 +572,10 @@ public class SzPerpetualCoreEnvironment extends SzCoreEnvironment {
 
     /**
      * The builder class for creating an instance of 
-     * {@link SzPerpetualCoreEnvironment}.
+     * {@link SzAutoCoreEnvironment}.
      */
     public static class Builder 
-        extends AbstractBuilder<SzPerpetualCoreEnvironment, Builder> 
+        extends AbstractBuilder<SzAutoCoreEnvironment, Builder> 
     {
         /**
          * Default constructor.
@@ -585,14 +585,14 @@ public class SzPerpetualCoreEnvironment extends SzCoreEnvironment {
         }
 
         /**
-         * Creates a new {@link SzPerpetualCoreEnvironment} instance based on
+         * Creates a new {@link SzAutoCoreEnvironment} instance based on
          * this {@link Builder} instance.  This method will throw an {@link 
          * IllegalStateException} if another active {@link SzCoreEnvironment}
          * instance exists since only one active instance can exist within a
          * process at any given time.  An active instance is one that has
          * been constructed, but has not yet been destroyed.
          * 
-         * @return The newly created {@link SzPerpetualCoreEnvironment} instance.
+         * @return The newly created {@link SzAutoCoreEnvironment} instance.
          * 
          * @throws IllegalStateException If another active {@link SzCoreEnvironment}
          *                               instance exists when this method is
@@ -602,7 +602,7 @@ public class SzPerpetualCoreEnvironment extends SzCoreEnvironment {
          *                               <code>null</code>.
          */
         @Override
-        public SzPerpetualCoreEnvironment build() 
+        public SzAutoCoreEnvironment build() 
             throws IllegalStateException
         {
             if (this.getConfigId() != null 
@@ -616,7 +616,7 @@ public class SzPerpetualCoreEnvironment extends SzCoreEnvironment {
                     + ").");
             }
 
-            return new SzPerpetualCoreEnvironment(this);
+            return new SzAutoCoreEnvironment(this);
         }
     }
 
@@ -709,7 +709,7 @@ public class SzPerpetualCoreEnvironment extends SzCoreEnvironment {
 
     /**
      * Creates a new instance of {@link Builder} for setting up an instance
-     * of {@link SzPerpetualCoreEnvironment}.  Keep in mind that while multiple 
+     * of {@link SzAutoCoreEnvironment}.  Keep in mind that while multiple 
      * {@link Builder} instances can exists, <b>only one active instance</b> of 
      * {@link SzCoreEnvironment} (including any of its derived classes) can exist
      * at time.  An active instance is one that has not yet been destroyed.
@@ -718,7 +718,7 @@ public class SzPerpetualCoreEnvironment extends SzCoreEnvironment {
      * <b>NOTE:</b> The static method {@link #newBuilder()} will produce an
      * instance of {@link SzCoreEnvironment.Builder} which will only create
      * instances of {@link SzCoreEnvironment} rather than {@link 
-     * SzPerpetualCoreEnvironment}.
+     * SzAutoCoreEnvironment}.
      * </p>
      * 
      * <p>
@@ -727,9 +727,9 @@ public class SzPerpetualCoreEnvironment extends SzCoreEnvironment {
      * </p>
      * 
      * @return The {@link Builder} for configuring and initializing the
-     *         {@link SzPerpetualCoreEnvironment}.
+     *         {@link SzAutoCoreEnvironment}.
      */
-    public static Builder newPerpetualBuilder() {
+    public static Builder newAutoBuilder() {
         return new Builder();
     }
 
@@ -824,7 +824,7 @@ public class SzPerpetualCoreEnvironment extends SzCoreEnvironment {
      * @param initializer The {@link Initializer} with which to construct
      *                    (typically an instance of {@link AbstractBuilder}).
      */
-    protected SzPerpetualCoreEnvironment(Initializer initializer) 
+    protected SzAutoCoreEnvironment(Initializer initializer) 
     {
         super(initializer);
 
@@ -1615,7 +1615,7 @@ public class SzPerpetualCoreEnvironment extends SzCoreEnvironment {
      * 
      * <p>
      * <b>NOTE:</b> Any Senzing Core SDK calls made using this 
-     * {@link SzPerpetualCoreEnvironment} instance will also be
+     * {@link SzAutoCoreEnvironment} instance will also be
      * run in the same thread with no additional context switching.
      * </p>
      * 
@@ -1659,7 +1659,7 @@ public class SzPerpetualCoreEnvironment extends SzCoreEnvironment {
      * 
      * <p>
      * <b>NOTE:</b> Any Senzing Core SDK calls made using this 
-     * {@link SzPerpetualCoreEnvironment} instance will also be
+     * {@link SzAutoCoreEnvironment} instance will also be
      * run in the same thread with no additional context switching.
      * </p>
      * 
@@ -1686,7 +1686,7 @@ public class SzPerpetualCoreEnvironment extends SzCoreEnvironment {
      * 
      * <p>
      * <b>NOTE:</b> Any Senzing Core SDK calls made using this 
-     * {@link SzPerpetualCoreEnvironment} instance will also be
+     * {@link SzAutoCoreEnvironment} instance will also be
      * run in the same thread with no additional context switching.
      * </p>
      * 

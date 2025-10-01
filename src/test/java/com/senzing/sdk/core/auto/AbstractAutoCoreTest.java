@@ -1,4 +1,4 @@
-package com.senzing.sdk.core.perpetual;
+package com.senzing.sdk.core.auto;
 
 import java.io.File;
 import java.time.Duration;
@@ -11,12 +11,12 @@ import com.senzing.sdk.core.AbstractCoreTest;
 /**
  * 
  */
-public abstract class AbstractPerpetualCoreTest extends AbstractCoreTest 
+public abstract class AbstractAutoCoreTest extends AbstractCoreTest 
 {
     /**
      * Protected default constructor.
      */
-    protected AbstractPerpetualCoreTest() {
+    protected AbstractAutoCoreTest() {
         this(null);
     }
 
@@ -27,7 +27,7 @@ public abstract class AbstractPerpetualCoreTest extends AbstractCoreTest
      * @param repoDirectory The directory in which to include the entity
      *                      repository.
      */
-    protected AbstractPerpetualCoreTest(File repoDirectory) {
+    protected AbstractAutoCoreTest(File repoDirectory) {
         super(repoDirectory);
     }
 

@@ -1,4 +1,4 @@
-package com.senzing.sdk.core.perpetual;
+package com.senzing.sdk.core.auto;
 
 import java.util.List;
 import java.util.Set;
@@ -16,6 +16,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import com.senzing.sdk.SzEngine;
 import com.senzing.sdk.SzRecordKey;
 import com.senzing.sdk.core.SzCoreEnvironment;
+import com.senzing.sdk.core.auto.SzAutoCoreEnvironment;
 import com.senzing.sdk.SzException;
 import com.senzing.sdk.test.StandardTestDataLoader;
 import com.senzing.sdk.test.SzEngineHowTest;
@@ -34,12 +35,12 @@ import static com.senzing.sdk.test.SzEngineHowTest.TestData.*;
 @TestInstance(Lifecycle.PER_CLASS)
 @Execution(ExecutionMode.SAME_THREAD)
 public class EngineHowTest 
-    extends AbstractPerpetualCoreTest 
+    extends AbstractAutoCoreTest 
     implements SzEngineHowTest
 {
     private TestData testData = new TestData();
 
-    private SzPerpetualCoreEnvironment env = null;
+    private SzAutoCoreEnvironment env = null;
 
     @Override
     public TestData getTestData() {
@@ -60,7 +61,7 @@ public class EngineHowTest
         
         String instanceName = this.getClass().getSimpleName();
         
-        this.env = SzPerpetualCoreEnvironment.newPerpetualBuilder()
+        this.env = SzAutoCoreEnvironment.newAutoBuilder()
                                              .instanceName(instanceName)
                                              .settings(settings)
                                              .verboseLogging(false)

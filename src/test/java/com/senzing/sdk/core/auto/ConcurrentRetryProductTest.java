@@ -1,4 +1,4 @@
-package com.senzing.sdk.core.perpetual;
+package com.senzing.sdk.core.auto;
 
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.parallel.Execution;
@@ -10,7 +10,7 @@ import java.time.Duration;
 
 @TestInstance(Lifecycle.PER_CLASS)
 @Execution(ExecutionMode.SAME_THREAD)
-public class ConcurrentRetryEngineHowTest extends EngineHowTest 
+public class ConcurrentRetryProductTest extends ProductTest
 {
     private static final Integer CONCURRENCY = 4;
 

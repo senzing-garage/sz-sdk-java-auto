@@ -1,4 +1,4 @@
-package com.senzing.sdk.core.perpetual;
+package com.senzing.sdk.core.auto;
 
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.parallel.Execution;

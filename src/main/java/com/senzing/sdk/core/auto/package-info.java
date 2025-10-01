@@ -1,17 +1,19 @@
 /**
- * This package provides the "perpetual core" implementation of the 
+ * This package provides the "automatic core" implementation of the 
  * Senzing Java SDK by extending the Senzing Core SDK implementation
  * found in the {@link com.senzing.sdk.core} package.
  * 
  * <p>
- * The perpetual core implementation adds enhancements like automatic
+ * The automatic core implementation adds enhancements that are
+ * useful when leveraging the Senzing Core SDK in a long-running
+ * multi-threaded sever-side process.  It provides automatic
  * handling of the following:
  * </p>
  * <ul>
  *  <li>
  *      Optional basic retry logic to retry <b>any</b> Senzing
  *      Core SDK method that fails with an {@link 
- *      SzRetryableException}.  The method may be retried one
+ *      com.senzing.sdk.SzRetryableException}.  The method may be retried one
  *      or more times with an increasing delay between retry
  *      attempts.
  *  </li>
@@ -23,10 +25,10 @@
  *  <li>
  *      When automatic configuration refresh is enabled, this
  *      implementation automatically refreshes the configuration
- *      when a Senzing Core SDK method annotated as
- *      {@link SzConfigRetryable} fails with an {@link 
- *      SzException}, subsequently retrying that method if in
- *      fact the the active configuration was changed.
+ *      when a Senzing Core SDK method annotated as {@link 
+ *      com.senzing.sdk.SzConfigRetryable} fails with an {@link
+ *      com.senzing.sdk.SzException}, subsequently retrying that
+ *      method if in fact the the active configuration was changed.
  *  </li>
  *  <li>
  *      Optional isolation of all Senzing Core SDK operations
@@ -36,9 +38,9 @@
  *      Senzing operations in too many threads.
  *  </li>
  *  <li>
- *      A limited {@link ExecutorService}-like interface to 
- *      enable executing multiple Senzing Core SDK operations
- *      within the execution thread pool while preventing
+ *      A limited {@link java.util.concurrent.ExecutorService}-like
+ *      interface to enable executing multiple Senzing Core SDK
+ *      operations within the execution thread pool while preventing
  *      excessive context switching.
  *  </li>
  * </ul>
@@ -50,4 +52,4 @@
  * configured in the same way as the Senzing Core SDK.
  * </p>
  */
-package com.senzing.sdk.core;
+package com.senzing.sdk.core.auto;
