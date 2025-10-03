@@ -51,6 +51,7 @@ jobs:
 
       - name: Build with Maven
         run: |
+          java -jar $SENZING_PATH/er/sdk/java/sz-sdk.jar -x
           mvn clean install -B -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn -Pjacoco -Djacoco.haltOnFailure=false -Djacoco.ignoreFailure=true
 
       - name: Jacoco Report to PR
