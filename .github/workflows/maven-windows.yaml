@@ -48,7 +48,7 @@ jobs:
       - name: Build with Maven
         run: |
           $Env:SENZING_PATH = "$Env:USERPROFILE\senzing"
-          C:\ProgramData\chocolatey\lib\maven\apache-maven-3.9.11\bin\mvn install:install-file -Dfile=C:\Users\runneradmin\senzing\er\sdk\java\sz-sdk.jar -DgroupId=com.senzing -DartifactId=sz-sdk -Dversion=4.1.0 -Dpackaging=jar -Djavadoc=C:\Users\runneradmin\senzing\er\sdk\java\sz-sdk-javadoc.jar -Dsources=C:\Users\runneradmin\senzing\er\sdk\java\sz-sdk-sources.jar
+          mvn install:install-file -Dfile=C:\Users\runneradmin\senzing\er\sdk\java\sz-sdk.jar -DgroupId=com.senzing -DartifactId=sz-sdk -Dversion=4.1.0 -Dpackaging=jar -Djavadoc=C:\Users\runneradmin\senzing\er\sdk\java\sz-sdk-javadoc.jar -Dsources=C:\Users\runneradmin\senzing\er\sdk\java\sz-sdk-sources.jar
           mvn clean install -B "-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn" -Pjacoco "-Djacoco.haltOnFailure=false" "-Djacoco.ignoreFailure=true" "-Dsenzing.path=$Env:USERPROFILE\Senzing"
 
       - name: Jacoco Report to PR
