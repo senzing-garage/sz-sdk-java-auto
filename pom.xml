@@ -2,9 +2,9 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.senzing</groupId>
-  <artifactId>sz-sdk-java-auto</artifactId>
+  <artifactId>sz-sdk-auto</artifactId>
   <packaging>jar</packaging>
-  <version>0.2.0</version>
+  <version>0.3.0</version>
   <name>Senzing Java Automatic Core SDK</name>
   <description>
     The Java Automatic Core SDK provides enhancements over the Java Core SDK
@@ -128,7 +128,7 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>exec-maven-plugin</artifactId>
-        <version>3.6.0</version>
+        <version>3.6.1</version>
         <executions>
           <execution>
             <id>generate-java-wrapper</id>
@@ -305,7 +305,7 @@
       <plugin>
         <groupId>org.sonatype.central</groupId>
         <artifactId>central-publishing-maven-plugin</artifactId>
-        <version>0.8.0</version>
+        <version>0.9.0</version>
         <extensions>true</extensions>
         <configuration>
           <publishingServerId>central</publishingServerId>
