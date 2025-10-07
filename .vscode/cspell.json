@@ -91,7 +91,9 @@
     "Dtest",
     "CONFIGPATH",
     "szerrors",
-    "Reinitializer"
+    "Reinitializer",
+    "Pspotbugs",
+    "Preleease"
   ],
   "ignorePaths": [".git/**", "**/test/**", "Makefile", "pom.xml"]
 }
