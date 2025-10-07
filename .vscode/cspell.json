@@ -93,7 +93,7 @@
     "szerrors",
     "Reinitializer",
     "Pspotbugs",
-    "Preleease"
+    "Prelease"
   ],
   "ignorePaths": [".git/**", "**/test/**", "Makefile", "pom.xml"]
 }
