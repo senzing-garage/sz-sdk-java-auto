@@ -23,7 +23,6 @@ import com.senzing.sdk.SzFlag;
 import com.senzing.sdk.SzRecordKey;
 import com.senzing.sdk.SzRecordKeys;
 import com.senzing.sdk.core.SzCoreEnvironment;
-import com.senzing.sdk.core.auto.SzAutoCoreEnvironment;
 import com.senzing.sdk.SzEntityIds;
 import com.senzing.sdk.SzException;
 import com.senzing.sdk.test.StandardTestDataLoader;

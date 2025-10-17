@@ -9,7 +9,7 @@ import com.senzing.sdk.SzException;
 import com.senzing.sdk.core.AbstractCoreTest;
 
 /**
- * 
+ * Provides a base class for the Auto Core tests.
  */
 public abstract class AbstractAutoCoreTest extends AbstractCoreTest 
 {

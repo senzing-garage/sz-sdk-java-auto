@@ -9,7 +9,6 @@ import org.junit.jupiter.api.parallel.ExecutionMode;
 
 import com.senzing.sdk.SzEngine;
 import com.senzing.sdk.SzException;
-import com.senzing.sdk.core.auto.SzAutoCoreEnvironment;
 import com.senzing.sdk.test.SzEngineBasicsTest;
 
 import static org.junit.jupiter.api.MethodOrderer.OrderAnnotation;

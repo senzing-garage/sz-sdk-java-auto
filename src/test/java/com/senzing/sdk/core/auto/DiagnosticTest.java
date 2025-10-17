@@ -9,7 +9,6 @@ import org.junit.jupiter.api.parallel.ExecutionMode;
 
 import com.senzing.sdk.SzException;
 import com.senzing.sdk.core.SzCoreEnvironment;
-import com.senzing.sdk.core.auto.SzAutoCoreEnvironment;
 import com.senzing.sdk.test.StandardTestDataLoader;
 import com.senzing.sdk.test.SzDiagnosticTest;
 import com.senzing.sdk.test.TestDataLoader;
