@@ -4,7 +4,7 @@
   <groupId>com.senzing</groupId>
   <artifactId>sz-sdk-auto</artifactId>
   <packaging>jar</packaging>
-  <version>0.3.0</version>
+  <version>0.4.0</version>
   <name>Senzing Java Automatic Core SDK</name>
   <description>
     The Java Automatic Core SDK provides enhancements over the Java Core SDK
