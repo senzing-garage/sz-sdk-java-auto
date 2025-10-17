@@ -12,7 +12,6 @@ import com.senzing.sdk.SzException;
 import com.senzing.sdk.test.StandardTestConfigurator;
 import com.senzing.sdk.test.SzConfigTest;
 import com.senzing.sdk.core.SzCoreEnvironment;
-import com.senzing.sdk.core.auto.SzAutoCoreEnvironment;
 
 import static org.junit.jupiter.api.TestInstance.Lifecycle;
 

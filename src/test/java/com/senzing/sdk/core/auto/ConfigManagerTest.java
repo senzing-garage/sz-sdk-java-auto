@@ -13,7 +13,6 @@ import com.senzing.sdk.SzEnvironment;
 import com.senzing.sdk.test.StandardTestConfigurator;
 import com.senzing.sdk.test.SzConfigManagerTest;
 import com.senzing.sdk.core.SzCoreEnvironment;
-import com.senzing.sdk.core.auto.SzAutoCoreEnvironment;
 
 import static org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
 import static org.junit.jupiter.api.TestInstance.Lifecycle;

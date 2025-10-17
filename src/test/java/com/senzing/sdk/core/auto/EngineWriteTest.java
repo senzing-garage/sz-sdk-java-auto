@@ -20,7 +20,6 @@ import static org.junit.jupiter.api.TestInstance.Lifecycle;
 import com.senzing.sdk.SzEngine;
 import com.senzing.sdk.SzRecordKey;
 import com.senzing.sdk.core.SzCoreEnvironment;
-import com.senzing.sdk.core.auto.SzAutoCoreEnvironment;
 import com.senzing.sdk.SzException;
 import com.senzing.sdk.test.StandardTestDataLoader;
 import com.senzing.sdk.test.SzEngineWriteTest;

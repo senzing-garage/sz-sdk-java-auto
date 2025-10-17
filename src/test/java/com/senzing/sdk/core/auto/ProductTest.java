@@ -8,7 +8,6 @@ import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
 
 import com.senzing.sdk.SzProduct;
-import com.senzing.sdk.core.auto.SzAutoCoreEnvironment;
 import com.senzing.sdk.SzException;
 import com.senzing.sdk.test.SzProductTest;
 
