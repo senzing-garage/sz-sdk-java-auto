@@ -2,7 +2,6 @@ package com.senzing.sdk.core.auto;
 
 import java.time.Duration;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
 import com.senzing.sdk.SzConfigRetryable;
@@ -26,7 +25,8 @@ public interface SzAutoEnvironment extends SzEnvironment {
      * </p>
      * 
      * @return The number of threads in the thread pool for the internal
-     *         {@link ExecutorService}, or zero (0) if threading is disabled.
+     *         {@link java.util.concurrent.ExecutorService}, or zero (0) 
+     *         if threading is disabled.
      */
     int getConcurrency();
 
@@ -119,9 +119,9 @@ public interface SzAutoEnvironment extends SzEnvironment {
 
     /**
      * Performs the specified task using this instance's configured 
-     * thread pool and internal {@link ExecutorService} via
-     * {@link ExecutorService#submit(Callable)} or directly
-     * executes the task in the calling thread if the thread pool 
+     * thread pool and internal {@link java.util.concurrent.ExecutorService}
+     * via {@link java.util.concurrent.ExecutorService#submit(Callable)} or
+     * directly executes the task in the calling thread if the thread pool 
      * has been disabled.
      * 
      * <p>
@@ -144,9 +144,9 @@ public interface SzAutoEnvironment extends SzEnvironment {
     
     /**
      * Performs the specified task using this instance's configured 
-     * thread pool and internal {@link ExecutorService} via 
-     * {@link ExecutorService#submit(Runnable)} or directly
-     * executes the task in the calling thread if the thread pool 
+     * thread pool and internal {@link java.util.concurrent.ExecutorService}
+     * via {@link java.util.concurrent.ExecutorService#submit(Runnable)} or
+     * directly executes the task in the calling thread if the thread pool 
      * has been disabled.
      * 
      * <p>
@@ -169,9 +169,9 @@ public interface SzAutoEnvironment extends SzEnvironment {
 
     /**
      * Performs the specified task using this instance's configured 
-     * thread pool and internal {@link ExecutorService} via 
-     * {@link ExecutorService#submit(Runnable, Object)} or directly
-     * executes the task in the calling thread if the thread pool 
+     * thread pool and internal {@link java.util.concurrent.ExecutorService}
+     * via {@link java.util.concurrent.ExecutorService#submit(Runnable, Object)}
+     * or directly executes the task in the calling thread if the thread pool 
      * has been disabled.
      * 
      * <p>
