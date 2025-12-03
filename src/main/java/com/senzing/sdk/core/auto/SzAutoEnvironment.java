@@ -5,7 +5,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 
 import com.senzing.sdk.SzEnvironment;
-import com.senzing.sdk.SzRetryableException;
 import com.senzing.sdk.core.auto.SzAutoCoreEnvironment.RefreshMode;
 
 /**
@@ -32,7 +31,7 @@ public interface SzAutoEnvironment extends SzEnvironment {
     /**
      * Gets the maximum number of basic retries that will be 
      * attempted when a Senzing Core SDK operation fails with an
-     * {@link SzRetryableException}.
+     * {@link com.senzing.sdk.SzRetryableException}.
      * 
      * <p>
      * See {@link SzAutoCoreEnvironment.Initializer#getMaxBasicRetries()} for a
@@ -41,7 +40,7 @@ public interface SzAutoEnvironment extends SzEnvironment {
      * 
      * @return The maximum number of basic retries that will be 
      *         attempted when a Senzing Core SDK operation fails 
-     *         with an {@link SzRetryableException}.
+     *         with an {@link com.senzing.sdk.SzRetryableException}.
      */
     int getMaxBasicRetries();
 
