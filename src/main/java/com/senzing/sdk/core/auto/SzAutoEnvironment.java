@@ -4,7 +4,6 @@ import java.time.Duration;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 
-import com.senzing.sdk.SzConfigRetryable;
 import com.senzing.sdk.SzEnvironment;
 import com.senzing.sdk.SzRetryableException;
 import com.senzing.sdk.core.auto.SzAutoCoreEnvironment.RefreshMode;
@@ -49,7 +48,7 @@ public interface SzAutoEnvironment extends SzEnvironment {
     /**
      * Gets the total number of times the configuration was automatically
      * refreshed either periodically or due to an exception on a method
-     * annotated with {@link SzConfigRetryable}.
+     * annotated with {@link com.senzing.sdk.SzConfigRetryable}.
      *  
      * <p>
      * <b>NOTE:</b> This does <b>NOT</b> include explicit calls to 
