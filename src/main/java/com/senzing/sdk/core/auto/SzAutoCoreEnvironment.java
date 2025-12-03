@@ -73,7 +73,9 @@ import java.lang.reflect.Proxy;
  *  </li>
  * </ul>
  */
-public class SzAutoCoreEnvironment extends SzCoreEnvironment {
+public class SzAutoCoreEnvironment extends SzCoreEnvironment 
+    implements SzAutoEnvironment
+{
     /**
      * The thread-local retry flag.
      */
@@ -895,17 +897,9 @@ public class SzAutoCoreEnvironment extends SzCoreEnvironment {
     }
 
     /**
-     * Gets the concurrency with which this instance was initialized.
-     * 
-     * <p>
-     * The value returned will be zero (0) if the thread pool has been
-     * disabled, otherwise it will be the number of threads in the 
-     * pool.
-     * </p>
-     * 
-     * @return The number of threads in the thread pool for the internal
-     *         {@link ExecutorService}, or zero (0) if threading is disabled.
+     * {@inheritDoc}
      */
+    @Override
     public int getConcurrency() {
         Lock lock = null;
         try {
@@ -918,19 +912,9 @@ public class SzAutoCoreEnvironment extends SzCoreEnvironment {
     }
 
     /**
-     * Gets the maximum number of basic retries that will be 
-     * attempted when a Senzing Core SDK operation fails with an
-     * {@link SzRetryableException}.
-     * 
-     * <p>
-     * See {@link Initializer#getMaxBasicRetries()} for a
-     * description of how the maximum is applied.
-     * </p>
-     * 
-     * @return The maximum number of basic retries that will be 
-     *         attempted when a Senzing Core SDK operation fails 
-     *         with an {@link SzRetryableException}.
+     * {@inheritDoc}
      */
+    @Override
     public int getMaxBasicRetries() {
         Lock lock = null;
         try {
@@ -943,18 +927,9 @@ public class SzAutoCoreEnvironment extends SzCoreEnvironment {
     }
 
     /**
-     * Gets the total number of times the configuration was automatically
-     * refreshed either periodically or due to an exception on a method
-     * annotated with {@link SzConfigRetryable}.
-     *  
-     * <p>
-     * <b>NOTE:</b> This does <b>NOT</b> include explicit calls to 
-     * {@link #reinitialize(long)}.
-     * </p>
-     * 
-     * @return The total number of times the configuration was automatically
-     *         refreshed
+     * {@inheritDoc}
      */
+    @Override
     public int getConfigRefreshCount() {
         Lock lock = null;
         try {
@@ -969,13 +944,9 @@ public class SzAutoCoreEnvironment extends SzCoreEnvironment {
     }
 
     /**
-     * Gets the total number Senzing Core SDK method invocations 
-     * that initially failed and were retried whether or not they
-     * ultimately succeeded.
-     *  
-     * @return The total number Senzing Core SDK method invocations
-     *         that initially failed and were retried.
+     * {@inheritDoc}
      */
+    @Override
     public int getRetriedCount() {
         Lock lock = null;
         try {
@@ -990,13 +961,9 @@ public class SzAutoCoreEnvironment extends SzCoreEnvironment {
     }
 
     /**
-     * Gets the total number Senzing Core SDK method invocations 
-     * that initially failed, were retried at least once and
-     * ultimately failed.
-     * 
-     * @return The total number Senzing Core SDK method invocations
-     *         that initially failed, were retried and ultimately failed.
+     * {@inheritDoc}
      */
+    @Override
     public int getRetriedFailureCount() {
         Lock lock = null;
         try {
@@ -1168,21 +1135,9 @@ public class SzAutoCoreEnvironment extends SzCoreEnvironment {
     } 
 
     /**
-     * Gets the {@link RefreshMode} describing how this instance will 
-     * handle refreshing the configuration (or not refreshing it).  The
-     * mode is set based on the value for the {@linkplain 
-     * Builder#getConfigRefreshPeriod() configuration refresh period}
-     * provided to the {@link Builder} via {@link 
-     * Builder#configRefreshPeriod(Duration)}.
-     * 
-     * @return The {@link RefreshMode} describing how this instance will
-     *         handle refreshing the configuration (or not).
-     * 
-     * @see #getConfigRefreshPeriod()
-     * @see Builder#configRefreshPeriod(Duration)
-     * @see Builder#getConfigRefreshPeriod()
-     * @see RefreshMode
+     * {@inheritDoc}
      */
+    @Override
     public RefreshMode getConfigRefreshMode() {
         Lock lock = null;
         try {
@@ -1195,20 +1150,9 @@ public class SzAutoCoreEnvironment extends SzCoreEnvironment {
     }
 
     /**
-     * Gets the {@link Duration} for the {@linkplain 
-     * Builder#getConfigRefreshPeriod() configuration refresh period}.
-     * 
-     * @return The {@link Duration} for the {@linkplain 
-     *         Builder#getConfigRefreshPeriod() configuration refresh
-     *         period}, or <code>null</code> if configuration refresh
-     *         is {@linkplain RefreshMode#DISABLED disabled}.
-     * 
-     * @see #getConfigRefreshMode()
-     * @see Builder#configRefreshPeriod(Duration)
-     * @see Builder#getConfigRefreshPeriod()
-     * @see RefreshMode
-     * 
+     * {@inheritDoc}
      */
+    @Override
     public Duration getConfigRefreshPeriod() {
         Lock lock = null;
         try {
@@ -1602,28 +1546,9 @@ public class SzAutoCoreEnvironment extends SzCoreEnvironment {
     }
 
     /**
-     * Performs the specified task using this instance's configured 
-     * thread pool and internal {@link ExecutorService} via
-     * {@link ExecutorService#submit(Callable)} or directly
-     * executes the task in the calling thread if the thread pool 
-     * has been disabled.
-     * 
-     * <p>
-     * This returned {@link Future} will provide the result of the
-     * task via {@link Future#get()} upon successful completion.
-     * </p>
-     * 
-     * <p>
-     * <b>NOTE:</b> Any Senzing Core SDK calls made using this 
-     * {@link SzAutoCoreEnvironment} instance will also be
-     * run in the same thread with no additional context switching.
-     * </p>
-     * 
-     * @param <T> The return type of the task.
-     * @param task The {@link Callable} task to perform.
-     * @return A {@link Future} representing the result of the
-     *         result of the task.
+     * {@inheritDoc}
      */
+    @Override
     public <T> Future<T> submitTask(Callable<T> task) {
         Lock lock = null;
         try {
@@ -1646,57 +1571,17 @@ public class SzAutoCoreEnvironment extends SzCoreEnvironment {
     }
 
     /**
-     * Performs the specified task using this instance's configured 
-     * thread pool and internal {@link ExecutorService} via 
-     * {@link ExecutorService#submit(Runnable)} or directly
-     * executes the task in the calling thread if the thread pool 
-     * has been disabled.
-     * 
-     * <p>
-     * This returned {@link Future} will provide a <code>null</code>
-     * value via {@link Future#get()} upon successful completion.
-     * </p>
-     * 
-     * <p>
-     * <b>NOTE:</b> Any Senzing Core SDK calls made using this 
-     * {@link SzAutoCoreEnvironment} instance will also be
-     * run in the same thread with no additional context switching.
-     * </p>
-     * 
-     * @param task The {@link Runnable} task to perform.
-     * @return A {@link Future} representing the result of the
-     *         result of the task that will provide the value
-     *         <code>null</code> upon successful completion.
+     * {@inheritDoc}
      */
+    @Override
     public Future<?> submitTask(Runnable task) {
         return this.submitTask(task, null);
     }
 
     /**
-     * Performs the specified task using this instance's configured 
-     * thread pool and internal {@link ExecutorService} via 
-     * {@link ExecutorService#submit(Runnable, Object)} or directly
-     * executes the task in the calling thread if the thread pool 
-     * has been disabled.
-     * 
-     * <p>
-     * This returned {@link Future} will provide the specified result
-     * value via {@link Future#get()} upon successful completion.
-     * </p>
-     * 
-     * <p>
-     * <b>NOTE:</b> Any Senzing Core SDK calls made using this 
-     * {@link SzAutoCoreEnvironment} instance will also be
-     * run in the same thread with no additional context switching.
-     * </p>
-     * 
-     * @param <T> The return type of the task.
-     * @param task The {@link Callable} task to perform.
-     * @param result The result to return from the returned 
-     *               {@link Future}.
-     * @return A {@link Future} representing the result of the
-     *         result of the task.
+     * {@inheritDoc}
      */
+    @Override
     public <T> Future<T> submitTask(Runnable task, T result) {
         Lock lock = null;
         try {
