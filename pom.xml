@@ -7,9 +7,10 @@
   <version>0.5.0</version>
   <name>Senzing Java Automatic Core SDK</name>
   <description>
-    The Java Automatic Core SDK provides enhancements over the Java Core SDK
-    by providing automatic handling of several functions that are useful when
-    used in a long-running multi-threaded server-side process.
+    The Senzing Automatic Core SDK for Java provides enhancements over the 
+    Senzing Core SDK for Java by providing automatic handling of several
+    functions that are useful when used in a long-running multi-threaded
+    server-side process.
   </description>
   <url>http://github.com/senzing-garage/sz-sdk-java-auto</url>
   <licenses>
