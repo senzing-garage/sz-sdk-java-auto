@@ -13,4 +13,3 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Initial stable pre-release version.
 - Adds `SzAutoEnvironment` interface so `SzAutoCoreEnvironment` functionality
   can be proxied.
-
