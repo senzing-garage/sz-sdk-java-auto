@@ -21,10 +21,12 @@ import com.senzing.sdk.SzEngine;
 import com.senzing.sdk.SzRecordKey;
 import com.senzing.sdk.core.SzCoreEnvironment;
 import com.senzing.sdk.SzException;
+import com.senzing.sdk.test.SdkTest;
 import com.senzing.sdk.test.StandardTestDataLoader;
 import com.senzing.sdk.test.SzEngineWriteTest;
 import com.senzing.sdk.test.SzRecord;
 import com.senzing.sdk.test.TestDataLoader;
+import com.senzing.util.SemanticVersion;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -44,6 +46,8 @@ public class EngineWriteTest
 
     private SzAutoCoreEnvironment env = null;
 
+    private SemanticVersion senzingVersion = null;
+
     @Override
     public TestData getTestData() {
         return this.testData;
@@ -52,6 +56,11 @@ public class EngineWriteTest
     @Override
     public SzEngine getEngine() throws SzException {
         return this.env.getEngine();
+    }
+
+    @Override
+    public SemanticVersion getSenzingVersion() {
+        return this.senzingVersion;
     }
 
     @BeforeAll
@@ -69,6 +78,8 @@ public class EngineWriteTest
                                              .concurrency(this.getConcurrency())
                                              .configRefreshPeriod(this.getConfigRefreshPeriod())
                                              .build();
+
+        this.senzingVersion = SdkTest.getSenzingVersion(this.env);
     }
 
     /**
