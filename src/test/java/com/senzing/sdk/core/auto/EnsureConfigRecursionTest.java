@@ -120,7 +120,7 @@ public class EnsureConfigRecursionTest extends AbstractAutoCoreTest
             fail("Failed to get engine", e);
         }
 
-        final SzEngine eng = engine;
+        final SzEngine finalEngine = engine;
 
         // capture stderr so the expected stack trace from execute()'s
         // e.printStackTrace() does not appear in the build output
@@ -134,13 +134,16 @@ public class EnsureConfigRecursionTest extends AbstractAutoCoreTest
                 // config retry on failure.  With persistent failures,
                 // the nested calls inside ensureConfigCurrent() also
                 // fail.  Before the fix this caused infinite recursion.
-                eng.addRecord(SzRecordKey.of("TEST", "REC1"),
-                              "{ \"NAME_FULL\": \"Test\" }");
+                finalEngine.addRecord(SzRecordKey.of("TEST", "REC1"),
+                                      "{ \"NAME_FULL\": \"Test\" }");
 
                 fail("Expected SzException from persistent failure");
 
             } catch (SzException e) {
                 // expected -- the ENSURING_CONFIG guard prevents recursion
+                // verify this is our simulated failure, not some other SzException
+                assertTrue(e.getMessage().contains("Simulated persistent failure"),
+                           "Unexpected SzException: " + e.getMessage());
 
             } catch (StackOverflowError e) {
                 fail("Infinite recursion between execute() and "
@@ -150,13 +153,5 @@ public class EnsureConfigRecursionTest extends AbstractAutoCoreTest
                 this.env.setAlwaysFail(false);
             }
         });
-
-        // verify the captured stderr contains the expected stack trace
-        // from the config refresh failure (printed by execute())
-        String errOutput = systemErr.getText();
-        assertTrue(errOutput.contains("Simulated persistent failure"),
-                   "Expected stderr to contain the simulated failure "
-                   + "stack trace from ensureConfigCurrent(), got: "
-                   + errOutput);
     }
 }
