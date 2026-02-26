@@ -2,6 +2,10 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Git Policy
+
+**Do not commit code.** Never run `git commit`, `git push`, or any command that creates or modifies commits. Instead, offer to generate a commit message so the user can commit manually.
+
 ## Project Overview
 
 This is the **Senzing Java Automatic Core SDK** (`sz-sdk-java-auto`), which extends the Senzing Java Core SDK with automatic handling features for long-running multi-threaded server applications. The key enhancements include:
