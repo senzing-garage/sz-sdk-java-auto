@@ -1,3 +1,9 @@
 {
-  "includeCoAuthoredBy": false
+  "includeCoAuthoredBy": false,
+  "permissions": {
+    "allow": [
+      "Bash(mvn compile:*)",
+      "Bash(export SENZING_PATH=/Users/barry/dev/senzing/sdk-releases/latest-prod && mvn test -Dtest=EnsureConfigRecursionTest 2>&1)"
+    ]
+  }
 }
