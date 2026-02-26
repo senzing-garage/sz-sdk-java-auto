@@ -50,7 +50,7 @@ public class EnsureConfigRecursionTest extends AbstractAutoCoreTest
      * {@link #doExecute(Callable)} level to trigger the recursion scenario.
      */
     private static class MockEnvironment extends SzAutoCoreEnvironment {
-        private static ThreadLocal<Boolean> ALWAYS_FAIL = new ThreadLocal<>() {
+        private static final ThreadLocal<Boolean> ALWAYS_FAIL = new ThreadLocal<>() {
             protected Boolean initialValue() {
                 return Boolean.FALSE;
             }
