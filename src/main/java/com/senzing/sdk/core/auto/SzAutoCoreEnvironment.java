@@ -95,6 +95,20 @@ public class SzAutoCoreEnvironment extends SzCoreEnvironment
     };
 
     /**
+     * Thread-local flag to indicate that the current thread is already
+     * inside {@link #ensureConfigCurrent()}.  This prevents infinite
+     * recursion when SDK methods called during config refresh (e.g.
+     * {@code getActiveConfigId()}, {@code getDefaultConfigId()},
+     * {@code reinitialize()}) route back through {@link #execute(Callable)}
+     * and would otherwise re-enter config-retry logic.
+     */
+    private static final ThreadLocal<Boolean> ENSURING_CONFIG = new ThreadLocal<>() {
+        protected Boolean initialValue() {
+            return Boolean.FALSE;
+        }
+    };
+
+    /**
      * The number of milliseconds to delay (if not notified) until checking
      * if we are destroyed.
      */
@@ -1072,66 +1086,72 @@ public class SzAutoCoreEnvironment extends SzCoreEnvironment
      * @throws SzException If a failure occurs.
      */
     protected boolean ensureConfigCurrent() throws SzException {
-        boolean result = false;
-        SzConfigManager configMgr = this.getConfigManager();
+        Boolean prevEnsuring = ENSURING_CONFIG.get();
+        ENSURING_CONFIG.set(Boolean.TRUE);
+        try {
+            boolean result = false;
+            SzConfigManager configMgr = this.getConfigManager();
 
-        TrapDestroyed<Long> getActiveConfigId = new TrapDestroyed<>(
-            () -> this.getActiveConfigId(), -1L);
+            TrapDestroyed<Long> getActiveConfigId = new TrapDestroyed<>(
+                () -> this.getActiveConfigId(), -1L);
 
-        TrapDestroyed<Long> getDefaultConfigId = new TrapDestroyed<>(
-            () -> configMgr.getDefaultConfigId(), -1L);
+            TrapDestroyed<Long> getDefaultConfigId = new TrapDestroyed<>(
+                () -> configMgr.getDefaultConfigId(), -1L);
 
-        // NOTE: there is a possibility for a race condition here
-        // where the active config ID or default config ID change
-        // after we retrieved them.  If the active config ID changes
-        // (presumably to the new default config ID), then 
-        // reinitializing should have no effect.  If the default 
-        // config ID changes then we will just update again on the 
-        // next go around of the loop until the maximum tries exceeded
-        for (int tryCount = 0;
-             (tryCount <= MAX_REINITIALIZE_COUNT && (!this.isDestroyed()));
-             tryCount++)
-        {
-            // get the active and default config ID's
-            long activeConfigId = getActiveConfigId.call();
-            long defaultConfigId = getDefaultConfigId.call();
-            
-            // see if there is no need to refresh the configuration
-            if (this.isDestroyed() || (activeConfigId == defaultConfigId)) {
-                break;
+            // NOTE: there is a possibility for a race condition here
+            // where the active config ID or default config ID change
+            // after we retrieved them.  If the active config ID changes
+            // (presumably to the new default config ID), then
+            // reinitializing should have no effect.  If the default
+            // config ID changes then we will just update again on the
+            // next go around of the loop until the maximum tries exceeded
+            for (int tryCount = 0;
+                 (tryCount <= MAX_REINITIALIZE_COUNT && (!this.isDestroyed()));
+                 tryCount++)
+            {
+                // get the active and default config ID's
+                long activeConfigId = getActiveConfigId.call();
+                long defaultConfigId = getDefaultConfigId.call();
+
+                // see if there is no need to refresh the configuration
+                if (this.isDestroyed() || (activeConfigId == defaultConfigId)) {
+                    break;
+                }
+
+                // check if we have exceeded our number of retries
+                if (tryCount >= MAX_REINITIALIZE_COUNT) {
+                    System.err.println(
+                        "*** WARNING: Default configuration is constantly changing.  Could not reinitialize "
+                        + "to the latest default configuration ID after " + tryCount + " attempts.  "
+                        + "activeConfigId=[ " + activeConfigId + " ], defaultConfigId=[ "
+                        + defaultConfigId + " ]");
+
+                    // allow the caller to retry anyway since we did update the config
+                    return true;
+                }
+
+                // attempt to reinitialize (we may be destroyed at this point)
+                try {
+                    this.reinitialize(defaultConfigId);
+
+                } catch (SzEnvironmentDestroyedException e) {
+                    break;
+                }
+
+                // increment the configuration refresh count
+                synchronized (this.monitor) {
+                    this.configRefreshCount++;
+                }
+
+                // set the result to true, but loop through to double-check
+                result = true;
             }
 
-            // check if we have exceeded our number of retries
-            if (tryCount >= MAX_REINITIALIZE_COUNT) {
-                System.err.println(
-                    "*** WARNING: Default configuration is constantly changing.  Could not reinitialize "
-                    + "to the latest default configuration ID after " + tryCount + " attempts.  "
-                    + "activeConfigId=[ " + activeConfigId + " ], defaultConfigId=[ " 
-                    + defaultConfigId + " ]");
-
-                // allow the caller to retry anyway since we did update the config
-                return true;
-            }
-
-            // attempt to reinitialize (we may be destroyed at this point)
-            try {
-                this.reinitialize(defaultConfigId);
-
-            } catch (SzEnvironmentDestroyedException e) {
-                break;
-            }
-
-            // increment the configuration refresh count
-            synchronized (this.monitor) {
-                this.configRefreshCount++;
-            }
-
-            // set the result to true, but loop through to double-check
-            result = true;
+            // return the result
+            return result;
+        } finally {
+            ENSURING_CONFIG.set(prevEnsuring);
         }
-
-        // return the result
-        return result;
     } 
 
     /**
@@ -1439,10 +1459,12 @@ public class SzAutoCoreEnvironment extends SzCoreEnvironment
             boolean retryFailure = false;
 
             try {
-                // if we are not refreshing the configuration or the
+                // if we are not refreshing the configuration, we are
+                // already ensuring the config is current, or the
                 // retry flag is not set then just execute the task
                 if (this.refreshMode == RefreshMode.DISABLED
-                    || (!Boolean.TRUE.equals(CONFIG_RETRY_FLAG.get()))) 
+                    || Boolean.TRUE.equals(ENSURING_CONFIG.get())
+                    || (!Boolean.TRUE.equals(CONFIG_RETRY_FLAG.get())))
                 {
                     return this.executeWithBasicRetry(task);
                 }

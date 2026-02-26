@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 [markdownlint](https://dlaa.me/markdownlint/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.1] - 2026-02-25
+
+### Fixed in version 0.5.1
+
+- Fixed `StackOverflowError` caused by infinite recursion between `execute()`
+  and `ensureConfigCurrent()` when config refresh is enabled and a persistent
+  failure occurs during a `@SzConfigRetryable` method.
+
 ## [0.5.0] - 2025-12-03
 
 ### Changes in version 0.5.0
