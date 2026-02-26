@@ -30,3 +30,7 @@ target/**
 !.vscode/cspell.json
 *.code-workspace
 .history
+
+# Claude Code
+.claude/settings.local.json
+
