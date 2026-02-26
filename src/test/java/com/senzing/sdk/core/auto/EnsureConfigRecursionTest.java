@@ -13,6 +13,9 @@ import com.senzing.sdk.SzEngine;
 import com.senzing.sdk.SzException;
 import com.senzing.sdk.SzRecordKey;
 
+import uk.org.webcompere.systemstubs.stream.SystemErr;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
 import static org.junit.jupiter.api.TestInstance.Lifecycle;
@@ -109,7 +112,7 @@ public class EnsureConfigRecursionTest extends AbstractAutoCoreTest
      */
     @Test
     @Order(10)
-    public void testNoRecursionOnPersistentFailure() {
+    public void testNoRecursionOnPersistentFailure() throws Exception {
         SzEngine engine = null;
         try {
             engine = this.env.getEngine();
@@ -117,28 +120,43 @@ public class EnsureConfigRecursionTest extends AbstractAutoCoreTest
             fail("Failed to get engine", e);
         }
 
-        // enable persistent failures so every doExecute() throws
-        this.env.setAlwaysFail(true);
-        try {
-            // addRecord is @SzConfigRetryable -- the proxy sets
-            // CONFIG_RETRY_FLAG=true, so execute() will attempt
-            // config retry on failure.  With persistent failures,
-            // the nested calls inside ensureConfigCurrent() also
-            // fail.  Before the fix this caused infinite recursion.
-            engine.addRecord(SzRecordKey.of("TEST", "REC1"),
-                             "{ \"NAME_FULL\": \"Test\" }");
+        final SzEngine eng = engine;
 
-            fail("Expected SzException from persistent failure");
+        // capture stderr so the expected stack trace from execute()'s
+        // e.printStackTrace() does not appear in the build output
+        SystemErr systemErr = new SystemErr();
+        systemErr.execute(() -> {
+            // enable persistent failures so every doExecute() throws
+            this.env.setAlwaysFail(true);
+            try {
+                // addRecord is @SzConfigRetryable -- the proxy sets
+                // CONFIG_RETRY_FLAG=true, so execute() will attempt
+                // config retry on failure.  With persistent failures,
+                // the nested calls inside ensureConfigCurrent() also
+                // fail.  Before the fix this caused infinite recursion.
+                eng.addRecord(SzRecordKey.of("TEST", "REC1"),
+                              "{ \"NAME_FULL\": \"Test\" }");
 
-        } catch (SzException e) {
-            // expected -- the ENSURING_CONFIG guard prevents recursion
+                fail("Expected SzException from persistent failure");
 
-        } catch (StackOverflowError e) {
-            fail("Infinite recursion between execute() and "
-                 + "ensureConfigCurrent() -- StackOverflowError thrown");
+            } catch (SzException e) {
+                // expected -- the ENSURING_CONFIG guard prevents recursion
 
-        } finally {
-            this.env.setAlwaysFail(false);
-        }
+            } catch (StackOverflowError e) {
+                fail("Infinite recursion between execute() and "
+                     + "ensureConfigCurrent() -- StackOverflowError thrown");
+
+            } finally {
+                this.env.setAlwaysFail(false);
+            }
+        });
+
+        // verify the captured stderr contains the expected stack trace
+        // from the config refresh failure (printed by execute())
+        String errOutput = systemErr.getText();
+        assertTrue(errOutput.contains("Simulated persistent failure"),
+                   "Expected stderr to contain the simulated failure "
+                   + "stack trace from ensureConfigCurrent(), got: "
+                   + errOutput);
     }
 }
