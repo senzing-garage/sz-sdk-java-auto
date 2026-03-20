@@ -16,6 +16,8 @@ updates:
     schedule:
       interval: "daily"
   - package-ecosystem: "maven"
+    assignees:
+      - "barrycaceres"
     cooldown:
       default-days: 21
     directory: "/"
