@@ -7,6 +7,10 @@ on:
     - cron: "15 7 * * *"
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
+
 permissions: {}
 
 jobs:
@@ -88,12 +92,11 @@ jobs:
           script: |
             core.setFailed('Overall coverage is less than 80%!')
 
-  slack-notification:
-    needs: [maven-windows]
-    if: ${{ always() && contains(fromJSON('["failure", "cancelled"]'), needs.maven-windows.result ) && github.event_name == 'schedule' }}
-    secrets:
-      SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
-      SLACK_CHANNEL: ${{ secrets.SLACK_CHANNEL }}
-    uses: senzing-factory/build-resources/.github/workflows/build-failure-slack-notification.yaml@v4
-    with:
-      job-status: ${{ needs.maven-windows.result }}
+      - name: Notify Slack on failure
+        if: (failure() || cancelled()) && (github.ref_name == github.event.repository.default_branch || github.event_name == 'schedule')
+        uses: senzing-factory/build-resources/slack-failure-notification@v4
+        with:
+          job-status: ${{ job.status }}
+          slack-channel: ${{ secrets.SLACK_CHANNEL }}
+          slack-bot-token: ${{ secrets.SLACK_BOT_TOKEN }}
+          additional-info: "SDK: ${{ matrix.senzingsdk-version }} | Java: ${{ matrix.java-version }}"
