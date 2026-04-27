@@ -2,11 +2,15 @@ name: maven linux
 
 on:
   push:
-    branches-ignore: [main]
+    branches: [main]
   pull_request:
     branches: [main]
   schedule:
     - cron: "15 7 * * *"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
 
 permissions: {}
 
@@ -33,11 +37,20 @@ jobs:
         senzingsdk-version: ${{ fromJSON(needs.sdk-versions.outputs.senzingsdk-versions) }}
 
     steps:
+      - name: Generate token for private submodules
+        id: app-token
+        uses: actions/create-github-app-token@v3.1.1
+        with:
+          client-id: ${{ secrets.SENZING_GITHUB_SUBMODULE_READ_APP_ID }}
+          owner: ${{ github.repository_owner }}
+          private-key: ${{ secrets.SENZING_GITHUB_SUBMODULE_READ_APP_KEY }}
+
       - name: checkout repository
         uses: actions/checkout@v6
         with:
           persist-credentials: false
           submodules: recursive
+          token: ${{ steps.app-token.outputs.token }}
 
       - uses: actions/setup-java@v5
         with:
@@ -79,12 +92,11 @@ jobs:
           script: |
             core.setFailed('Overall coverage is less than 80%!')
 
-  slack-notification:
-    needs: [maven-linux]
-    if: ${{ always() && contains(fromJSON('["failure", "cancelled"]'), needs.maven-linux.result ) && github.event_name == 'schedule' }}
-    secrets:
-      SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
-      SLACK_CHANNEL: ${{ secrets.SLACK_CHANNEL }}
-    uses: senzing-factory/build-resources/.github/workflows/build-failure-slack-notification.yaml@v4
-    with:
-      job-status: ${{ needs.maven-linux.result }}
+      - name: Notify Slack on failure
+        if: (failure() || cancelled()) && (github.ref_name == github.event.repository.default_branch || github.event_name == 'schedule')
+        uses: senzing-factory/build-resources/slack-failure-notification@v4
+        with:
+          job-status: ${{ job.status }}
+          slack-channel: ${{ secrets.SLACK_CHANNEL }}
+          slack-bot-token: ${{ secrets.SLACK_BOT_TOKEN }}
+          additional-info: "SDK: ${{ matrix.senzingsdk-version }} | Java: ${{ matrix.java-version }}"
