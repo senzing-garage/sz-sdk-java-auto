@@ -10,44 +10,37 @@ on:
 permissions: {}
 
 jobs:
-  sdk-versions:
-    runs-on: ubuntu-latest
-    outputs:
-      senzingsdk-versions: ${{ steps.cfg.outputs.senzingsdk-versions }}
-    steps:
-      - id: cfg
-        uses: senzing-factory/build-resources/sdk-versions@v4
-
   docs:
-    needs: sdk-versions
     permissions:
       contents: write
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        senzingsdk-version: ${{ fromJSON(needs.sdk-versions.outputs.senzingsdk-versions) }}
-        include:
-          - java-version: "21"
-            java-distribution: "temurin"
 
     steps:
+      - name: Generate token for private submodules
+        id: app-token
+        uses: actions/create-github-app-token@v3
+        with:
+          app-id: ${{ secrets.SENZING_GITHUB_SUBMODULE_READ_APP_ID }}
+          owner: ${{ github.repository_owner }}
+          private-key: ${{ secrets.SENZING_GITHUB_SUBMODULE_READ_APP_KEY }}
+
       - name: Checkout repository
         uses: actions/checkout@v6
         with:
           persist-credentials: false
           submodules: recursive
+          token: ${{ steps.app-token.outputs.token }}
 
       - uses: actions/setup-java@v5
         with:
-          java-version: ${{ matrix.java-version }}
-          distribution: ${{ matrix.java-distribution }}
+          java-version: "21"
+          distribution: "temurin"
 
       - name: install Senzing runtime
         uses: senzing-factory/github-action-install-senzing-sdk@v4
         with:
           packages-to-install: "senzingsdk-runtime senzingsdk-setup"
-          senzingsdk-version: ${{ matrix.senzingsdk-version }}
+          senzingsdk-version: "production-v4"
 
       - name: Build with Maven
         env:

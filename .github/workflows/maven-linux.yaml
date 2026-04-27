@@ -33,11 +33,20 @@ jobs:
         senzingsdk-version: ${{ fromJSON(needs.sdk-versions.outputs.senzingsdk-versions) }}
 
     steps:
+      - name: Generate token for private submodules
+        id: app-token
+        uses: actions/create-github-app-token@v3
+        with:
+          app-id: ${{ secrets.SENZING_GITHUB_SUBMODULE_READ_APP_ID }}
+          owner: ${{ github.repository_owner }}
+          private-key: ${{ secrets.SENZING_GITHUB_SUBMODULE_READ_APP_KEY }}
+
       - name: checkout repository
         uses: actions/checkout@v6
         with:
           persist-credentials: false
           submodules: recursive
+          token: ${{ steps.app-token.outputs.token }}
 
       - uses: actions/setup-java@v5
         with:
