@@ -1,0 +1,63 @@
+name: Trivy dependency scan
+
+on:
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
+
+permissions: {}
+
+jobs:
+  dependency-scan:
+    name: Scan Dependencies
+    permissions:
+      contents: read
+      pull-requests: write
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Set up JDK
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Cache Maven packages
+        uses: actions/cache@v5.0.4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      - name: install Senzing runtime
+        uses: senzing-factory/github-action-install-senzing-sdk@v4
+        with:
+          packages-to-install: "senzingsdk-runtime senzingsdk-setup"
+          senzingsdk-version: "staging-v4"
+
+      # Generate the dependency tree so Trivy can resolve transitive deps
+      - name: Build and resolve dependencies
+        env:
+          SENZING_PATH: "/opt/senzing"
+        run: |
+          java -jar "$SENZING_PATH"/er/sdk/java/sz-sdk.jar -x
+          mvn dependency:resolve -DskipTests --batch-mode
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@0.35.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          scanners: vuln
+          severity: CRITICAL,HIGH
+          exit-code: 1
+          format: table
