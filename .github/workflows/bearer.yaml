@@ -11,7 +11,7 @@ concurrency:
 permissions: {}
 
 jobs:
-  rule_check:
+  rule_check_src:
     permissions:
       contents: read
     runs-on: ubuntu-latest
