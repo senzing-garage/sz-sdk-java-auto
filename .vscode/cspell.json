@@ -31,6 +31,8 @@
     "Pcheckstyle",
     "peaceiris",
     "Pjacoco",
+    "Prelease",
+    "Pspotbugs",
     "reinit",
     "Reinitializer",
     "Retryable",
@@ -40,7 +42,8 @@
     "stackoverflow",
     "SZDIAGNOSTIC",
     "temurin",
-    "USERPROFILE"
+    "USERPROFILE",
+    "xerial"
   ],
   "ignorePaths": [".git/**", "**/test/**", "Makefile", "pom.xml"]
 }
