@@ -37,7 +37,7 @@ jobs:
           distribution: "temurin"
 
       - name: install Senzing runtime
-        uses: senzing-factory/github-action-install-senzing-sdk@v4
+        uses: senzing-factory/github-action-install-senzing-sdk@v5
         with:
           packages-to-install: "senzingsdk-runtime senzingsdk-setup"
           senzingsdk-version: "production-v4"
