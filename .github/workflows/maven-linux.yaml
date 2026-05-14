@@ -42,8 +42,9 @@ jobs:
         uses: actions/create-github-app-token@v3.1.1
         with:
           client-id: ${{ secrets.SENZING_GITHUB_SUBMODULE_READ_APP_ID }}
-          owner: ${{ github.repository_owner }}
+          owner: ${{ github.repository_owner }} # zizmor: ignore[github-app]
           private-key: ${{ secrets.SENZING_GITHUB_SUBMODULE_READ_APP_KEY }}
+          permission-contents: read
 
       - name: checkout repository
         uses: actions/checkout@v6

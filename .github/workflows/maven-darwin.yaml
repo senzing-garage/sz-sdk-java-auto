@@ -41,8 +41,9 @@ jobs:
         uses: actions/create-github-app-token@v3.1.1
         with:
           client-id: ${{ secrets.SENZING_GITHUB_SUBMODULE_READ_APP_ID }}
-          owner: ${{ github.repository_owner }}
+          owner: ${{ github.repository_owner }} # zizmor: ignore[github-app]
           private-key: ${{ secrets.SENZING_GITHUB_SUBMODULE_READ_APP_KEY }}
+          permission-contents: read
 
       - name: checkout repository
         uses: actions/checkout@v6
@@ -63,8 +64,9 @@ jobs:
         with:
           client-id: ${{ secrets.SENZINGSDK_STAGING_CLIENT_ID }}
           private-key: ${{ secrets.SENZINGSDK_STAGING_APP_KEY }}
-          owner: senzing-factory
+          owner: senzing-factory # zizmor: ignore[github-app]
           repositories: homebrew-senzingsdk-staging
+          permission-contents: read
 
       - name: install Senzing SDK
         uses: senzing-factory/github-action-install-senzing-sdk@v5
