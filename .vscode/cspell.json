@@ -31,6 +31,8 @@
     "Pcheckstyle",
     "peaceiris",
     "Pjacoco",
+    "Prelease",
+    "Pspotbugs",
     "reinit",
     "Reinitializer",
     "Retryable",
@@ -41,6 +43,7 @@
     "SZDIAGNOSTIC",
     "temurin",
     "USERPROFILE",
+    "xerial",
     "zizmor"
   ],
   "ignorePaths": [
