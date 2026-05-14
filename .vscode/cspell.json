@@ -40,7 +40,13 @@
     "stackoverflow",
     "SZDIAGNOSTIC",
     "temurin",
-    "USERPROFILE"
+    "USERPROFILE",
+    "zizmor"
   ],
-  "ignorePaths": [".git/**", "**/test/**", "Makefile", "pom.xml"]
+  "ignorePaths": [
+    ".git/**",
+    "**/test/**",
+    "Makefile",
+    "pom.xml"
+  ]
 }
