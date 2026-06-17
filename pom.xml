@@ -48,6 +48,11 @@
     <maven.compiler.target>17</maven.compiler.target>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    <!-- Declared empty so the surefire `<argLine>@{argLine} ...</argLine>`
+         late-bound reference always resolves. The jacoco profile's
+         prepare-agent goal overwrites this with the JaCoCo agent flags
+         during tests run under -Pjacoco. -->
+    <argLine></argLine>
   </properties>
 
   <dependencies>
@@ -236,6 +241,7 @@
         <version>3.5.5</version>
         <configuration>
           <jvm>${project.build.directory}/java-wrapper/bin/java-wrapper.bat</jvm>
+          <argLine>@{argLine} -XX:+EnableDynamicAgentLoading -Xshare:off</argLine>
           <includes>
             <include>**/*Test.java</include>
             <include>**/*Tests.java</include>
@@ -366,11 +372,11 @@
             <artifactId>maven-checkstyle-plugin</artifactId>
             <version>3.6.0</version>
             <configuration>
+              <configLocation>${project.basedir}/.java-coding-standards/checkstyle/senzing-checkstyle.xml</configLocation>
               <encoding>UTF-8</encoding>
               <consoleOutput>true</consoleOutput>
               <failsOnError>true</failsOnError>
               <linkXRef>false</linkXRef>
-              <suppressionsLocation>checkstyle-suppressions.xml</suppressionsLocation>
             </configuration>
             <executions>
               <execution>
