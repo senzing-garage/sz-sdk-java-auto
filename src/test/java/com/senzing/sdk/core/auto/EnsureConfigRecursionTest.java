@@ -8,18 +8,14 @@ import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
-
 import com.senzing.sdk.SzEngine;
 import com.senzing.sdk.SzException;
 import com.senzing.sdk.SzRecordKey;
-
 import uk.org.webcompere.systemstubs.stream.SystemErr;
-
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
 import static org.junit.jupiter.api.TestInstance.Lifecycle;
-
 import java.util.concurrent.Callable;
 
 /**
@@ -28,17 +24,17 @@ import java.util.concurrent.Callable;
  * {@link SzAutoCoreEnvironment#ensureConfigCurrent()}.
  *
  * <p>
- * When config refresh is enabled and {@code CONFIG_RETRY_FLAG} is set (via
- * a {@code @SzConfigRetryable} proxy), a persistent failure caused
+ * When config refresh is enabled and {@code CONFIG_RETRY_FLAG} is set (via a
+ * {@code @SzConfigRetryable} proxy), a persistent failure caused
  * {@code execute()} to call {@code ensureConfigCurrent()}, which called
  * {@code getActiveConfigId()} / {@code getDefaultConfigId()} back through
  * the overridden {@code execute()}, which called
  * {@code ensureConfigCurrent()} again, ad&nbsp;infinitum.
  *
  * <p>
- * The fix uses the {@code ENSURING_CONFIG} thread-local guard to prevent
- * nested {@code execute()} calls from re-entering the config-retry path
- * while {@code ensureConfigCurrent()} is already in progress.
+ * The fix uses the {@code ENSURING_CONFIG} thread-local guard to prevent nested
+ * {@code execute()} calls from re-entering the config-retry path while {@code
+ * ensureConfigCurrent()} is already in progress.
  */
 @TestInstance(Lifecycle.PER_CLASS)
 @Execution(ExecutionMode.SAME_THREAD)
@@ -49,26 +45,32 @@ public class EnsureConfigRecursionTest extends AbstractAutoCoreTest
      * A mock environment that can simulate persistent failures at the
      * {@link #doExecute(Callable)} level to trigger the recursion scenario.
      */
-    private static class MockEnvironment extends SzAutoCoreEnvironment {
-        private static final ThreadLocal<Boolean> ALWAYS_FAIL = new ThreadLocal<>() {
-            protected Boolean initialValue() {
-                return Boolean.FALSE;
-            }
-        };
+    private static class MockEnvironment extends SzAutoCoreEnvironment
+    {
+        private static final ThreadLocal<Boolean> ALWAYS_FAIL
+            = new ThreadLocal<>() {
+                protected Boolean initialValue()
+                {
+                    return Boolean.FALSE;
+                }
+            };
 
-        public MockEnvironment(String instanceName, String settings) {
+        public MockEnvironment(String instanceName, String settings)
+        {
             super(SzAutoCoreEnvironment.newAutoBuilder()
                     .settings(settings).instanceName(instanceName)
                     .configRefreshPeriod(REACTIVE_CONFIG_REFRESH)
                     .concurrency(null));
         }
 
-        public void setAlwaysFail(boolean fail) {
+        public void setAlwaysFail(boolean fail)
+        {
             ALWAYS_FAIL.set(fail);
         }
 
         @Override
-        protected <T> T doExecute(Callable<T> task) throws Exception
+        protected <T> T doExecute(Callable<T> task)
+            throws Exception
         {
             if (Boolean.TRUE.equals(ALWAYS_FAIL.get())) {
                 throw new SzException("Simulated persistent failure");
@@ -83,16 +85,18 @@ public class EnsureConfigRecursionTest extends AbstractAutoCoreTest
     private MockEnvironment env = null;
 
     @BeforeAll
-    public void initializeEnvironment() {
+    public void initializeEnvironment()
+    {
         this.beginTests();
         this.initializeTestEnvironment();
-        String settings     = this.getRepoSettings();
+        String settings = this.getRepoSettings();
         String instanceName = this.getClass().getSimpleName();
         this.env = new MockEnvironment(instanceName, settings);
     }
 
     @AfterAll
-    public void teardownEnvironment() {
+    public void teardownEnvironment()
+    {
         try {
             if (this.env != null) {
                 this.env.destroy();
@@ -112,7 +116,9 @@ public class EnsureConfigRecursionTest extends AbstractAutoCoreTest
      */
     @Test
     @Order(10)
-    public void testNoRecursionOnPersistentFailure() throws Exception {
+    public void testNoRecursionOnPersistentFailure()
+        throws Exception
+    {
         SzEngine engine = null;
         try {
             engine = this.env.getEngine();
