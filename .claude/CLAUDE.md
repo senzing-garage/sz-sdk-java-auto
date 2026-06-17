@@ -4,7 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Git Policy
 
-**Do not commit code.** Never run `git commit`, `git push`, or any command that creates or modifies commits. Instead, offer to generate a commit message so the user can commit manually.
+Claude may edit files, create branches, commit, and push changes directly using
+clear, detailed commit messages. Prefer working on a feature branch rather than
+committing directly to `main`. Do not merge pull requests without confirmation.
 
 ## Project Overview
 
