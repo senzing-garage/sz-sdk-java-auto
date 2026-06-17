@@ -51,6 +51,6 @@ features for long-running, multi-threaded, server-side applications.
   prevent re-entrant recursion during config refresh.
 - **`ReentrantReadWriteLock`** to coordinate normal operations against
   refresh/destroy.
-- **Builder pattern** with type-safe generics for subclassing.
+- **Builder pattern** with type-safe generics for extensibility.
 
 > Garage project: experimental, not production-supported.
