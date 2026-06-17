@@ -20,6 +20,8 @@ updates:
       - "barrycaceres"
     cooldown:
       default-days: 21
+      exclude:
+        - "com.senzing:*"
     directory: "/"
     schedule:
       interval: "daily"

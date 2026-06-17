@@ -43,7 +43,13 @@
     "SZDIAGNOSTIC",
     "temurin",
     "USERPROFILE",
-    "xerial"
+    "xerial",
+    "zizmor"
   ],
-  "ignorePaths": [".git/**", "**/test/**", "Makefile", "pom.xml"]
+  "ignorePaths": [
+    ".git/**",
+    "**/test/**",
+    "Makefile",
+    "pom.xml"
+  ]
 }
