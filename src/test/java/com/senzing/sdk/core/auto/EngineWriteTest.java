@@ -2,7 +2,6 @@ package com.senzing.sdk.core.auto;
 
 import java.util.List;
 import java.util.ArrayList;
-
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.TestInstance;
@@ -13,10 +12,8 @@ import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-
 import static org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
 import static org.junit.jupiter.api.TestInstance.Lifecycle;
-
 import com.senzing.sdk.SzEngine;
 import com.senzing.sdk.SzRecordKey;
 import com.senzing.sdk.core.SzCoreEnvironment;
@@ -27,7 +24,6 @@ import com.senzing.sdk.test.SzEngineWriteTest;
 import com.senzing.sdk.test.SzRecord;
 import com.senzing.sdk.test.TestDataLoader;
 import com.senzing.util.SemanticVersion;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 import static com.senzing.sdk.SzFlag.*;
@@ -38,9 +34,8 @@ import static com.senzing.sdk.SzFlag.*;
 @TestInstance(Lifecycle.PER_CLASS)
 @Execution(ExecutionMode.SAME_THREAD)
 @TestMethodOrder(OrderAnnotation.class)
-public class EngineWriteTest 
-    extends AbstractAutoCoreTest 
-    implements SzEngineWriteTest
+public class EngineWriteTest
+    extends AbstractAutoCoreTest implements SzEngineWriteTest
 {
     private TestData testData = new TestData();
 
@@ -49,35 +44,37 @@ public class EngineWriteTest
     private SemanticVersion senzingVersion = null;
 
     @Override
-    public TestData getTestData() {
+    public TestData getTestData()
+    {
         return this.testData;
     }
 
     @Override
-    public SzEngine getEngine() throws SzException {
+    public SzEngine getEngine()
+        throws SzException
+    {
         return this.env.getEngine();
     }
 
     @Override
-    public SemanticVersion getSenzingVersion() {
+    public SemanticVersion getSenzingVersion()
+    {
         return this.senzingVersion;
     }
 
     @BeforeAll
-    public void initializeEnvironment() {
+    public void initializeEnvironment()
+    {
         this.beginTests();
         this.initializeTestEnvironment();
         String settings = this.getRepoSettings();
-        
+
         String instanceName = this.getClass().getSimpleName();
-        
-        this.env = SzAutoCoreEnvironment.newAutoBuilder()
-                                             .instanceName(instanceName)
-                                             .settings(settings)
-                                             .verboseLogging(false)
-                                             .concurrency(this.getConcurrency())
-                                             .configRefreshPeriod(this.getConfigRefreshPeriod())
-                                             .build();
+
+        this.env = SzAutoCoreEnvironment.newAutoBuilder().instanceName(
+            instanceName).settings(settings).verboseLogging(false).concurrency(
+            this.getConcurrency()).configRefreshPeriod(
+            this.getConfigRefreshPeriod()).build();
 
         this.senzingVersion = SdkTest.getSenzingVersion(this.env);
     }
@@ -85,27 +82,25 @@ public class EngineWriteTest
     /**
      * Overridden to configure some data sources.
      */
-    protected void prepareRepository() {
+    protected void prepareRepository()
+    {
         String instanceName = this.getInstanceName();
-        String settings     = this.getRepoSettings();
+        String settings = this.getRepoSettings();
 
-        SzCoreEnvironment env = SzCoreEnvironment.newBuilder()
-                                                 .instanceName(instanceName)
-                                                 .settings(settings)
-                                                 .verboseLogging(false)
-                                                 .build();
+        SzCoreEnvironment env = SzCoreEnvironment.newBuilder().instanceName(
+            instanceName).settings(settings).verboseLogging(false).build();
         try {
             TestDataLoader loader = new StandardTestDataLoader(env);
-        
+
             this.testData.loadData(loader);
-        
         } finally {
             env.destroy();
         }
     }
-    
+
     @AfterAll
-    public void teardownEnvironment() {
+    public void teardownEnvironment()
+    {
         try {
             if (this.env != null) {
                 this.env.destroy();
@@ -117,7 +112,8 @@ public class EngineWriteTest
         }
     }
 
-    public List<Arguments> getRecordPreviewDefaultArguments() {
+    public List<Arguments> getRecordPreviewDefaultArguments()
+    {
         List<Arguments> baseArgs = this.getRecordPreviewArguments();
 
         List<Arguments> defaultArgs = new ArrayList<>(baseArgs.size());
@@ -154,9 +150,10 @@ public class EngineWriteTest
                 fail("Unexpectedly failed getting entity by record", e);
             }
         });
-    }    
+    }
 
-    public List<Arguments> getAddRecordDefaultArguments() {
+    public List<Arguments> getAddRecordDefaultArguments()
+    {
         List<Arguments> baseArgs = this.getAddRecordArguments();
 
         List<Arguments> defaultArgs = new ArrayList<>(baseArgs.size());
@@ -193,9 +190,10 @@ public class EngineWriteTest
                 fail("Unexpectedly failed adding record", e);
             }
         });
-    }    
+    }
 
-    public List<Arguments> getReevaluateRecordDefaultArguments() {
+    public List<Arguments> getReevaluateRecordDefaultArguments()
+    {
         List<Arguments> baseArgs = this.getReevaluateRecordArguments();
 
         List<Arguments> defaultArgs = new ArrayList<>(baseArgs.size());
@@ -232,9 +230,10 @@ public class EngineWriteTest
                 fail("Unexpectedly failed reevaluating record", e);
             }
         });
-    }    
+    }
 
-    public List<Arguments> getReevaluateEntityDefaultArguments() {
+    public List<Arguments> getReevaluateEntityDefaultArguments()
+    {
         List<Arguments> baseArgs = this.getReevaluateEntityArguments();
 
         List<Arguments> defaultArgs = new ArrayList<>(baseArgs.size());
@@ -271,9 +270,10 @@ public class EngineWriteTest
                 fail("Unexpectedly failed reevaluating entity", e);
             }
         });
-    }    
+    }
 
-    public List<Arguments> getDeleteRecordDefaultArguments() {
+    public List<Arguments> getDeleteRecordDefaultArguments()
+    {
         List<Arguments> baseArgs = this.getDeleteRecordArguments();
 
         List<Arguments> defaultArgs = new ArrayList<>(baseArgs.size());

@@ -9,15 +9,12 @@ import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.Random;
-
 import java.util.concurrent.ThreadPoolExecutor;
-
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
-
 import static java.util.concurrent.TimeUnit.SECONDS;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.AfterAll;
@@ -29,7 +26,6 @@ import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.junit.jupiter.params.provider.Arguments;
-
 import static org.junit.jupiter.api.TestInstance.Lifecycle;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -39,9 +35,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
-
 import org.junit.jupiter.api.Test;
-
 import com.senzing.sdk.SzProduct;
 import com.senzing.sdk.core.SzCoreEnvironment;
 import com.senzing.sdk.core.auto.Reinitializer;
@@ -54,7 +48,6 @@ import com.senzing.sdk.SzEngine;
 import com.senzing.sdk.SzEnvironment;
 import com.senzing.sdk.SzDiagnostic;
 import com.senzing.sdk.SzException;
-
 import static com.senzing.sdk.core.SzCoreEnvironment.*;
 import static com.senzing.sdk.core.auto.SzAutoCoreEnvironment.DISABLED_CONCURRENCY;
 import static com.senzing.sdk.core.auto.SzAutoCoreEnvironment.DISABLED_CONFIG_REFRESH;
@@ -65,9 +58,10 @@ import static com.senzing.sdk.test.SdkTest.*;
 
 @TestInstance(Lifecycle.PER_CLASS)
 @Execution(ExecutionMode.SAME_THREAD)
-public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest {
+public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest
+{
     private static final String EMPLOYEES_DATA_SOURCE = "EMPLOYEES";
-    
+
     private static final String CUSTOMERS_DATA_SOURCE = "CUSTOMERS";
 
     private long configId1 = 0L;
@@ -76,18 +70,17 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest {
 
     private long configId3 = 0L;
 
-    @BeforeAll public void initializeEnvironment() {
+    @BeforeAll
+    public void initializeEnvironment()
+    {
         this.beginTests();
         this.initializeTestEnvironment();
-        String settings     = this.getRepoSettings();
+        String settings = this.getRepoSettings();
         String instanceName = this.getInstanceName();
 
-        SzEnvironment env = SzCoreEnvironment.newBuilder()
-                                             .instanceName(instanceName)
-                                             .settings(settings)
-                                             .verboseLogging(false)
-                                             .build();
-        
+        SzEnvironment env = SzCoreEnvironment.newBuilder().instanceName(
+            instanceName).settings(settings).verboseLogging(false).build();
+
         try {
             String config1 = this.createConfig(env, CUSTOMERS_DATA_SOURCE);
             String config2 = this.createConfig(env, EMPLOYEES_DATA_SOURCE);
@@ -98,16 +91,16 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest {
             this.configId1 = configMgr.registerConfig(config1, "Config 1");
             this.configId2 = configMgr.registerConfig(config2, "Config 2");
             this.configId3 = configMgr.registerConfig(config3, "Config 3");
-            
         } catch (Exception e) {
             fail(e);
-
         } finally {
             env.destroy();
-        }   
+        }
     }
 
-    @AfterAll public void teardownEnvironment() {
+    @AfterAll
+    public void teardownEnvironment()
+    {
         try {
             this.teardownTestEnvironment();
         } finally {
@@ -116,7 +109,8 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest {
     }
 
     @Test
-    void testNewDefaultBuilder() {
+    void testNewDefaultBuilder()
+    {
         this.performTest(() -> {    
             SzAutoCoreEnvironment env  = null;
             
@@ -136,13 +130,12 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest {
         });
     }
 
-
     @ParameterizedTest
-    @CsvSource({"true,Custom Instance,0,0", "false,Custom Instance,4,2000", "true,  ,0,3000", "false,,6,0"})
+    @CsvSource({ "true,Custom Instance,0,0", "false,Custom Instance,4,2000", "true,  ,0,3000", "false,,6,0" })
     void testNewCustomBuilder(boolean   verboseLogging, 
                               String    instanceName,
                               int       concurrency,
-                              long      duration) 
+                              long      duration)
     {
         this.performTest(() -> {
             String settings = this.getRepoSettings();
@@ -192,7 +185,8 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest {
     }
 
     @Test
-    void testSingletonViolation() {
+    void testSingletonViolation()
+    {
         this.performTest(() -> {
             SzAutoCoreEnvironment env1 = null;
             SzAutoCoreEnvironment env2 = null;
@@ -223,7 +217,8 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest {
     }
 
     @Test
-    void testMixedSingletonViolation() {
+    void testMixedSingletonViolation()
+    {
         this.performTest(() -> {
             SzCoreEnvironment env1 = null;
             SzAutoCoreEnvironment env2 = null;
@@ -254,7 +249,8 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest {
     }
 
     @Test
-    void testSingletonAdherence() {
+    void testSingletonAdherence()
+    {
         this.performTest(() -> {
             SzAutoCoreEnvironment env1 = null;
             SzAutoCoreEnvironment env2 = null;
@@ -286,7 +282,8 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest {
     }
 
     @Test
-    void testMixedSingletonAdherence() {
+    void testMixedSingletonAdherence()
+    {
         this.performTest(() -> {
             SzCoreEnvironment env1 = null;
             SzAutoCoreEnvironment env2 = null;
@@ -318,7 +315,8 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest {
     }
 
     @Test
-    void testDestroy() {
+    void testDestroy()
+    {
         this.performTest(() -> {
             SzAutoCoreEnvironment env1 = null;
             SzAutoCoreEnvironment env2 = null;
@@ -371,24 +369,28 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest {
     /**
      * Extends {@link Thread} to allow for identifying of core threads.
      */
-    static class CallingThread extends Thread {
+    static class CallingThread extends Thread
+    {
         /**
          * Constructs with the specified {@link Runnable}.
-         * 
+         *
          * @param runnable The {@link Runnable} with which to construct with.
          */
-        public CallingThread(Runnable runnable) {
+        public CallingThread(Runnable runnable)
+        {
             super(runnable);
         }
     }
 
-    private static final ThreadFactory THREAD_FACTORY = (r) -> new CallingThread(r);
+    private static final ThreadFactory THREAD_FACTORY
+        = (r) -> new CallingThread(r);
 
     @ParameterizedTest
     @CsvSource({"1, 1, Foo", "1, 0, Foo", "2, 0, Bar", "2, 1, Bar", "2, 2, Bar", 
                 "3, 0, Phoo", "3, 1, Phoo", "3, 2, Phoo", "4, 0, Phoox", "4, 1, Phoox",
                 "4, 2, Phoox", "4, 3, Phoox", "4, 4, Phoox"})
-    void testExecute(int threadCount, int concurrencyParam, String expected) {
+    void testExecute(int threadCount, int concurrencyParam, String expected)
+    {
         Integer concurrency = (concurrencyParam == 0) ? null : concurrencyParam;
         this.performTest(() -> {
             SzAutoCoreEnvironment env  = null;
@@ -501,7 +503,8 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest {
         });
     }
 
-    void testSubmitTaskFailingCallable() {
+    void testSubmitTaskFailingCallable()
+    {
         this.performTest(() -> {
             SzAutoCoreEnvironment env = null;
             try {
@@ -541,8 +544,8 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest {
         });
     }
 
-
-    void testSubmitTaskFailingRunnable() {
+    void testSubmitTaskFailingRunnable()
+    {
         this.performTest(() -> {
             SzAutoCoreEnvironment env = null;
             try {
@@ -578,8 +581,8 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest {
         });
     }
 
-
-    void testSubmitTaskFailingRunnableResult() {
+    void testSubmitTaskFailingRunnableResult()
+    {
         this.performTest(() -> {
             SzAutoCoreEnvironment env = null;
             try {
@@ -620,7 +623,10 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest {
     @CsvSource({"1, 1, Foo", "1, 0, Foo", "2, 0, Bar", "2, 1, Bar", "2, 2, Bar", 
                 "3, 0, Phoo", "3, 1, Phoo", "3, 2, Phoo", "4, 0, Phoox", "4, 1, Phoox",
                 "4, 2, Phoox", "4, 3, Phoox", "4, 4, Phoox"})
-    void testSubmitTaskCallable(int threadCount, int concurrencyParam, String expected) {
+    void testSubmitTaskCallable(int threadCount,
+                                int concurrencyParam,
+                                String expected)
+    {
         Integer concurrency = (concurrencyParam == 0) ? null : concurrencyParam;
         this.performTest(() -> {
             SzAutoCoreEnvironment env  = null;
@@ -749,7 +755,10 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest {
     @CsvSource({"1, 1, Foo", "1, 0, Foo", "2, 0, Bar", "2, 1, Bar", "2, 2, Bar", 
                 "3, 0, Phoo", "3, 1, Phoo", "3, 2, Phoo", "4, 0, Phoox", "4, 1, Phoox",
                 "4, 2, Phoox", "4, 3, Phoox", "4, 4, Phoox"})
-    void testSubmitTaskRunnableResult(int threadCount, int concurrencyParam, String expected) {
+    void testSubmitTaskRunnableResult(int threadCount,
+                                      int concurrencyParam,
+                                      String expected)
+    {
         Integer concurrency = (concurrencyParam == 0) ? null : concurrencyParam;
         this.performTest(() -> {
             SzAutoCoreEnvironment env  = null;
@@ -876,7 +885,8 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest {
     @ParameterizedTest
     @CsvSource({"1, 1", "1, 0", "2, 0", "2, 1", "2, 2", "3, 0", "3, 1", 
                 "3, 2", "4, 0", "4, 1", "4, 2", "4, 3", "4, 4"})
-    void testSubmitTaskRunnable(int threadCount, int concurrencyParam) {
+    void testSubmitTaskRunnable(int threadCount, int concurrencyParam)
+    {
         Integer concurrency = (concurrencyParam == 0) ? null : concurrencyParam;
         this.performTest(() -> {
             SzAutoCoreEnvironment env  = null;
@@ -987,8 +997,9 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"Foo", "Bar", "Phoo", "Phoox"})
-    void testExecuteFail(String expected) {
+    @ValueSource(strings = { "Foo", "Bar", "Phoo", "Phoox" })
+    void testExecuteFail(String expected)
+    {
         this.performTest(() -> {
             SzAutoCoreEnvironment env  = null;
             try {
@@ -1017,7 +1028,8 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest {
     }
 
     @Test
-    void testDestroyRaceConditions() {
+    void testDestroyRaceConditions()
+    {
         this.performTest(() -> {
             SzAutoCoreEnvironment env = SzAutoCoreEnvironment.newAutoBuilder().build();
 
@@ -1105,7 +1117,8 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest {
     }
 
     @Test
-    void testGetActiveInstance() {
+    void testGetActiveInstance()
+    {
         this.performTest(() -> {
             SzAutoCoreEnvironment env1 = null;
             SzAutoCoreEnvironment env2 = null;
@@ -1162,7 +1175,8 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest {
     }
 
     @Test
-    void testGetConfigManager() {
+    void testGetConfigManager()
+    {
         this.performTest(() -> {
             String settings = this.getRepoSettings();
             
@@ -1195,7 +1209,8 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest {
     }
 
     @Test
-    void testGetDiagnostic() {
+    void testGetDiagnostic()
+    {
         this.performTest(() -> {
             String settings = this.getRepoSettings();
             
@@ -1228,7 +1243,8 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest {
     }
 
     @Test
-    void testGetEngine() {
+    void testGetEngine()
+    {
         this.performTest(() -> {
             String settings = this.getRepoSettings();
             
@@ -1261,7 +1277,8 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest {
     }
 
     @Test
-    void testGetProduct() {
+    void testGetProduct()
+    {
         this.performTest(() -> {
             this.performTest(() -> {
                 String settings = this.getRepoSettings();
@@ -1295,7 +1312,8 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest {
         });
     }
 
-    private List<Arguments> getActiveConfigIdParams() {
+    private List<Arguments> getActiveConfigIdParams()
+    {
         List<Arguments> result = new LinkedList<>();
         long[] configIds = { this.configId1, this.configId2, this.configId3 };
 
@@ -1310,7 +1328,8 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest {
 
     @ParameterizedTest
     @MethodSource("getActiveConfigIdParams")
-    public void testGetActiveConfigId(long configId, boolean initEngine) {
+    public void testGetActiveConfigId(long configId, boolean initEngine)
+    {
         this.performTest(() -> {
             SzAutoCoreEnvironment env  = null;
 
@@ -1344,8 +1363,9 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest {
     }
 
     @ParameterizedTest
-    @ValueSource(booleans = { true, false})
-    public void testGetActiveConfigIdDefault(boolean initEngine) {
+    @ValueSource(booleans = { true, false })
+    public void testGetActiveConfigIdDefault(boolean initEngine)
+    {
         this.performTest(() -> {
             SzAutoCoreEnvironment env  = null;
         
@@ -1384,29 +1404,30 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest {
         });
     }
 
-    private List<Arguments> getReinitializeParams() {
+    private List<Arguments> getReinitializeParams()
+    {
         List<Arguments> result = new LinkedList<>();
         List<List<Boolean>> booleanCombos = getBooleanVariants(2, false);
 
         Random prng = new Random(System.currentTimeMillis());
 
-
-        
-        List<Long> configIds = List.of(this.configId1, this.configId2, this.configId3);
-        List<List<?>> configIdCombos = generateCombinations(configIds, configIds);
+        List<Long> configIds
+            = List.of(this.configId1, this.configId2, this.configId3);
+        List<List<?>> configIdCombos
+            = generateCombinations(configIds, configIds);
 
         Collections.shuffle(configIdCombos, prng);
         Collections.shuffle(booleanCombos, prng);
 
         Iterator<List<?>> configIdIter = circularIterator(configIdCombos);
 
-
         for (List<Boolean> bools : booleanCombos) {
             boolean initEngine = bools.get(0);
             boolean initDiagnostic = bools.get(1);
 
             for (Long configId : configIds) {
-                result.add(Arguments.of(null, configId, initEngine, initDiagnostic));
+                result.add(Arguments.of(null, configId, initEngine,
+                                        initDiagnostic));
             }
 
             List<?> configs = configIdIter.next();
@@ -1420,7 +1441,8 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest {
     }
 
     @Test
-    public void testExecuteException() {
+    public void testExecuteException()
+    {
         this.performTest(() -> {
             SzAutoCoreEnvironment env = SzAutoCoreEnvironment.newAutoBuilder().build();
             try {
@@ -1443,7 +1465,7 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest {
     public void testReinitialize(Long       startConfig, 
                                  Long       endConfig,
                                  boolean    initEngine, 
-                                 boolean    initDiagnostic) 
+                                 boolean    initDiagnostic)
     {
         this.performTest(() -> {
             SzAutoCoreEnvironment env = null;
@@ -1495,18 +1517,19 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest {
         });
     }
 
-    private static class MockEnvironment extends SzAutoCoreEnvironment {
+    private static class MockEnvironment extends SzAutoCoreEnvironment
+    {
         private int configIndex = 0;
 
         private boolean bumpOnReinitialize = false;
-        
-        public MockEnvironment(String instanceName, String settings) 
+
+        public MockEnvironment(String instanceName, String settings)
             throws SzException
         {
             super(SzAutoCoreEnvironment.newAutoBuilder()
                     .settings(settings).instanceName(instanceName)
                     .configRefreshPeriod(REACTIVE_CONFIG_REFRESH));
-            
+
             // revert the default config
             SzConfigManager configMgr = this.getConfigManager();
             configMgr.setDefaultConfig(
@@ -1514,63 +1537,75 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest {
 
             // ensure we initialize
             this.getEngine();
-
         }
 
-        public void setBumpOnReinitialize(boolean bump) {
+        public void setBumpOnReinitialize(boolean bump)
+        {
             this.bumpOnReinitialize = bump;
         }
 
-        protected boolean ensureConfigCurrent() throws SzException {
-            this.bumpConfig(); // ensure config is out of sync
+        protected boolean ensureConfigCurrent()
+            throws SzException
+        {
+            this.bumpConfig();
+            // ensure config is out of sync
             return super.ensureConfigCurrent();
         }
 
         @Override
-        public void reinitialize(long configId) throws SzException {
+        public void reinitialize(long configId)
+            throws SzException
+        {
             super.reinitialize(configId);
             if (this.bumpOnReinitialize) {
-                this.bumpConfig(); // keep the config out of sync
+                this.bumpConfig();
+                // keep the config out of sync
             }
         }
 
-        private void bumpConfig() throws SzException {
+        private void bumpConfig()
+            throws SzException
+        {
             SzConfigManager configMgr = this.getConfigManager();
-            SzConfig config = configMgr.createConfig(configMgr.getDefaultConfigId());
-            String dataSource = ("DUMMY_SOURCE_" 
-                + TextUtilities.randomAlphanumericText(5) 
-                + "-" + (++configIndex)).toUpperCase();
+            SzConfig config
+                = configMgr.createConfig(configMgr.getDefaultConfigId());
+            String dataSource = ("DUMMY_SOURCE_"
+                + TextUtilities.randomAlphanumericText(5)
+                + "-"
+                + (++configIndex)).toUpperCase();
             config.registerDataSource(dataSource);
             configMgr.setDefaultConfig(config.export(), "Added " + dataSource);
         }
     }
 
-    public static class MockRetryCallable implements Callable<Integer> {
+    public static class MockRetryCallable implements Callable<Integer>
+    {
         private List<Boolean> retryList = null;
         private String errorMessage = null;
-        
-        public MockRetryCallable(boolean succeedOnRetry) 
+
+        public MockRetryCallable(boolean succeedOnRetry)
         {
             this(succeedOnRetry,
                  TextUtilities.randomAlphanumericText(20));
         }
 
-        public MockRetryCallable(int failureCount) 
+        public MockRetryCallable(int failureCount)
         {
             this(failureCount,
                  TextUtilities.randomAlphanumericText(20));
         }
 
         public MockRetryCallable(boolean    succeedOnRetry, 
-                                 String     errorMessage) 
+                                 String     errorMessage)
         {
             this.retryList = new LinkedList<>();
             this.retryList.add(Boolean.FALSE);
             this.retryList.add(succeedOnRetry);
-            this.errorMessage   = errorMessage;
+            this.errorMessage = errorMessage;
         }
 
-        public MockRetryCallable(int failureCount, String errorMessage) {
+        public MockRetryCallable(int failureCount, String errorMessage)
+        {
             this.retryList = new LinkedList<>();
             for (int index = 0; index < failureCount; index++) {
                 this.retryList.add(Boolean.FALSE);
@@ -1578,12 +1613,15 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest {
             this.errorMessage = errorMessage;
         }
 
-        public String getErrorMessage() {
+        public String getErrorMessage()
+        {
             return this.errorMessage;
         }
 
         @Override
-        public Integer call() throws Exception {
+        public Integer call()
+            throws Exception
+        {
             Boolean succeed = this.retryList.remove(0);
             if (!succeed) {
                 // use the list size as mock error code
@@ -1594,7 +1632,8 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest {
     }
 
     @Test
-    public void mockRetryTest() {
+    public void mockRetryTest()
+    {
         this.performTest(() -> {
             SzAutoCoreEnvironment env = null;
     
@@ -1675,7 +1714,8 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest {
     }
 
     @Test
-    public void constructNegativeConcurrencyTest() {
+    public void constructNegativeConcurrencyTest()
+    {
         this.performTest(() -> {
             try {
                 new SzAutoCoreEnvironment(
@@ -1696,7 +1736,8 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest {
     }
 
     @Test
-    public void constructNegativeMaxRetriesTest() {
+    public void constructNegativeMaxRetriesTest()
+    {
         this.performTest(() -> {
             try {
                 new SzAutoCoreEnvironment(
@@ -1717,7 +1758,8 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest {
     }
 
     @Test
-    public void constructNegativeConfigRefreshPeriodTest() {
+    public void constructNegativeConfigRefreshPeriodTest()
+    {
         this.performTest(() -> {
             try {
                 new SzAutoCoreEnvironment(
@@ -1738,7 +1780,8 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest {
     }
 
     @Test
-    public void builderFixedConfigWithRefreshTest() {
+    public void builderFixedConfigWithRefreshTest()
+    {
         this.performTest(() -> {
             SzEnvironment env = null;
             try {
@@ -1763,7 +1806,8 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest {
         });
     }
 
-    public List<Integer> getConcurrencyParameters() {
+    public List<Integer> getConcurrencyParameters()
+    {
         List<Integer> result = new ArrayList<>();
         result.add(null);
         result.add(0);
@@ -1776,7 +1820,8 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest {
 
     @ParameterizedTest
     @MethodSource("getConcurrencyParameters")
-    public void builderConcurrencyTest(Integer concurrency) {
+    public void builderConcurrencyTest(Integer concurrency)
+    {
         this.performTest(() -> {
             SzAutoCoreEnvironment env = null;
 
@@ -1819,7 +1864,8 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest {
         });
     }
 
-    public List<Duration> getConfigRefreshPeriodParameters() {
+    public List<Duration> getConfigRefreshPeriodParameters()
+    {
         List<Duration> result = new ArrayList<>();
         result.add(null);
         result.add(Duration.ofSeconds(0));
@@ -1831,7 +1877,8 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest {
 
     @ParameterizedTest
     @MethodSource("getConfigRefreshPeriodParameters")
-    public void builderConfigRefreshPeriodTest(Duration duration) {
+    public void builderConfigRefreshPeriodTest(Duration duration)
+    {
         this.performTest(() -> {
             SzAutoCoreEnvironment env = null;
 
@@ -1877,7 +1924,8 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest {
         });
     }
 
-    public List<Integer> getMaxBasicRetryParameters() {
+    public List<Integer> getMaxBasicRetryParameters()
+    {
         List<Integer> result = new ArrayList<>();
         result.add(0);
         result.add(1);
@@ -1889,7 +1937,8 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest {
 
     @ParameterizedTest
     @MethodSource("getMaxBasicRetryParameters")
-    public void builderMaxBasicRetryTest(int maxRetries) {
+    public void builderMaxBasicRetryTest(int maxRetries)
+    {
         this.performTest(() -> {
             SzAutoCoreEnvironment env = null;
 
@@ -1929,7 +1978,8 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest {
     }
 
     @Test
-    public void formatStackTraceTest() {
+    public void formatStackTraceTest()
+    {
         this.performTest(() -> {
             StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
 
@@ -1938,7 +1988,8 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest {
     }
 
     @Test
-    public void maxReinitializeTest() {
+    public void maxReinitializeTest()
+    {
         this.performTest(() -> {
             String instanceName = this.getInstanceName();
             String settings = this.getRepoSettings();
