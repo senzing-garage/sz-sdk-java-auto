@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "sz-sdk-java-auto-faq": {
+      "command": "uv",
+      "args": [
+        "run",
+        "--script",
+        ".java-coding-standards/mcp/faq_server.py",
+        "--server-name=sz-sdk-java-auto-faq",
+        "--faqs-dir=.claude/faqs",
+        "--shared-faqs-dir=.java-coding-standards/docs/faqs"
+      ]
+    }
+  }
+}

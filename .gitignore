@@ -28,6 +28,9 @@ target/**
 # Visual Studio code
 .vscode/*
 !.vscode/cspell.json
+!.vscode/settings.json
+!.vscode/extensions.json
+!.vscode/tasks.json
 *.code-workspace
 .history
 
