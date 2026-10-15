@@ -3,14 +3,14 @@ package com.senzing.sdk.core.auto;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.time.Duration;
-
 import com.senzing.sdk.SzException;
 
 /**
- * Background thread to refresh the configuration on the 
+ * Background thread to refresh the configuration on the
  * {@link SzAutoCoreEnvironment}.
  */
-class Reinitializer extends Thread {
+class Reinitializer extends Thread
+{
     /**
      * Constant for converting between nanoseconds and milliseconds.
      */
@@ -31,7 +31,7 @@ class Reinitializer extends Thread {
      * The {@link SzAutoCoreEnvironment} to monitor and reinitialize.
      */
     private SzAutoCoreEnvironment env;
-    
+
     /**
      * Flag indicating if the thread should complete or continue monitoring.
      */
@@ -42,18 +42,18 @@ class Reinitializer extends Thread {
      *
      * @param env The {@link SzAutoCoreEnvironment} to use.
      */
-    Reinitializer(SzAutoCoreEnvironment env) {
-        this.env        = env;
-        this.complete   = false;
+    Reinitializer(SzAutoCoreEnvironment env)
+    {
+        this.env = env;
+        this.complete = false;
     }
 
     /**
      * Signals that this thread should complete execution.
      */
-    synchronized void complete() {
-        if (this.complete) {
-            return;
-        }
+    synchronized void complete()
+    {
+        if (this.complete) return;
         this.complete = true;
         this.notifyAll();
     }
@@ -61,19 +61,21 @@ class Reinitializer extends Thread {
     /**
      * Checks if this thread has received the completion signal.
      *
-     * @return <tt>true</tt> if the completion signal has been received, 
+     * @return <tt>true</tt> if the completion signal has been received,
      *         otherwise <tt>false</tt>.
      */
-    synchronized boolean isComplete() {
+    synchronized boolean isComplete()
+    {
         return this.complete;
     }
 
     /**
      * The run method implemented to periodically check if the active
-     * configuration ID differs from the default configuration ID 
-     * and if so, reinitializes.
+     * configuration ID differs from the default configuration ID and if so,
+     * reinitializes.
      */
-    public void run() {
+    public void run()
+    {
         try {
             int errorCount = 0;
             // loop until completed
@@ -89,23 +91,24 @@ class Reinitializer extends Thread {
                 // get the refresh period
                 Duration duration = this.env.getConfigRefreshPeriod();
 
-                // check if zero or null (we should not really get here since 
+                // check if zero or null (we should not really get here since
                 // this thread should not be started if the delay is zero)
-                if (duration == null || duration.isZero() || this.env.isDestroyed()) {
+                if (duration
+                    == null || duration.isZero() || this.env.isDestroyed()) {
                     this.complete();
                     continue;
                 }
 
                 // convert to milliseconds
-                long delay = duration.getSeconds() * ONE_THOUSAND 
-                    + (duration.getNano() / ONE_MILLION);
+                long delay = duration.getSeconds()
+                    * ONE_THOUSAND + (duration.getNano() / ONE_MILLION);
 
                 try {
                     synchronized (this) {
                         // sleep for the delay period
                         this.wait(delay);
                     }
-                    
+
                     // check if destroyed
                     if (this.env.isDestroyed()) {
                         this.complete();
@@ -114,7 +117,6 @@ class Reinitializer extends Thread {
 
                     // ensure the config is current
                     this.env.ensureConfigCurrent();
-
                 } catch (InterruptedException | SzException e) {
                     errorCount++;
                     continue;
@@ -123,13 +125,12 @@ class Reinitializer extends Thread {
                 // reset the error count if we successfully reach this point
                 errorCount = 0;
             }
-
         } catch (Exception e) {
             System.err.println(
-                "Giving up on monitoring active configuration due to exception:");
+                "Giving up on monitoring active configuration due to "
+                    + "exception:");
             System.err.println(e.getMessage());
             System.err.println(formatStackTrace(e.getStackTrace()));
-
         } finally {
             this.complete();
         }
@@ -138,17 +139,17 @@ class Reinitializer extends Thread {
     /**
      * Formats an array of {@link StackTraceElement} instances using {@link
      * #formatStackTrace(StackTraceElement)} with a single element per line.
-     * 
-     * @param stackTrace The array of {@link StackTraceElement} instances to format.
-     * 
-     * @return The formatted {@link String} describing the array of {@link 
-     *         StackTraceElement} instances or <code>null</code> if the specified
-     *         array is <code>null</code>.
+     *
+     * @param stackTrace The array of {@link StackTraceElement} instances to
+     *                   format.
+     *
+     * @return The formatted {@link String} describing the array of {@link
+     *         StackTraceElement} instances or <code>null</code> if the
+     *         specified array is <code>null</code>.
      */
-    static String formatStackTrace(StackTraceElement[] stackTrace) {
-        if (stackTrace == null) {
-            return null;
-        }
+    static String formatStackTrace(StackTraceElement[] stackTrace)
+    {
+        if (stackTrace == null) return null;
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
         for (StackTraceElement elem : stackTrace) {
@@ -158,21 +159,23 @@ class Reinitializer extends Thread {
     }
 
     /**
-     * Formats a single {@link StackTraceElement} in the same format as they would appear
-     * in an exception stack trace.
-     * 
+     * Formats a single {@link StackTraceElement} in the same format as they
+     * would appear in an exception stack trace.
+     *
      * @param elem The {@link StackTraceElement} to format.
-     * 
-     * @return The formatted {@link String} describing the {@link StackTraceElement}.
+     *
+     * @return The formatted {@link String} describing the {@link
+     *         StackTraceElement}.
      */
-    static String formatStackTrace(StackTraceElement elem) {
+    static String formatStackTrace(StackTraceElement elem)
+    {
         StringBuilder sb = new StringBuilder();
         sb.append("        at ");
-        
+
         // handle a null element
         if (elem == null) {
-        sb.append("[unknown: null]");
-        return sb.toString();
+            sb.append("[unknown: null]");
+            return sb.toString();
         }
 
         String moduleName = elem.getModuleName();
@@ -196,5 +199,4 @@ class Reinitializer extends Thread {
 
         return sb.toString();
     }
-
 }

@@ -1,3 +1,6 @@
 [submodule "sz-sdk-java"]
 	path = sz-sdk-java
 	url = https://github.com/senzing-garage/sz-sdk-java.git
+[submodule ".java-coding-standards"]
+	path = .java-coding-standards
+	url = https://github.com/senzing-garage/java-coding-standards.git

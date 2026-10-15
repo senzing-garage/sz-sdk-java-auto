@@ -12,7 +12,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-
 import com.senzing.sdk.SzConfig;
 import com.senzing.sdk.SzConfigManager;
 import com.senzing.sdk.SzConfigRetryable;
@@ -23,38 +22,35 @@ import com.senzing.sdk.SzProduct;
 import com.senzing.sdk.SzRetryableException;
 import com.senzing.sdk.SzEnvironmentDestroyedException;
 import com.senzing.sdk.core.SzCoreEnvironment;
-
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.concurrent.CompletableFuture.failedFuture;
-
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 
 /**
- * Extends {@link SzCoreEnvironment} to provide a more robust 
- * implementation for instances used in long-running processes
- * typically in server-side applications.  The features added
- * by this implementation are:
+ * Extends {@link SzCoreEnvironment} to provide a more robust implementation for
+ * instances used in long-running processes typically in server-side
+ * applications. The features added by this implementation are:
  * <ul>
  *  <li>
  *      Optional basic retry logic to retry <b>any</b> Senzing
- *      Core SDK method that fails with an {@link 
+ *      Core SDK method that fails with an {@link
  *      SzRetryableException}.  The method may be retried one
  *      or more times with an increasing delay between retry
  *      attempts.
  *  </li>
  *  <li>
  *      Optional automatic configuration refresh so that the
- *      active configuration ID remains in sync with the 
+ *      active configuration ID remains in sync with the
  *      current default configuration ID.
  *  </li>
  *  <li>
  *      When automatic configuration refresh is enabled, this
  *      implementation automatically refreshes the configuration
  *      when a Senzing Core SDK method annotated as
- *      {@link SzConfigRetryable} fails with an {@link 
+ *      {@link SzConfigRetryable} fails with an {@link
  *      SzException}, subsequently retrying that method if in
  *      fact the the active configuration was changed.
  *  </li>
@@ -66,21 +62,22 @@ import java.lang.reflect.Proxy;
  *      Senzing operations in too many threads.
  *  </li>
  *  <li>
- *      A limited {@link ExecutorService}-like interface to 
+ *      A limited {@link ExecutorService}-like interface to
  *      enable executing multiple Senzing Core SDK operations
  *      within the execution thread pool while preventing
  *      excessive context switching.
  *  </li>
  * </ul>
  */
-public class SzAutoCoreEnvironment extends SzCoreEnvironment 
-    implements SzAutoEnvironment
+public class SzAutoCoreEnvironment
+    extends SzCoreEnvironment implements SzAutoEnvironment
 {
     /**
      * The thread-local retry flag.
      */
     static final ThreadLocal<Boolean> CONFIG_RETRY_FLAG = new ThreadLocal<>() {
-        protected Boolean initialValue() {
+        protected Boolean initialValue()
+        {
             return Boolean.FALSE;
         }
     };
@@ -88,36 +85,40 @@ public class SzAutoCoreEnvironment extends SzCoreEnvironment
     /**
      * The thread-local flag indicating if a method was retried.
      */
-    private static final ThreadLocal<Boolean> RETRIED_FLAG = new ThreadLocal<>() {
-        protected Boolean initialValue() {
-            return Boolean.FALSE;
-        }
-    };
+    private static final ThreadLocal<Boolean> RETRIED_FLAG
+        = new ThreadLocal<>() {
+            protected Boolean initialValue()
+            {
+                return Boolean.FALSE;
+            }
+        };
 
     /**
-     * Thread-local flag to indicate that the current thread is already
-     * inside {@link #ensureConfigCurrent()}.  This prevents infinite
-     * recursion when SDK methods called during config refresh (e.g.
+     * Thread-local flag to indicate that the current thread is already inside
+     * {@link #ensureConfigCurrent()}. This prevents infinite recursion when SDK
+     * methods called during config refresh (e.g.
      * {@code getActiveConfigId()}, {@code getDefaultConfigId()},
      * {@code reinitialize()}) route back through {@link #execute(Callable)}
      * and would otherwise re-enter config-retry logic.
      */
-    private static final ThreadLocal<Boolean> ENSURING_CONFIG = new ThreadLocal<>() {
-        protected Boolean initialValue() {
-            return Boolean.FALSE;
-        }
-    };
+    private static final ThreadLocal<Boolean> ENSURING_CONFIG
+        = new ThreadLocal<>() {
+            protected Boolean initialValue()
+            {
+                return Boolean.FALSE;
+            }
+        };
 
     /**
-     * The number of milliseconds to delay (if not notified) until checking
-     * if we are destroyed.
+     * The number of milliseconds to delay (if not notified) until checking if
+     * we are destroyed.
      */
     private static final long DESTROY_DELAY = 5000L;
 
     /**
-     * The default number of times this class will perform a basic 
-     * retry when an {@link SzRetryableException} occurs.  The value
-     * of this constant is {@value}.
+     * The default number of times this class will perform a basic retry when an
+     * {@link SzRetryableException} occurs. The value of this constant is
+     * {@value}.
      */
     public static final int DEFAULT_MAX_BASIC_RETRIES = 2;
 
@@ -125,15 +126,15 @@ public class SzAutoCoreEnvironment extends SzCoreEnvironment
      * The classes to be proxied using the {@link RetryHandler}.
      */
     private static final Set<Class<?>> PROXY_CLASSES = Set.of(SzEngine.class,
-                                                               SzProduct.class,
-                                                               SzConfigManager.class,
-                                                               SzDiagnostic.class,
-                                                               SzConfig.class);
+                 SzProduct.class,
+                 SzConfigManager.class,
+                 SzDiagnostic.class,
+                 SzConfig.class);
 
     /**
-     * The maximum number of time to try to reinitialize with the
-     * latest default configuration ID before giving up.  This ensures
-     * we never get an infinite loop in the case of race conditions.
+     * The maximum number of time to try to reinitialize with the latest default
+     * configuration ID before giving up. This ensures we never get an infinite
+     * loop in the case of race conditions.
      */
     static final int MAX_REINITIALIZE_COUNT = 5;
 
@@ -150,75 +151,73 @@ public class SzAutoCoreEnvironment extends SzCoreEnvironment
     private static final int SHUTDOWN_WAIT_COUNT = 3;
 
     /**
-     * A <code>null</code> {@link Duration} reference that can be
-     * used with {@link Builder#configRefreshPeriod(Duration)} to
-     * disable configuration refresh and automatic retry of failed
-     * methods that are annotated with {@link SzConfigRetryable}.
+     * A <code>null</code> {@link Duration} reference that can be used with
+     * {@link Builder#configRefreshPeriod(Duration)} to disable configuration
+     * refresh and automatic retry of failed methods that are annotated with
+     * {@link SzConfigRetryable}.
      */
     public static final Duration DISABLED_CONFIG_REFRESH = null;
 
     /**
-     * A zero (0) {@link Duration} instance that can be used 
-     * with {@link Builder#configRefreshPeriod(Duration)} to
-     * enable <b>Reactive</b> configuration refresh so that
-     * configuration refresh and automatic retry are performed
-     * on demand when a method annotated with {@link 
+     * A zero (0) {@link Duration} instance that can be used with {@link
+     * Builder#configRefreshPeriod(Duration)} to enable <b>Reactive</b>
+     * configuration refresh so that configuration refresh and automatic retry
+     * are performed on demand when a method annotated with {@link
      * SzConfigRetryable} fails with an {@link SzException}.
      */
     public static final Duration REACTIVE_CONFIG_REFRESH
         = Duration.ofSeconds(0);
-    
+
     /**
-     * A <code>null</code> {@link Integer} reference that can be 
-     * used with {@link Builder#concurrency(Integer)} to disable
-     * the isolated concurrency thread pool and enable execution
-     * in the calling thread.
+     * A <code>null</code> {@link Integer} reference that can be used with
+     * {@link Builder#concurrency(Integer)} to disable the isolated concurrency
+     * thread pool and enable execution in the calling thread.
      */
     public static final Integer DISABLED_CONCURRENCY = null;
 
     /**
      * A zero (0) {@link Integer} instance that can be used with
      * {@link Builder#concurrency(Integer)} to indicate that the
-     * concurrency should be set to {@link 
-     * Runtime#availableProcessors()}.
+     * concurrency should be set to {@link Runtime#availableProcessors()}.
      */
     public static final Integer RECOMMENDED_CONCURRENCY = 0;
 
     /**
      * Enumerates the various modes for configuration refresh.
-     * 
+     *
      * <p>
-     * Configuration refresh is the process by which the 
+     * Configuration refresh is the process by which the
      * {@linkplain com.senzing.sdk.SzEnvironment#getActiveConfigId()
-     * active configuration ID} is compared to the current 
+     * active configuration ID} is compared to the current
      * {@linkplain com.senzing.sdk.SzConfigManager#getDefaultConfigId()
-     * default configuration ID} and if they are out of sync, the 
-     * {@link SzAutoCoreEnvironment} is {@linkplain 
-     * com.senzing.sdk.SzEnvironment#reinitialize(long) reinitialized}
-     * with the current default configuration ID.
+     * default configuration ID} and if they are out of sync, the
+     * {@link SzAutoCoreEnvironment} is {@linkplain
+     * com.senzing.sdk.SzEnvironment#reinitialize(long) reinitialized} with the
+     * current default configuration ID.
      * </p>
      */
-    public enum RefreshMode {
+    public enum RefreshMode
+    {
         /**
-         * The configuration will never be automatically refreshed.  
-         * Methods annotated with {@link SzConfigRetryable} will 
+         * The configuration will never be automatically refreshed. Methods
+         * annotated with {@link SzConfigRetryable} will
          * <b>not</b> be retried upon an exception.
          */
         DISABLED,
 
         /**
-         * The configuration will be refreshed on-demand in response
-         * to an exception being thrown by a method annotated with
+         * The configuration will be refreshed on-demand in response to an
+         * exception being thrown by a method annotated with
          * {@link SzConfigRetryable}.  When this occurs, the method will
          * be retried to see if it still fails after refresh.
          */
         REACTIVE,
 
         /**
-         * The configuration will be refreshed in the background
-         * periodically using a specified {@link Duration} as the 
-         * refresh period.  This mode <b>ALSO</b> performs the 
-         * on-demand refresh as with <b>Reactive</b> mode.
+         * The configuration will be refreshed in the background periodically
+         * using a specified {@link Duration} as the refresh period. This mode
+         * <b>ALSO</b> performs the on-demand refresh as with <b>Reactive</b>
+         * mode.
          */
         PROACTIVE;
     }
@@ -226,59 +225,59 @@ public class SzAutoCoreEnvironment extends SzCoreEnvironment
     /**
      * Provides an interface for initializing an instance of
      * {@link SzAutoCoreEnvironment}.
-     * 
+     *
      * <p>
-     * This interface is not needed to use {@link SzAutoCoreEnvironment}.
-     * It is only needed if you are extending {@link SzAutoCoreEnvironment}.
+     * This interface is not needed to use {@link SzAutoCoreEnvironment}. It is
+     * only needed if you are extending {@link SzAutoCoreEnvironment}.
      * </p>
-     * 
+     *
      * <p>
-     * This is provided for derived classes of {@link SzAutoCoreEnvironment}
-     * to initialize their super class and is typically implemented by
-     * extending {@link AbstractBuilder} in creating a derived
-     * builder implementation.
+     * This is provided for derived classes of {@link SzAutoCoreEnvironment} to
+     * initialize their super class and is typically implemented by extending
+     * {@link AbstractBuilder} in creating a derived builder implementation.
      * </p>
      */
-    public interface Initializer extends SzCoreEnvironment.Initializer {
+    public interface Initializer extends SzCoreEnvironment.Initializer
+    {
         /**
          * Gets the configuration refresh period for this instance.
-         * 
+         *
          * <p>
-         * Configuration refresh is the process by which the 
+         * Configuration refresh is the process by which the
          * {@linkplain com.senzing.sdk.SzEnvironment#getActiveConfigId()
-         * active configuration ID} is compared to the current 
+         * active configuration ID} is compared to the current
          * {@linkplain com.senzing.sdk.SzConfigManager#getDefaultConfigId()
-         * default configuration ID} and if they are out of sync, the 
-         * {@link SzAutoCoreEnvironment} is {@linkplain 
-         * com.senzing.sdk.SzEnvironment#reinitialize(long) reinitialized}
-         * with the current default configuration ID.
+         * default configuration ID} and if they are out of sync, the
+         * {@link SzAutoCoreEnvironment} is {@linkplain
+         * com.senzing.sdk.SzEnvironment#reinitialize(long) reinitialized} with
+         * the current default configuration ID.
          * </p>
-         * 
+         *
          * <p>
          * Configuration refresh can be configured in one of three modes
          * enumerated by {@link RefreshMode}.
          * </p>
-         * 
+         *
          * <p>
          * <b>NOTE:</b> Configuration refresh cannot be in any mode
-         * other than {@link RefreshMode#DISABLED} if the {@linkplain 
-         * #getConfigId() configuration ID} is a non-null value.  An
-         * exception will be thrown if attempting to construct an {@link 
-         * SzAutoCoreEnvironment} with an explicit configuration ID
-         * with configuration refresh enabled.
+         * other than {@link RefreshMode#DISABLED} if the {@linkplain
+         * #getConfigId() configuration ID} is a non-null value. An exception
+         * will be thrown if attempting to construct an {@link
+         * SzAutoCoreEnvironment} with an explicit configuration ID with
+         * configuration refresh enabled.
          * </p>
-         * 
+         *
          * <p>
-         * The possible values for this setting with their associated
-         * mode are as follows:
+         * The possible values for this setting with their associated mode are
+         * as follows:
          * <ul>
          *  <li>
-         *      A <code>null</code> value implies that configuration 
+         *      A <code>null</code> value implies that configuration
          *      refresh is {@linkplain RefreshMode#DISABLED disabled}
          *      (see {@link #DISABLED_CONFIG_REFRESH}).
          *  <li>
          *  <li>
-         *      A zero (0) {@link Duration} implies that configuration 
+         *      A zero (0) {@link Duration} implies that configuration
          *      refresh will be {@linkplain RefreshMode#REACTIVE reactive}
          *      (see {@link #REACTIVE_CONFIG_REFRESH}).
          *  </li>
@@ -288,23 +287,23 @@ public class SzAutoCoreEnvironment extends SzCoreEnvironment
          *      with the {@link Duration} value used as the refresh period.
          *  </li>
          * </ul>
-         * 
+         *
          * @return A positive {@link Duration} to enable {@linkplain
-         *         RefreshMode#PROACTIVE proactive} configuration refresh,
-         *         a zero (0) {@link Duration} to enable {@linkplain
-         *         RefreshMode#REACTIVE reactive} configuration refresh or 
+         *         RefreshMode#PROACTIVE proactive} configuration refresh, a
+         *         zero (0) {@link Duration} to enable {@linkplain
+         *         RefreshMode#REACTIVE reactive} configuration refresh or
          *         <code>null</code> to {@linkplain RefreshMode#DISABLED
          *         disable} configuration refresh.
-         * 
+         *
          * @see #DISABLED_CONFIG_REFRESH
          * @see #REACTIVE_CONFIG_REFRESH
          */
         Duration getConfigRefreshPeriod();
 
         /**
-         * Gets the concurrency for the thread pool used to execute the
-         * Senzing Core SDK operations.
-         * 
+         * Gets the concurrency for the thread pool used to execute the Senzing
+         * Core SDK operations.
+         *
          * <p>
          * The Senzing Core SDK allocates resources that are local to each
          * thread.  These resources are allocated when first needed and then
@@ -313,23 +312,23 @@ public class SzAutoCoreEnvironment extends SzCoreEnvironment
          * the same threads each time for the Core SDK operations <b>both</b>
          * for performance reasons and to prevent excessive memory allocation.
          * </p>
-         * 
+         *
          * <p>
-         * Server applications that leverage the Senzing Core SDK may have 
-         * a large number of threads for servicing requests, but should limit
-         * the concurrency for the Senzing Core SDK to at most the number of 
+         * Server applications that leverage the Senzing Core SDK may have a
+         * large number of threads for servicing requests, but should limit the
+         * concurrency for the Senzing Core SDK to at most the number of
          * processing cores on the machine (or less if memory is limited).
          * </p>
-         * 
+         *
          * The provided value determines the behavior:
          * <ul>
          *  <li>
          *      If <code>null</code> (see {@link #DISABLED_CONCURRENCY})
          *      then the thread pool is disabled and all operations are
          *      performed in the calling thread.  This may be desirable
-         *      if you have an {@link ExecutorService} that you are 
-         *      already using to perform one more Senzing Core SDK 
-         *      operations in conjunction and you want to avoid 
+         *      if you have an {@link ExecutorService} that you are
+         *      already using to perform one more Senzing Core SDK
+         *      operations in conjunction and you want to avoid
          *      unnecessary context switching.
          *  </li>
          *  <li>
@@ -343,17 +342,17 @@ public class SzAutoCoreEnvironment extends SzCoreEnvironment
          *      using that number of threads.
          *  </li>
          * </ul>
-         * 
+         *
          * <p>
          * Any created thread pool will be disposed upon calling {@link
          * #destroy()}.
          * </p>
-         * 
-         * @return A positive integer indicating the size of the thread pool, 
+         *
+         * @return A positive integer indicating the size of the thread pool,
          *         zero (0) to use the number of threads equal to {@link
          *         Runtime#availableProcessors()}, or <code>null</code> to
          *         disable the thread pool.
-         * 
+         *
          * @see #DISABLED_CONCURRENCY
          * @see #RECOMMENDED_CONCURRENCY
          * @see #submitTask(Callable)
@@ -363,112 +362,110 @@ public class SzAutoCoreEnvironment extends SzCoreEnvironment
         Integer getConcurrency();
 
         /**
-         * Returns the maximum number of times a method invocation should be 
-         * retried either due to an {@link SzRetryableException} being 
+         * Returns the maximum number of times a method invocation should be
+         * retried either due to an {@link SzRetryableException} being
          * encountered.
-         * 
+         *
          * <p>
          * There are several things to note:
          * </p>
          * <ol>
-         *      <li>This setting has <b>no</b> effect on the retrying of 
+         *      <li>This setting has <b>no</b> effect on the retrying of
          *          Senzing Core SDK methods annotated with {@link
          *          SzConfigRetryable} methods as that is simply governed by
          *          the active configuration requiring a refresh.
          *      </li>
-         *      <li>Each subsequent retry for will occur after increasingly 
+         *      <li>Each subsequent retry for will occur after increasingly
          *          long delay to allow the condition causing the failure to
          *          be resolved.
          *      </li>
-         *      <li>Since the basic retries are nested with the configuration 
+         *      <li>Since the basic retries are nested with the configuration
          *          refresh retries, it is possible, though unlikely, for the
          *          total number of retries to exceed the maximum.  For example,
-         *          a method may fail due to a missing data source in the active 
+         *          a method may fail due to a missing data source in the active
          *          configuration, triggering a retry after the configuration
          *          refresh, and the retried attempt may then fail due to a
-         *          persistent deadlock condition causing multiple {@link 
+         *          persistent deadlock condition causing multiple {@link
          *          SzRetryableException}'s being thrown.
          *      </li>
          * </ol>
-         * 
-         * @return The maximum number of times to retry a method invocation 
-         *         due to an {@link SzRetryableException}.
+         *
+         * @return The maximum number of times to retry a method invocation due
+         *         to an {@link SzRetryableException}.
          */
         int getMaxBasicRetries();
     }
 
     /**
-     * Extends {@link SzCoreEnvironment.AbstractBuilder} to provide
-     * additional initialization properties for {@link 
-     * SzAutoCoreEnvironment}.
-     * 
-     * @param <E> The {@link SzAutoCoreEnvironment}-derived class
-     *            built by instances of this class.
+     * Extends {@link SzCoreEnvironment.AbstractBuilder} to provide additional
+     * initialization properties for {@link SzAutoCoreEnvironment}.
+     *
+     * @param <E> The {@link SzAutoCoreEnvironment}-derived class built by
+     *            instances of this class.
      * @param <B> The {@link AbstractBuilder}-derived class of the
      *            implementation.
      */
-    public abstract static 
-    class AbstractBuilder<E extends SzAutoCoreEnvironment, 
-                          B extends AbstractBuilder<E, B>>
-        extends SzCoreEnvironment.AbstractBuilder<E, B> 
-        implements Initializer
+    // CSOFF
+    public abstract static class AbstractBuilder<E extends SzAutoCoreEnvironment,
+        B extends AbstractBuilder<E, B>>
+        extends SzCoreEnvironment.AbstractBuilder<E, B> implements Initializer
     {
+        // CSON
         /**
-         * The number of threads for executing, or 
+         * The number of threads for executing, or
          * <code>null</code> if the thread pool is disabled.
          */
         private Integer concurrency = null;
 
         /**
-         * The period with which to background-refresh the 
-         * active configuration, or <code>null</code> if 
-         * configuration refresh is disabled.
+         * The period with which to background-refresh the active configuration,
+         * or <code>null</code> if configuration refresh is disabled.
          */
         private Duration configRefreshPeriod = null;
 
         /**
-         * The maximum number of times to perform a retry of a
-         * method due to an {@link SzRetryableException}.
+         * The maximum number of times to perform a retry of a method due to an
+         * {@link SzRetryableException}.
          */
         private int maxBasicRetries = DEFAULT_MAX_BASIC_RETRIES;
 
         /**
          * Default constructor.
          */
-        protected AbstractBuilder() {
+        protected AbstractBuilder()
+        {
             super();
-            this.concurrency            = DISABLED_CONCURRENCY;
-            this.configRefreshPeriod    = DISABLED_CONFIG_REFRESH;
-            this.maxBasicRetries        = DEFAULT_MAX_BASIC_RETRIES;
+            this.concurrency = DISABLED_CONCURRENCY;
+            this.configRefreshPeriod = DISABLED_CONFIG_REFRESH;
+            this.maxBasicRetries = DEFAULT_MAX_BASIC_RETRIES;
         }
 
         /**
-         * Sets the configuration refresh period for this instance.
-         * If not explicitly called, the default value will be 
+         * Sets the configuration refresh period for this instance. If not
+         * explicitly called, the default value will be
          * {@link #DISABLED_CONFIG_REFRESH}.
-         * 
+         *
          * <p>
-         * See {@link #getConfigRefreshPeriod()} for a description
-         * of how the specified duration relates to the configuration
-         * refresh modes.
+         * See {@link #getConfigRefreshPeriod()} for a description of how the
+         * specified duration relates to the configuration refresh modes.
          * </p>
-         * 
-         * @param duration A positive {@link Duration} to enable <b>Proactive</b>
-         *                 configuration refresh, a zero (0) {@link Duration} to
-         *                 enable <b>Reactive</b> configuration refresh or 
-         *                 <code>null</code> to <b>Disable</b> configuration
-         *                 refresh.
-         * 
+         *
+         * @param duration A positive {@link Duration} to enable
+         *                 <b>Proactive</b> configuration refresh, a zero (0)
+         *                 {@link Duration} to enable <b>Reactive</b>
+         *                 configuration refresh or <code>null</code> to
+         *                 <b>Disable</b> configuration refresh.
+         *
          * @return A reference to this instance.
-         * 
-         * @throws IllegalArgumentException If a negative {@link Duration} is 
+         *
+         * @throws IllegalArgumentException If a negative {@link Duration} is
          *                                  specified.
-         * 
+         *
          * @see #DISABLED_CONFIG_REFRESH
          * @see #REACTIVE_CONFIG_REFRESH
          */
         @SuppressWarnings("unchecked")
-        public B configRefreshPeriod(Duration duration) 
+        public B configRefreshPeriod(Duration duration)
         {
             if (duration != null && duration.isNegative()) {
                 throw new IllegalArgumentException(
@@ -480,36 +477,37 @@ public class SzAutoCoreEnvironment extends SzCoreEnvironment
         }
 
         /**
-         * Implemented to return the configuration refresh period,
-         * or <code>null</code> if none has been configured.
-         * 
+         * Implemented to return the configuration refresh period, or
+         * <code>null</code> if none has been configured.
+         *
          * {@inheritDoc}
          */
         @Override
-        public Duration getConfigRefreshPeriod() {
+        public Duration getConfigRefreshPeriod()
+        {
             return this.configRefreshPeriod;
         }
 
         /**
-         * Sets the concurrency for the thread pool used to execute the
-         * Senzing Core SDK operations.  If not explicitly called, the
-         * default value will be {@link #DISABLED_CONCURRENCY}.
-         * 
+         * Sets the concurrency for the thread pool used to execute the Senzing
+         * Core SDK operations. If not explicitly called, the default value will
+         * be {@link #DISABLED_CONCURRENCY}.
+         *
          * <p>
-         * See {@link #getConcurrency()} for a description of how the
-         * specified concurrency affects the thread pool and how it is used.
+         * See {@link #getConcurrency()} for a description of how the specified
+         * concurrency affects the thread pool and how it is used.
          * </p>
-         * 
-         * @param concurrency A positive integer indicating the size of
-         *                    the thread pool, zero (0) to use the a number
-         *                    of threads equal to {@link
+         *
+         * @param concurrency A positive integer indicating the size of the
+         *                    thread pool, zero (0) to use the a number of
+         *                    threads equal to {@link
          *                    Runtime#availableProcessors()}, or
          *                    <code>null</code> to disable the thread pool.
-         * 
+         *
          * @return A reference to this instance.
-         * 
+         *
          * @throws IllegalArgumentException If a negative value is specified.
-         * 
+         *
          * @see #DISABLED_CONCURRENCY
          * @see #RECOMMENDED_CONCURRENCY
          * @see #submitTask(Callable)
@@ -530,35 +528,36 @@ public class SzAutoCoreEnvironment extends SzCoreEnvironment
         }
 
         /**
-         * Implemented to return the concurrency or <code>null</code> 
-         * if none has been configured.
-         * 
+         * Implemented to return the concurrency or <code>null</code> if none
+         * has been configured.
+         *
          * {@inheritDoc}
          */
         @Override
-        public Integer getConcurrency() {
+        public Integer getConcurrency()
+        {
             return this.concurrency;
         }
 
         /**
-         * Sets the maximum number of basic retries to perform when an 
+         * Sets the maximum number of basic retries to perform when an
          * {@link SzRetryableException} is encountered when invoking an
          * Senzing Core SDK operation.
-         * 
+         *
          * <p>
          * See {@link #getMaxBasicRetries()} for a description of how the
          * maximum is applied.
          * </p>
-         * 
+         *
          * @param maxRetries A non-negative integer indicating the maximum
-         *                   number of times to retry a Senzing Core SDK 
-         *                   operation that fails with an 
-         *                   {@link SzRetryableException}.
-         * 
+         *                   number of times to retry a Senzing Core SDK
+         *                   operation that fails with an {@link
+         *                   SzRetryableException}.
+         *
          * @return A reference to this instance.
-         * 
+         *
          * @throws IllegalArgumentException If a negative value is specified.
-         * 
+         *
          * @see #DEFAULT_MAX_BASIC_RETRIES
          */
         @SuppressWarnings("unchecked")
@@ -567,63 +566,64 @@ public class SzAutoCoreEnvironment extends SzCoreEnvironment
         {
             if (maxRetries < 0) {
                 throw new IllegalArgumentException(
-                    "The specified maximum number of retries cannot be negative: "
-                        + maxRetries);
+                    "The specified maximum number of retries cannot be "
+                        + "negative: " + maxRetries);
             }
             this.maxBasicRetries = maxRetries;
             return ((B) this);
         }
 
         /**
-         * Implemented to return the configuration refresh period,
-         * or <code>null</code> if none has been configured.
-         * 
+         * Implemented to return the configuration refresh period, or
+         * <code>null</code> if none has been configured.
+         *
          * {@inheritDoc}
          */
         @Override
-        public int getMaxBasicRetries() {
+        public int getMaxBasicRetries()
+        {
             return this.maxBasicRetries;
         }
     }
 
     /**
-     * The builder class for creating an instance of 
+     * The builder class for creating an instance of
      * {@link SzAutoCoreEnvironment}.
      */
-    public static class Builder 
-        extends AbstractBuilder<SzAutoCoreEnvironment, Builder> 
+    public static class Builder
+        extends AbstractBuilder<SzAutoCoreEnvironment, Builder>
     {
         /**
          * Default constructor.
          */
-        public Builder() {
+        public Builder()
+        {
             super();
         }
 
         /**
-         * Creates a new {@link SzAutoCoreEnvironment} instance based on
-         * this {@link Builder} instance.  This method will throw an {@link 
+         * Creates a new {@link SzAutoCoreEnvironment} instance based on this
+         * {@link Builder} instance. This method will throw an {@link
          * IllegalStateException} if another active {@link SzCoreEnvironment}
          * instance exists since only one active instance can exist within a
-         * process at any given time.  An active instance is one that has
-         * been constructed, but has not yet been destroyed.
-         * 
+         * process at any given time. An active instance is one that has been
+         * constructed, but has not yet been destroyed.
+         *
          * @return The newly created {@link SzAutoCoreEnvironment} instance.
-         * 
-         * @throws IllegalStateException If another active {@link SzCoreEnvironment}
-         *                               instance exists when this method is
-         *                               invoked <b>OR</b> if there is an explicit
-         *                               configuration ID and the configuration
-         *                               refresh period is <b>not</b> 
-         *                               <code>null</code>.
+         *
+         * @throws IllegalStateException If another active {@link
+         *                               SzCoreEnvironment} instance exists when
+         *                               this method is invoked <b>OR</b> if
+         *                               there is an explicit configuration ID
+         *                               and the configuration refresh period is
+         *                               <b>not</b> <code>null</code>.
          */
         @Override
-        public SzAutoCoreEnvironment build() 
+        public SzAutoCoreEnvironment build()
             throws IllegalStateException
         {
-            if (this.getConfigId() != null 
-                && this.getConfigRefreshPeriod() != null)
-            {
+            if (this.getConfigId() != null && this.getConfigRefreshPeriod()
+                != null) {
                 throw new IllegalStateException(
                     "Cannot provide an explicit configuration ID (" 
                     + this.getConfigId() + ") and enable configuration "
@@ -639,22 +639,25 @@ public class SzAutoCoreEnvironment extends SzCoreEnvironment
     /**
      * Extends {@link Thread} to allow for identifying of core threads.
      */
-    static class CoreThread extends Thread {
+    static class CoreThread extends Thread
+    {
         /**
          * Constructs with the specified {@link Runnable}.
-         * 
+         *
          * @param runnable The {@link Runnable} with which to construct with.
          */
-        CoreThread(Runnable runnable) {
+        CoreThread(Runnable runnable)
+        {
             super(runnable);
         }
     }
 
     /**
-     * The {@link InvocationHandler} implementation that sets the 
-     * thread-local {@link #CONFIG_RETRY_FLAG} if a method is retryable.
+     * The {@link InvocationHandler} implementation that sets the thread-local
+     * {@link #CONFIG_RETRY_FLAG} if a method is retryable.
      */
-    private static class RetryHandler implements InvocationHandler {
+    private static class RetryHandler implements InvocationHandler
+    {
         /**
          * The target object for which to handle methods.
          */
@@ -662,17 +665,19 @@ public class SzAutoCoreEnvironment extends SzCoreEnvironment
 
         /**
          * Constructs with the target object.
-         * 
+         *
          * @param target The target object for which to handle methods.
          */
-        RetryHandler(Object target) {
+        RetryHandler(Object target)
+        {
             this.target = target;
         }
 
         @Override
-        public Object invoke(Object proxy, Method method, Object[] args) throws Throwable 
+        public Object invoke(Object proxy, Method method, Object[] args)
+            throws Throwable
         {
-            SzConfigRetryable retryable 
+            SzConfigRetryable retryable
                 = method.getAnnotation(SzConfigRetryable.class);
 
             Object result = null;
@@ -680,21 +685,17 @@ public class SzAutoCoreEnvironment extends SzCoreEnvironment
             if (retryable == null) {
                 try {
                     result = method.invoke(target, args);
-
                 } catch (InvocationTargetException e) {
                     // get the cause of the exception
                     throw e.getCause();
                 }
-
             } else {
                 Boolean initial = CONFIG_RETRY_FLAG.get();
                 CONFIG_RETRY_FLAG.set(Boolean.TRUE);
                 try {
                     result = method.invoke(target, args);
-
                 } catch (InvocationTargetException e) {
                     throw e.getCause();
-
                 } finally {
                     // set the flag back to what our caller set
                     CONFIG_RETRY_FLAG.set(initial);
@@ -703,14 +704,13 @@ public class SzAutoCoreEnvironment extends SzCoreEnvironment
 
             // check the result to see if we need to proxy it
             final Object r = result;
-            if (r != null
-                && (PROXY_CLASSES.contains(method.getReturnType())
-                    || PROXY_CLASSES.stream().anyMatch((c) -> c.isInstance(r))))
-            {
+            if (r != null && (PROXY_CLASSES.contains(method.getReturnType())
+                || PROXY_CLASSES.stream().anyMatch((c) -> c.isInstance(r)))) {
                 Class<?>[] interfaces = result.getClass().getInterfaces();
                 ClassLoader classLoader = this.getClass().getClassLoader();
                 RetryHandler handler = new RetryHandler(result);
-                result = Proxy.newProxyInstance(classLoader, interfaces, handler);
+                result = Proxy.newProxyInstance(classLoader, interfaces,
+                                                handler);
             }
 
             // return the result (possibly proxied)
@@ -721,36 +721,38 @@ public class SzAutoCoreEnvironment extends SzCoreEnvironment
     /**
      * The {@link ThreadFactory} to be used by instances of this class.
      */
-    private static final ThreadFactory THREAD_FACTORY = (r) -> new CoreThread(r);
+    private static final ThreadFactory THREAD_FACTORY
+        = (r) -> new CoreThread(r);
 
     /**
-     * Creates a new instance of {@link Builder} for setting up an instance
-     * of {@link SzAutoCoreEnvironment}.  Keep in mind that while multiple 
-     * {@link Builder} instances can exists, <b>only one active instance</b> of 
-     * {@link SzCoreEnvironment} (including any of its derived classes) can exist
-     * at time.  An active instance is one that has not yet been destroyed.
-     * 
+     * Creates a new instance of {@link Builder} for setting up an instance of
+     * {@link SzAutoCoreEnvironment}. Keep in mind that while multiple {@link
+     * Builder} instances can exists, <b>only one active instance</b> of {@link
+     * SzCoreEnvironment} (including any of its derived classes) can exist at
+     * time. An active instance is one that has not yet been destroyed.
+     *
      * <p>
      * <b>NOTE:</b> The static method {@link #newBuilder()} will produce an
      * instance of {@link SzCoreEnvironment.Builder} which will only create
-     * instances of {@link SzCoreEnvironment} rather than {@link 
+     * instances of {@link SzCoreEnvironment} rather than {@link
      * SzAutoCoreEnvironment}.
      * </p>
-     * 
+     *
      * <p>
      * <b>Alternatively</b>, you can directly call the {@link Builder#Builder()}
      * constructor.
      * </p>
-     * 
-     * @return The {@link Builder} for configuring and initializing the
-     *         {@link SzAutoCoreEnvironment}.
+     *
+     * @return The {@link Builder} for configuring and initializing the {@link
+     *         SzAutoCoreEnvironment}.
      */
-    public static Builder newAutoBuilder() {
+    public static Builder newAutoBuilder()
+    {
         return new Builder();
     }
 
     /**
-     * The {@link ExecutorService} to be used by this instance, or 
+     * The {@link ExecutorService} to be used by this instance, or
      * <code>null</code> if the thread pool is disabled.
      */
     private ExecutorService coreExecutor = null;
@@ -771,20 +773,19 @@ public class SzAutoCoreEnvironment extends SzCoreEnvironment
     private RefreshMode refreshMode = null;
 
     /**
-     * The maximum number of times each method invocation should
-     * be retried when an {@link SzRetryableException} is encountered.
+     * The maximum number of times each method invocation should be retried when
+     * an {@link SzRetryableException} is encountered.
      */
     private int maxBasicRetries = DEFAULT_MAX_BASIC_RETRIES;
 
     /**
-     * Flag indicating if this instance has had its 
+     * Flag indicating if this instance has had its
      * {@link #destroy()} method called.
      */
     private boolean destroying = false;
 
     /**
-     * The {@link Reinitializer} thread to background refresh
-     * the configuration.
+     * The {@link Reinitializer} thread to background refresh the configuration.
      */
     private Reinitializer reinitializer = null;
 
@@ -836,16 +837,16 @@ public class SzAutoCoreEnvironment extends SzCoreEnvironment
     /**
      * Protected constructor used by the {@link Builder} to construct the
      * instance.
-     *  
+     *
      * @param initializer The {@link Initializer} with which to construct
      *                    (typically an instance of {@link AbstractBuilder}).
      */
-    protected SzAutoCoreEnvironment(Initializer initializer) 
+    protected SzAutoCoreEnvironment(Initializer initializer)
     {
         super(initializer);
 
         try {
-            this.readWriteLock  = new ReentrantReadWriteLock(true);
+            this.readWriteLock = new ReentrantReadWriteLock(true);
 
             // determine the number of threads we need in the thread pool
             Integer threadCount = initializer.getConcurrency();
@@ -853,7 +854,6 @@ public class SzAutoCoreEnvironment extends SzCoreEnvironment
                 threadCount = 0;
             } else if (threadCount == 0) {
                 threadCount = Runtime.getRuntime().availableProcessors();
-
             } else if (threadCount < 0) {
                 throw new IllegalArgumentException(
                     "The concurrency cannot be negative: " + threadCount);
@@ -871,7 +871,7 @@ public class SzAutoCoreEnvironment extends SzCoreEnvironment
 
             // determine the configuration refresh period and mode
             this.configRefreshPeriod = initializer.getConfigRefreshPeriod();
-            
+
             if (this.configRefreshPeriod == null) {
                 this.refreshMode = RefreshMode.DISABLED;
             } else if (this.configRefreshPeriod.isZero()) {
@@ -885,15 +885,15 @@ public class SzAutoCoreEnvironment extends SzCoreEnvironment
             }
 
             // setup the executor service
-            this.coreExecutor = (threadCount == 0) ? null
-                : Executors.newFixedThreadPool(threadCount, THREAD_FACTORY);
+            this.coreExecutor = (threadCount == 0)
+                ? null : Executors.newFixedThreadPool(threadCount,
+                                                      THREAD_FACTORY);
 
             // setup the background configuration refresh if needed
             if (this.refreshMode == RefreshMode.PROACTIVE) {
                 this.reinitializer = new Reinitializer(this);
                 this.reinitializer.start();
             }
-            
         } catch (RuntimeException e) {
             // cleanup anything we might have initialized
             if (this.coreExecutor != null) {
@@ -914,7 +914,8 @@ public class SzAutoCoreEnvironment extends SzCoreEnvironment
      * {@inheritDoc}
      */
     @Override
-    public int getConcurrency() {
+    public int getConcurrency()
+    {
         Lock lock = null;
         try {
             lock = this.acquireReadLock();
@@ -929,7 +930,8 @@ public class SzAutoCoreEnvironment extends SzCoreEnvironment
      * {@inheritDoc}
      */
     @Override
-    public int getMaxBasicRetries() {
+    public int getMaxBasicRetries()
+    {
         Lock lock = null;
         try {
             lock = this.acquireReadLock();
@@ -944,7 +946,8 @@ public class SzAutoCoreEnvironment extends SzCoreEnvironment
      * {@inheritDoc}
      */
     @Override
-    public int getConfigRefreshCount() {
+    public int getConfigRefreshCount()
+    {
         Lock lock = null;
         try {
             lock = this.acquireReadLock();
@@ -961,7 +964,8 @@ public class SzAutoCoreEnvironment extends SzCoreEnvironment
      * {@inheritDoc}
      */
     @Override
-    public int getRetriedCount() {
+    public int getRetriedCount()
+    {
         Lock lock = null;
         try {
             lock = this.acquireReadLock();
@@ -978,7 +982,8 @@ public class SzAutoCoreEnvironment extends SzCoreEnvironment
      * {@inheritDoc}
      */
     @Override
-    public int getRetriedFailureCount() {
+    public int getRetriedFailureCount()
+    {
         Lock lock = null;
         try {
             lock = this.acquireReadLock();
@@ -992,27 +997,30 @@ public class SzAutoCoreEnvironment extends SzCoreEnvironment
     }
 
     /**
-     * Ensures this instance is still active and if not will throw 
-     * an {@link SzEnvironmentDestroyedException}.
+     * Ensures this instance is still active and if not will throw an {@link
+     * SzEnvironmentDestroyedException}.
      *
      * @throws SzEnvironmentDestroyedException If this instance is not active.
      */
-    void ensureNotDestroyed() throws SzEnvironmentDestroyedException {
+    void ensureNotDestroyed()
+        throws SzEnvironmentDestroyedException
+    {
         synchronized (this.monitor) {
             if (this.destroying) {
                 throw new SzEnvironmentDestroyedException(
                     "This instance has already been destroyed.");
-            }            
+            }
         }
     }
 
     /**
-     * Helper to trap destroyed states without throwing an exception.
-     * Usually the destroyed state is trapped later.
-     * 
+     * Helper to trap destroyed states without throwing an exception. Usually
+     * the destroyed state is trapped later.
+     *
      * @param <T> The type returned by the callable.
      */
-    class TrapDestroyed<T> {
+    class TrapDestroyed<T>
+    {
         /**
          * The result to return if destroyed.
          */
@@ -1026,45 +1034,47 @@ public class SzAutoCoreEnvironment extends SzCoreEnvironment
         /**
          * Constructs with the {@link Callable} and uses
          * <code>null</code> as the result if destroyed.
-         * 
+         *
          * @param callable The {@link Callable} to execute.
          */
-        TrapDestroyed(Callable<T> callable) {
+        TrapDestroyed(Callable<T> callable)
+        {
             this(callable, null);
         }
 
         /**
-         * Constructs with the {@link Callable} and the
-         * specified value to return if destroyed.
-         * 
+         * Constructs with the {@link Callable} and the specified value to
+         * return if destroyed.
+         *
          * @param callable The {@link Callable} to execute.
          * @param destroyedResult The value to return if destroyed.
          */
-        TrapDestroyed(Callable<T> callable, T destroyedResult) {
+        TrapDestroyed(Callable<T> callable, T destroyedResult)
+        {
             this.callable = callable;
             this.destroyedResult = destroyedResult;
         }
 
         /**
-         * Calls the function and traps any {@link SzEnvironmentDestroyedException}
-         * and returns the destroyed result if encountered.
-         * 
-         * @return The result from the {@link Callable} or the destroyed
-         *         result if destroyed.
-         * 
+         * Calls the function and traps any {@link
+         * SzEnvironmentDestroyedException} and returns the destroyed result if
+         * encountered.
+         *
+         * @return The result from the {@link Callable} or the destroyed result
+         *         if destroyed.
+         *
          * @throws SzException If the specified {@link Callable} throws an
          *                     {@link SzException}.
          */
-        public T call() throws SzException {
+        public T call()
+            throws SzException
+        {
             try {
                 return this.callable.call();
-
             } catch (SzEnvironmentDestroyedException e) {
                 return this.destroyedResult;
-
             } catch (SzException | RuntimeException e) {
                 throw e;
-
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
@@ -1072,20 +1082,21 @@ public class SzAutoCoreEnvironment extends SzCoreEnvironment
     }
 
     /**
-     * Protected method to ensure the active configuration ID is the same
-     * as the default configuration ID.  This will check if they are out
-     * of sync and, if so, reinitialize with the default configuration ID.
-     * This will attempt to handle the unlikely (though possible) race 
-     * conditions by rechecking several times that they are in sync after
-     * reinitializing.
-     * 
-     * @return <code>true</code> if the active configuration ID was updated
-     *         to the default configuration ID, otherwise <code>false</code>
-     *         if no update was necessary.
-     * 
+     * Protected method to ensure the active configuration ID is the same as the
+     * default configuration ID. This will check if they are out of sync and, if
+     * so, reinitialize with the default configuration ID. This will attempt to
+     * handle the unlikely (though possible) race conditions by rechecking
+     * several times that they are in sync after reinitializing.
+     *
+     * @return <code>true</code> if the active configuration ID was updated to
+     *         the default configuration ID, otherwise <code>false</code> if no
+     *         update was necessary.
+     *
      * @throws SzException If a failure occurs.
      */
-    protected boolean ensureConfigCurrent() throws SzException {
+    protected boolean ensureConfigCurrent()
+        throws SzException
+    {
         Boolean prevEnsuring = ENSURING_CONFIG.get();
         ENSURING_CONFIG.set(Boolean.TRUE);
         try {
@@ -1121,19 +1132,20 @@ public class SzAutoCoreEnvironment extends SzCoreEnvironment
                 // check if we have exceeded our number of retries
                 if (tryCount >= MAX_REINITIALIZE_COUNT) {
                     System.err.println(
-                        "*** WARNING: Default configuration is constantly changing.  Could not reinitialize "
-                        + "to the latest default configuration ID after " + tryCount + " attempts.  "
-                        + "activeConfigId=[ " + activeConfigId + " ], defaultConfigId=[ "
-                        + defaultConfigId + " ]");
+                        "*** WARNING: Default configuration is constantly "
+                        + "changing.  Could not reinitialize to the latest "
+                        + "default configuration ID after " + tryCount
+                        + " attempts.  activeConfigId=[ " + activeConfigId
+                        + " ], defaultConfigId=[ " + defaultConfigId + " ]");
 
-                    // allow the caller to retry anyway since we did update the config
+                    // allow the caller to retry anyway since we did update the
+                    // config
                     return true;
                 }
 
                 // attempt to reinitialize (we may be destroyed at this point)
                 try {
                     this.reinitialize(defaultConfigId);
-
                 } catch (SzEnvironmentDestroyedException e) {
                     break;
                 }
@@ -1152,13 +1164,14 @@ public class SzAutoCoreEnvironment extends SzCoreEnvironment
         } finally {
             ENSURING_CONFIG.set(prevEnsuring);
         }
-    } 
+    }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public RefreshMode getConfigRefreshMode() {
+    public RefreshMode getConfigRefreshMode()
+    {
         Lock lock = null;
         try {
             lock = this.acquireReadLock();
@@ -1173,7 +1186,8 @@ public class SzAutoCoreEnvironment extends SzCoreEnvironment
      * {@inheritDoc}
      */
     @Override
-    public Duration getConfigRefreshPeriod() {
+    public Duration getConfigRefreshPeriod()
+    {
         Lock lock = null;
         try {
             lock = this.acquireReadLock();
@@ -1185,125 +1199,132 @@ public class SzAutoCoreEnvironment extends SzCoreEnvironment
     }
 
     /**
-     * Overridden to proxy the result to implement the retry-on-refresh
-     * logic for methods annotated with {@link SzConfigRetryable} that
-     * fail with an {@link SzException}.
-     * 
+     * Overridden to proxy the result to implement the retry-on-refresh logic
+     * for methods annotated with {@link SzConfigRetryable} that fail with an
+     * {@link SzException}.
+     *
      * {@inheritDoc}
      */
     @Override
-    public SzEngine getEngine() throws SzException {
+    public SzEngine getEngine()
+        throws SzException
+    {
         synchronized (this.monitor) {
             this.ensureNotDestroyed();
-            if (this.engine != null) {
-                return this.engine;
-            }
+            if (this.engine != null) return this.engine;
 
             SzEngine engine = super.getEngine();
             Class<?>[] interfaces = engine.getClass().getInterfaces();
             ClassLoader classLoader = this.getClass().getClassLoader();
             RetryHandler handler = new RetryHandler(engine);
-            this.engine = (SzEngine) Proxy.newProxyInstance(classLoader, interfaces, handler);
+            this.engine = (SzEngine) Proxy.newProxyInstance(classLoader,
+                                                            interfaces,
+                                                            handler);
             return this.engine;
         }
     }
 
     /**
-     * Overridden to proxy the result to implement the retry-on-refresh
-     * logic for methods annotated with {@link SzConfigRetryable} that
-     * fail with an {@link SzException}.
-     * 
+     * Overridden to proxy the result to implement the retry-on-refresh logic
+     * for methods annotated with {@link SzConfigRetryable} that fail with an
+     * {@link SzException}.
+     *
      * {@inheritDoc}
      */
     @Override
-    public SzProduct getProduct() throws SzException {
+    public SzProduct getProduct()
+        throws SzException
+    {
         synchronized (this.monitor) {
             this.ensureNotDestroyed();
-            if (this.product != null) {
-                return this.product;
-            }
+            if (this.product != null) return this.product;
 
             SzProduct product = super.getProduct();
             Class<?>[] interfaces = product.getClass().getInterfaces();
             ClassLoader classLoader = this.getClass().getClassLoader();
             RetryHandler handler = new RetryHandler(product);
-            this.product = (SzProduct) Proxy.newProxyInstance(classLoader, interfaces, handler);
+            this.product = (SzProduct) Proxy.newProxyInstance(classLoader,
+                                                              interfaces,
+                                                              handler);
             return this.product;
         }
     }
 
     /**
-     * Overridden to proxy the result to implement the retry-on-refresh
-     * logic for methods annotated with {@link SzConfigRetryable} that
-     * fail with an {@link SzException}.
-     * 
+     * Overridden to proxy the result to implement the retry-on-refresh logic
+     * for methods annotated with {@link SzConfigRetryable} that fail with an
+     * {@link SzException}.
+     *
      * {@inheritDoc}
      */
     @Override
-    public SzConfigManager getConfigManager() throws SzException {
+    public SzConfigManager getConfigManager()
+        throws SzException
+    {
         synchronized (this.monitor) {
             this.ensureNotDestroyed();
-            if (this.configManager != null) {
-                return this.configManager;
-            }
+            if (this.configManager != null) return this.configManager;
 
             SzConfigManager configManager = super.getConfigManager();
             Class<?>[] interfaces = configManager.getClass().getInterfaces();
             ClassLoader classLoader = this.getClass().getClassLoader();
             RetryHandler handler = new RetryHandler(configManager);
-            this.configManager = (SzConfigManager) 
-                Proxy.newProxyInstance(classLoader, interfaces, handler);
+            this.configManager = (SzConfigManager) Proxy.newProxyInstance(
+                classLoader,
+                interfaces,
+                handler);
             return this.configManager;
         }
     }
 
     /**
-     * Overridden to proxy the result to implement the retry-on-refresh
-     * logic for methods annotated with {@link SzConfigRetryable} that
-     * fail with an {@link SzException}.
-     * 
+     * Overridden to proxy the result to implement the retry-on-refresh logic
+     * for methods annotated with {@link SzConfigRetryable} that fail with an
+     * {@link SzException}.
+     *
      * {@inheritDoc}
      */
     @Override
-    public SzDiagnostic getDiagnostic() throws SzException {
+    public SzDiagnostic getDiagnostic()
+        throws SzException
+    {
         synchronized (this.monitor) {
             this.ensureNotDestroyed();
-            if (this.diagnostic != null) {
-                return this.diagnostic;
-            }
+            if (this.diagnostic != null) return this.diagnostic;
 
             SzDiagnostic diagnostic = super.getDiagnostic();
             Class<?>[] interfaces = diagnostic.getClass().getInterfaces();
             ClassLoader classLoader = this.getClass().getClassLoader();
             RetryHandler handler = new RetryHandler(diagnostic);
-            this.diagnostic = (SzDiagnostic) 
-                Proxy.newProxyInstance(classLoader, interfaces, handler);
+            this.diagnostic = (SzDiagnostic) Proxy.newProxyInstance(
+                classLoader,
+                interfaces,
+                handler);
             return this.diagnostic;
         }
     }
 
     /**
-     * Overridden to ensure that if the configuration refresh is 
+     * Overridden to ensure that if the configuration refresh is
      * {@linkplain RefreshMode#PROACTIVE proactive} that the background
-     * thread that handles periodic refresh is shutdown before destroying
-     * the environment.
-     * 
+     * thread that handles periodic refresh is shutdown before destroying the
+     * environment.
+     *
      * <p>
      * Further, this override will ensure that all threads in the execution
      * thread pool (if any) are destroyed after the environment is destroyed.
      * </p>
-     * 
+     *
      * {@inheritDoc}
      */
     @Override
-    public void destroy() {
+    public void destroy()
+    {
         Lock lock = null;
         try {
             synchronized (this.monitor) {
                 // check if already destroyed
-                if (this.destroying) {
-                    return;
-                }
+                if (this.destroying) return;
 
                 // flag as destroying
                 this.destroying = true;
@@ -1315,7 +1336,8 @@ public class SzAutoCoreEnvironment extends SzCoreEnvironment
                 this.reinitializer.complete();
 
                 for (int tryCount = 0;
-                     (tryCount < SHUTDOWN_WAIT_COUNT && this.reinitializer.isAlive());
+                     (tryCount < SHUTDOWN_WAIT_COUNT
+                          && this.reinitializer.isAlive());
                      tryCount++)
                 {
                     try {
@@ -1325,8 +1347,9 @@ public class SzAutoCoreEnvironment extends SzCoreEnvironment
                     }
                 }
                 if (this.reinitializer.isAlive()) {
-                    System.err.println("Failed to shutdown reinitializer thread: " 
-                                       + this.reinitializer.getName());
+                    System.err.println(
+                        "Failed to shutdown reinitializer thread: "
+                            + this.reinitializer.getName());
                 }
             }
             this.reinitializer = null;
@@ -1334,7 +1357,7 @@ public class SzAutoCoreEnvironment extends SzCoreEnvironment
             // acquire the write lock to wait for in-flight operations
             // to complete (including compound retry operations)
             lock = this.acquireWriteLock();
-            
+
             // destroy the environment
             super.destroy();
 
@@ -1343,65 +1366,66 @@ public class SzAutoCoreEnvironment extends SzCoreEnvironment
             this.configManager = null;
             this.product = null;
             this.diagnostic = null;
-            
+
             // cleanup after the executor
             if (this.coreExecutor != null) {
                 this.coreExecutor.shutdown();
                 for (int retryCount = 0;
-                     (retryCount < SHUTDOWN_WAIT_COUNT && !this.coreExecutor.isTerminated());
+                     (retryCount < SHUTDOWN_WAIT_COUNT
+                          && !this.coreExecutor.isTerminated());
                      retryCount++)
                 {
                     try {
-                        this.coreExecutor.awaitTermination(SHUTDOWN_WAIT_SECONDS, TimeUnit.SECONDS);
+                        this.coreExecutor.awaitTermination(
+                            SHUTDOWN_WAIT_SECONDS,
+                            TimeUnit.SECONDS);
                     } catch (InterruptedException ignore) {
                         // ignore
                     }
                 }
                 if (!this.coreExecutor.isTerminated()) {
-                    System.err.println("Failed to shutdown executor service: concurrency=[ "
-                                       + this.concurrency + " ]");
+                    System.err.println(
+                        "Failed to shutdown executor service: concurrency=[ "
+                            + this.concurrency + " ]");
                 }
             }
-
         } finally {
             lock = releaseLock(lock);
         }
     }
 
-
     /**
-     * Calls the super class {@link #execute(Callable)} implementation
-     * at least once and then repeatedly if necessary until either the
-     * call succeeds, fails with an exception other than {@link 
-     * SzRetryableException} or the {@linkplain #getMaxBasicRetries()
-     * configured maximum} number of retry attempts has been reached.
-     * 
+     * Calls the super class {@link #execute(Callable)} implementation at least
+     * once and then repeatedly if necessary until either the call succeeds,
+     * fails with an exception other than {@link SzRetryableException} or the
+     * {@linkplain #getMaxBasicRetries() configured maximum} number of retry
+     * attempts has been reached.
+     *
      * <p>
-     * There will be no delay in making the first retry attempt.
-     * Subsequent retry attempts will be attempted after an increasing
-     * delay with each attempt.
+     * There will be no delay in making the first retry attempt. Subsequent
+     * retry attempts will be attempted after an increasing delay with each
+     * attempt.
      * </p>
-     * 
+     *
      * <p>
      * If still failing with {@link SzRetryableException} after the
      * {@linkplain #getMaxBasicRetries() maximum number retries} has
-     * been reached, then the {@link SzRetryableException} is simply
-     * re-thrown.
+     * been reached, then the {@link SzRetryableException} is simply re-thrown.
      * </p>
-     * 
+     *
      * @param <T> The return type of the specified {@link Callable}.
-     * 
+     *
      * @param task The task to execute.
-     * 
+     *
      * @return The return value from the specified {@link Callable}
-     * 
-     * @throws SzRetryableException If the specified task failed with
-     *                              this exception and we have retried
-     *                              the maximum number of times.
-     * 
+     *
+     * @throws SzRetryableException If the specified task failed with this
+     *                              exception and we have retried the maximum
+     *                              number of times.
+     *
      * @throws SzException If a failure occurs.
      */
-    protected <T> T executeWithBasicRetry(Callable<T> task) 
+    protected <T> T executeWithBasicRetry(Callable<T> task)
         throws SzException
     {
         int maxAttempts = this.maxBasicRetries + 1;
@@ -1426,9 +1450,8 @@ public class SzAutoCoreEnvironment extends SzCoreEnvironment
                 }
 
                 return super.execute(task);
-
             } catch (SzRetryableException e) {
-                lastException = e;        
+                lastException = e;
             }
         }
 
@@ -1437,20 +1460,21 @@ public class SzAutoCoreEnvironment extends SzCoreEnvironment
     }
 
     /**
-     * Overridden to implement retry logic if {@link #getConfigRefreshMode()}
-     * is <b>not</b> {@link RefreshMode#DISABLED} and an {@link SzException}
-     * is encountered on a Senzing Core SDK method that is annotated with 
+     * Overridden to implement retry logic if {@link #getConfigRefreshMode()} is
+     * <b>not</b> {@link RefreshMode#DISABLED} and an {@link SzException} is
+     * encountered on a Senzing Core SDK method that is annotated with
      * {@link SzConfigRetryable}.
-     * 
+     *
      * {@inheritDoc}
      */
     @Override
-    protected <T> T execute(Callable<T> task) 
+    protected <T> T execute(Callable<T> task)
         throws SzException, SzEnvironmentDestroyedException
     {
         Lock lock = null;
         Boolean initialFlag = RETRIED_FLAG.get();
-        RETRIED_FLAG.set(Boolean.FALSE); // clear the flag
+        RETRIED_FLAG.set(Boolean.FALSE);
+        // clear the flag
         try {
             lock = this.acquireReadLock();
             this.ensureNotDestroyed();
@@ -1462,25 +1486,23 @@ public class SzAutoCoreEnvironment extends SzCoreEnvironment
                 // if we are not refreshing the configuration, we are
                 // already ensuring the config is current, or the
                 // retry flag is not set then just execute the task
-                if (this.refreshMode == RefreshMode.DISABLED
-                    || Boolean.TRUE.equals(ENSURING_CONFIG.get())
-                    || (!Boolean.TRUE.equals(CONFIG_RETRY_FLAG.get())))
-                {
+                if (this.refreshMode
+                    == RefreshMode.DISABLED || Boolean.TRUE.equals(
+                        ENSURING_CONFIG.get()) || (!Boolean.TRUE.equals(
+                        CONFIG_RETRY_FLAG.get()))) {
                     return this.executeWithBasicRetry(task);
                 }
 
                 // otherwise execute and trap any SzException
                 try {
                     return this.executeWithBasicRetry(task);
-                    
                 } catch (SzException e) {
-                    // we need to check the active config and 
+                    // we need to check the active config and
                     // update the config if necessary
                     boolean configUpdated = false;
                     try {
                         // refresh the configuration
                         configUpdated = this.ensureConfigCurrent();
- 
                     } catch (SzException e2) {
                         e2.printStackTrace();
                         // if we fail to refresh the config then
@@ -1490,9 +1512,7 @@ public class SzAutoCoreEnvironment extends SzCoreEnvironment
 
                     // if the configuration was not updated
                     // then rethrow the original exception
-                    if (!configUpdated) {
-                        throw e;
-                    }
+                    if (!configUpdated) throw e;
 
                     // flag that we are retrying
                     RETRIED_FLAG.set(Boolean.TRUE);
@@ -1500,11 +1520,9 @@ public class SzAutoCoreEnvironment extends SzCoreEnvironment
                     // if we get here then try again
                     return this.executeWithBasicRetry(task);
                 }
-
             } catch (SzException | RuntimeException e) {
                 retryFailure = true;
                 throw e;
-
             } finally {
                 // check the retried flag
                 if (Boolean.TRUE.equals(RETRIED_FLAG.get())) {
@@ -1518,7 +1536,6 @@ public class SzAutoCoreEnvironment extends SzCoreEnvironment
                 // clear the retried flag
                 RETRIED_FLAG.set(initialFlag);
             }
-
         } finally {
             // release the lock
             lock = releaseLock(lock);
@@ -1526,19 +1543,18 @@ public class SzAutoCoreEnvironment extends SzCoreEnvironment
     }
 
     /**
-     * Overridden to implement the use of an internal {@link ExecutorService}
-     * if this instance has been configured with a positive concurrency that
+     * Overridden to implement the use of an internal {@link ExecutorService} if
+     * this instance has been configured with a positive concurrency that
      * provides for an execution thread pool.
-     * 
+     *
      * {@inheritDoc}
      */
     @Override
-    protected <T> T doExecute(Callable<T> task) throws Exception
+    protected <T> T doExecute(Callable<T> task)
+        throws Exception
     {
         // check if we have a thread pool
-        if (this.coreExecutor == null) {
-            return super.doExecute(task);
-        }
+        if (this.coreExecutor == null) return super.doExecute(task);
 
         // otherwise, use the executor
         Future<T> future = this.coreExecutor.submit(task);
@@ -1546,7 +1562,6 @@ public class SzAutoCoreEnvironment extends SzCoreEnvironment
         try {
             // resolve the future
             return future.get();
-
         } catch (ExecutionException e) {
             // get the cause for the exception
             Throwable cause = e.getCause();
@@ -1555,11 +1570,9 @@ public class SzAutoCoreEnvironment extends SzCoreEnvironment
             if (cause instanceof Error) {
                 // if an error, rethrow as an error
                 throw ((Error) cause);
-
             } else if (cause instanceof Exception) {
                 // if an exception, rethrow as an exception
                 throw ((Exception) cause);
-                
             } else {
                 // for any other throwable, throw the ExecutionException
                 throw e;
@@ -1571,7 +1584,8 @@ public class SzAutoCoreEnvironment extends SzCoreEnvironment
      * {@inheritDoc}
      */
     @Override
-    public <T> Future<T> submitTask(Callable<T> task) {
+    public <T> Future<T> submitTask(Callable<T> task)
+    {
         Lock lock = null;
         try {
             lock = this.acquireReadLock();
@@ -1586,7 +1600,6 @@ public class SzAutoCoreEnvironment extends SzCoreEnvironment
             } else {
                 return this.coreExecutor.submit(task);
             }
-
         } finally {
             lock = releaseLock(lock);
         }
@@ -1596,7 +1609,8 @@ public class SzAutoCoreEnvironment extends SzCoreEnvironment
      * {@inheritDoc}
      */
     @Override
-    public Future<?> submitTask(Runnable task) {
+    public Future<?> submitTask(Runnable task)
+    {
         return this.submitTask(task, null);
     }
 
@@ -1604,7 +1618,8 @@ public class SzAutoCoreEnvironment extends SzCoreEnvironment
      * {@inheritDoc}
      */
     @Override
-    public <T> Future<T> submitTask(Runnable task, T result) {
+    public <T> Future<T> submitTask(Runnable task, T result)
+    {
         Lock lock = null;
         try {
             lock = this.acquireReadLock();
@@ -1620,7 +1635,6 @@ public class SzAutoCoreEnvironment extends SzCoreEnvironment
             } else {
                 return this.coreExecutor.submit(task, result);
             }
-
         } finally {
             lock = releaseLock(lock);
         }
@@ -1629,22 +1643,24 @@ public class SzAutoCoreEnvironment extends SzCoreEnvironment
     /**
      * Acquires an exclusive write lock from this instance's
      * {@link ReentrantReadWriteLock}.
-     * 
+     *
      * @return The {@link Lock} that was acquired.
      */
-    private Lock acquireWriteLock() {
+    private Lock acquireWriteLock()
+    {
         Lock lock = this.readWriteLock.writeLock();
         lock.lock();
         return lock;
     }
 
     /**
-     * Acquires a shared read lock from this instance's 
+     * Acquires a shared read lock from this instance's
      * {@link ReentrantReadWriteLock}.
-     * 
+     *
      * @return The {@link Lock} that was acquired.
      */
-    private Lock acquireReadLock() {
+    private Lock acquireReadLock()
+    {
         Lock lock = this.readWriteLock.readLock();
         lock.lock();
         return lock;
@@ -1652,12 +1668,13 @@ public class SzAutoCoreEnvironment extends SzCoreEnvironment
 
     /**
      * Releases the specified {@link Lock} if not <code>null</code>.
-     * 
+     *
      * @param lock The {@link Lock} to be released.
-     * 
+     *
      * @return Always returns <code>null</code>.
      */
-    private Lock releaseLock(Lock lock) {
+    private Lock releaseLock(Lock lock)
+    {
         if (lock != null) {
             lock.unlock();
         }
@@ -1666,15 +1683,16 @@ public class SzAutoCoreEnvironment extends SzCoreEnvironment
 
     /**
      * {@inheritDoc}
-     * 
+     *
      * <p>
-     * Overridden to return <code>true</code> once the {@link #destroy()}
-     * method has been called even before the destruction of this instance
-     * has completed.
+     * Overridden to return <code>true</code> once the {@link #destroy()} method
+     * has been called even before the destruction of this instance has
+     * completed.
      * </p>
      */
     @Override
-    public boolean isDestroyed() {
+    public boolean isDestroyed()
+    {
         synchronized (this.monitor) {
             return this.destroying;
         }
@@ -1682,29 +1700,28 @@ public class SzAutoCoreEnvironment extends SzCoreEnvironment
 
     /**
      * {@inheritDoc}
-     * 
+     *
      * <p>
      * Overridden to handle timing the blocking of a destroying instance
      * properly.
      * </p>
      */
     @Override
-    protected boolean validateActiveInstance() {
+    protected boolean validateActiveInstance()
+    {
         synchronized (this.monitor) {
-            if (!this.destroying) {
-                return true;
-            }
+            if (!this.destroying) return true;
             this.waitUntilDestroyed();
             return false;
         }
     }
 
     /**
-     * Waits until this instance has been destroyed.  This is an internal
-     * method used when this instance is being destroyed and we want to
-     * wait until it is fully destroyed.
+     * Waits until this instance has been destroyed. This is an internal method
+     * used when this instance is being destroyed and we want to wait until it
+     * is fully destroyed.
      */
-    private void waitUntilDestroyed() 
+    private void waitUntilDestroyed()
     {
         synchronized (this.monitor) {
             while (!super.isDestroyed()) {
@@ -1716,5 +1733,4 @@ public class SzAutoCoreEnvironment extends SzCoreEnvironment
             }
         }
     }
-
 }
