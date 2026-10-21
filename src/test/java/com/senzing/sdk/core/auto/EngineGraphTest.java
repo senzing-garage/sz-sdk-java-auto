@@ -64,10 +64,14 @@ public class EngineGraphTest
 
         String instanceName = this.getClass().getSimpleName();
 
-        this.env = SzAutoCoreEnvironment.newAutoBuilder().instanceName(
-            instanceName).settings(settings).verboseLogging(false).concurrency(
-            this.getConcurrency()).configRefreshPeriod(
-            this.getConfigRefreshPeriod()).build();
+        this.env = SzAutoCoreEnvironment
+            .newAutoBuilder()
+            .instanceName(instanceName)
+            .settings(settings)
+            .verboseLogging(false)
+            .concurrency(this.getConcurrency())
+            .configRefreshPeriod(this.getConfigRefreshPeriod())
+            .build();
     }
 
     /**
@@ -78,8 +82,11 @@ public class EngineGraphTest
         String instanceName = this.getInstanceName();
         String settings = this.getRepoSettings();
 
-        SzCoreEnvironment env = SzCoreEnvironment.newBuilder().instanceName(
-            instanceName).settings(settings).verboseLogging(false).build();
+        SzCoreEnvironment env = SzCoreEnvironment.newBuilder()
+                                                 .instanceName(instanceName)
+                                                 .settings(settings)
+                                                 .verboseLogging(false)
+                                                 .build();
         try {
             TestDataLoader loader = new StandardTestDataLoader(env);
 
@@ -115,8 +122,14 @@ public class EngineGraphTest
             // skip the ones that expect an exception
             if (arr[arr.length - 3] != null) return;
             if (arr[arr.length - 4] != null) return;
-            result.add(Arguments.of(
-                arr[1], arr[3], arr[5], arr[6], arr[7], arr[8], arr[9]));
+            result.add(
+                Arguments.of(arr[1],
+                             arr[3],
+                             arr[5],
+                             arr[6],
+                             arr[7],
+                             arr[8],
+                             arr[9]));
         });
         return result;
     }
@@ -134,30 +147,36 @@ public class EngineGraphTest
     {
         this.performTest(() -> {
             try {
-                SzEngine engine = (SzEngine)this.env.getEngine();
+                SzEngine engine = (SzEngine) this.env.getEngine();
 
-                String defaultResult = engine.findPath(startRecordKey,
-                                                       endRecordKey,
-                                                       maxDegrees,
-                                                       SzRecordKeys.of(avoidances),
-                                                       requiredSources);
+                String defaultResult = engine.findPath(
+                    startRecordKey,
+                    endRecordKey,
+                    maxDegrees,
+                    SzRecordKeys.of(avoidances),
+                    requiredSources);
 
-                String explicitResult = engine.findPath(startRecordKey,
-                                                        endRecordKey,
-                                                        maxDegrees,
-                                                        SzRecordKeys.of(avoidances),
-                                                        requiredSources,
-                                                        SZ_FIND_PATH_DEFAULT_FLAGS);
-                assertEquals(explicitResult, defaultResult,
-                    "Explicitly setting default flags yields a different result "
-                    + "than omitting the flags parameter to the SDK function.");
-            
+                String explicitResult = engine.findPath(
+                    startRecordKey,
+                    endRecordKey,
+                    maxDegrees,
+                    SzRecordKeys.of(avoidances),
+                    requiredSources,
+                    SZ_FIND_PATH_DEFAULT_FLAGS);
+                assertEquals(
+                    explicitResult,
+                    defaultResult,
+                    "Explicitly setting default flags yields a different "
+                    + "result than omitting the flags parameter to the "
+                    + "SDK function.");
             } catch (Exception e) {
-                fail("Unexpectedly failed to find path.  startRecord=[ "
-                     + startRecordKey + " ], endRecordKey=[ " + endRecordKey
-                     + " ], maxDegrees=[ " + maxDegrees + " ], avoidances=[ "
-                     + avoidances + " ], requiredSources=[ " + requiredSources
-                     + " ]", e);
+                fail(
+                    "Unexpectedly failed to find path.  startRecord=[ "
+                    + startRecordKey + " ], endRecordKey=[ " + endRecordKey
+                    + " ], maxDegrees=[ " + maxDegrees + " ], avoidances=[ "
+                    + avoidances + " ], requiredSources=[ " + requiredSources
+                    + " ]",
+                    e);
             }
         });
     }
@@ -175,34 +194,40 @@ public class EngineGraphTest
     {
         this.performTest(() -> {
             try {
-                SzEngine engine = (SzEngine)this.env.getEngine();
+                SzEngine engine = (SzEngine) this.env.getEngine();
 
                 long startEntityId = this.getEntityId(startRecordKey);
                 long endEntityId = this.getEntityId(endRecordKey);
 
-                String defaultResult = engine.findPath(startEntityId,
-                                                       endEntityId,
-                                                       maxDegrees,
-                                                       SzEntityIds.of(avoidanceIds),
-                                                       requiredSources);
+                String defaultResult = engine.findPath(
+                    startEntityId,
+                    endEntityId,
+                    maxDegrees,
+                    SzEntityIds.of(avoidanceIds),
+                    requiredSources);
 
-                String explicitResult = engine.findPath(startEntityId,
-                                                        endEntityId,
-                                                        maxDegrees,
-                                                        SzEntityIds.of(avoidanceIds),
-                                                        requiredSources,
-                                                        SZ_FIND_PATH_DEFAULT_FLAGS);
-                
-                assertEquals(explicitResult, defaultResult,
-                    "Explicitly setting default flags yields a different result "
-                    + "than omitting the flags parameter to the SDK function.");
-            
+                String explicitResult = engine.findPath(
+                    startEntityId,
+                    endEntityId,
+                    maxDegrees,
+                    SzEntityIds.of(avoidanceIds),
+                    requiredSources,
+                    SZ_FIND_PATH_DEFAULT_FLAGS);
+
+                assertEquals(
+                    explicitResult,
+                    defaultResult,
+                    "Explicitly setting default flags yields a different "
+                    + "result than omitting the flags parameter to the "
+                    + "SDK function.");
             } catch (Exception e) {
-                fail("Unexpectedly failed to find path.  startRecord=[ "
-                     + startRecordKey + " ], endRecordKey=[ " + endRecordKey
-                     + " ], maxDegrees=[ " + maxDegrees + " ], avoidances=[ "
-                     + avoidances + " ], requiredSources=[ " + requiredSources
-                     + " ]", e);
+                fail(
+                    "Unexpectedly failed to find path.  startRecord=[ "
+                    + startRecordKey + " ], endRecordKey=[ " + endRecordKey
+                    + " ], maxDegrees=[ " + maxDegrees + " ], avoidances=[ "
+                    + avoidances + " ], requiredSources=[ " + requiredSources
+                    + " ]",
+                    e);
             }
         });
     }
@@ -220,12 +245,10 @@ public class EngineGraphTest
     {
         this.performTest(() -> {
             try {
-                SzEngine engine = (SzEngine)this.env.getEngine();
+                SzEngine engine = (SzEngine) this.env.getEngine();
 
-                String simpleResult = engine.findPath(startRecordKey,
-                                                      endRecordKey,
-                                                      maxDegrees,
-                                                      flags);
+                String simpleResult = engine.findPath(
+                    startRecordKey, endRecordKey, maxDegrees, flags);
 
                 String explicitResult = engine.findPath(startRecordKey,
                                                         endRecordKey,
@@ -234,16 +257,20 @@ public class EngineGraphTest
                                                         null,
                                                         flags);
 
-                assertEquals(explicitResult, simpleResult,
-                    "Explicitly setting default flags yields a different result "
-                    + "than omitting the flags parameter to the SDK function.");
-
+                assertEquals(
+                    explicitResult,
+                    simpleResult,
+                    "Explicitly setting default flags yields a different "
+                    + "result than omitting the flags parameter to the "
+                    + "SDK function.");
             } catch (Exception e) {
-                fail("Unexpectedly failed to find path.  startRecord=[ "
-                     + startRecordKey + " ], endRecordKey=[ " + endRecordKey
-                     + " ], maxDegrees=[ " + maxDegrees + " ], avoidances=[ "
-                     + avoidances + " ], requiredSources=[ " + requiredSources
-                     + " ]", e);
+                fail(
+                    "Unexpectedly failed to find path.  startRecord=[ "
+                    + startRecordKey + " ], endRecordKey=[ " + endRecordKey
+                    + " ], maxDegrees=[ " + maxDegrees + " ], avoidances=[ "
+                    + avoidances + " ], requiredSources=[ " + requiredSources
+                    + " ]",
+                    e);
             }
         });
     }
@@ -266,29 +293,26 @@ public class EngineGraphTest
                 long startEntityID = this.getEntityId(startRecordKey);
                 long endEntityID = this.getEntityId(endRecordKey);
 
-                String simpleResult = engine.findPath(startEntityID,
-                                                      endEntityID,
-                                                      maxDegrees,
-                                                      flags);
+                String simpleResult = engine.findPath(
+                    startEntityID, endEntityID, maxDegrees, flags);
 
-                String explicitResult = engine.findPath(startEntityID,
-                                                        endEntityID,
-                                                        maxDegrees,
-                                                        null,
-                                                        null,
-                                                        flags);
+                String explicitResult = engine.findPath(
+                    startEntityID, endEntityID, maxDegrees, null, null, flags);
 
-
-                assertEquals(explicitResult, simpleResult,
-                    "Explicitly setting default flags yields a different result "
-                    + "than omitting the flags parameter to the SDK function.");
-
+                assertEquals(
+                    explicitResult,
+                    simpleResult,
+                    "Explicitly setting default flags yields a different "
+                    + "result than omitting the flags parameter to the "
+                    + "SDK function.");
             } catch (Exception e) {
-                fail("Unexpectedly failed to find path.  startRecord=[ "
-                     + startRecordKey + " ], endRecordKey=[ " + endRecordKey
-                     + " ], maxDegrees=[ " + maxDegrees + " ], avoidances=[ "
-                     + avoidances + " ], requiredSources=[ " + requiredSources
-                     + " ]", e);
+                fail(
+                    "Unexpectedly failed to find path.  startRecord=[ "
+                    + startRecordKey + " ], endRecordKey=[ " + endRecordKey
+                    + " ], maxDegrees=[ " + maxDegrees + " ], avoidances=[ "
+                    + avoidances + " ], requiredSources=[ " + requiredSources
+                    + " ]",
+                    e);
             }
         });
     }
@@ -301,12 +325,11 @@ public class EngineGraphTest
 
         argsList.forEach(args -> {
             Object[] arr = args.get();
-            
+
             // skip the ones that expect an exception
             if (arr[arr.length - 4] != null) return;
             if (arr[arr.length - 5] != null) return;
             result.add(Arguments.of(arr[1], arr[3], arr[4], arr[5]));
-
         });
         return result;
     }
@@ -323,21 +346,25 @@ public class EngineGraphTest
             try {
                 SzEngine engine = (SzEngine) this.env.getEngine();
 
-                String defaultResult = engine.findNetwork(SzRecordKeys.of(recordKeys),
-                                                          maxDegrees,
-                                                          buildOutDegrees,
-                                                          buildOutMaxEntities);
+                String defaultResult = engine.findNetwork(
+                    SzRecordKeys.of(recordKeys),
+                    maxDegrees,
+                    buildOutDegrees,
+                    buildOutMaxEntities);
 
-                String explicitResult = engine.findNetwork(SzRecordKeys.of(recordKeys),
-                                                           maxDegrees,
-                                                           buildOutDegrees,
-                                                           buildOutMaxEntities,
-                                                           SZ_FIND_NETWORK_DEFAULT_FLAGS);
+                String explicitResult = engine.findNetwork(
+                    SzRecordKeys.of(recordKeys),
+                    maxDegrees,
+                    buildOutDegrees,
+                    buildOutMaxEntities,
+                    SZ_FIND_NETWORK_DEFAULT_FLAGS);
 
-                assertEquals(explicitResult, defaultResult,
-                    "Explicitly setting default flags yields a different result "
-                    + "than omitting the flags parameter to the SDK function.");
-
+                assertEquals(
+                    explicitResult,
+                    defaultResult,
+                    "Explicitly setting default flags yields a different "
+                    + "result than omitting the flags parameter to the "
+                    + "SDK function.");
             } catch (Exception e) {
                 fail("Unexpectedly failed getting entity by record", e);
             }
@@ -356,25 +383,29 @@ public class EngineGraphTest
             try {
                 SzEngine engine = (SzEngine) this.env.getEngine();
 
-                Set<Long> entityIDs = new TreeSet<>(this.getEntityIds(recordKeys));
+                Set<Long> entityIDs = new TreeSet<>(
+                    this.getEntityIds(recordKeys));
 
-                String defaultResult = engine.findNetwork(SzEntityIds.of(entityIDs),
-                                                          maxDegrees,
-                                                          buildOutDegrees,
-                                                          buildOutMaxEntities);
+                String defaultResult = engine.findNetwork(
+                    SzEntityIds.of(entityIDs),
+                    maxDegrees,
+                    buildOutDegrees,
+                    buildOutMaxEntities);
 
-                String explicitResult = engine.findNetwork(SzEntityIds.of(entityIDs),
-                                                           maxDegrees,
-                                                           buildOutDegrees,
-                                                           buildOutMaxEntities,
-                                                           SZ_FIND_NETWORK_DEFAULT_FLAGS);
+                String explicitResult = engine.findNetwork(
+                    SzEntityIds.of(entityIDs),
+                    maxDegrees,
+                    buildOutDegrees,
+                    buildOutMaxEntities,
+                    SZ_FIND_NETWORK_DEFAULT_FLAGS);
 
-                assertEquals(explicitResult, defaultResult,
-                    "Explicitly setting default flags yields a different result "
-                    + "than omitting the flags parameter to the SDK function.");
-            }
-            catch (Exception e)
-            {
+                assertEquals(
+                    explicitResult,
+                    defaultResult,
+                    "Explicitly setting default flags yields a different "
+                    + "result than omitting the flags parameter to the "
+                    + "SDK function.");
+            } catch (Exception e) {
                 fail("Unexpectedly failed getting entity by record", e);
             }
         });

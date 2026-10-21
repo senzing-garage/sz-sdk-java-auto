@@ -78,14 +78,17 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest
         String settings = this.getRepoSettings();
         String instanceName = this.getInstanceName();
 
-        SzEnvironment env = SzCoreEnvironment.newBuilder().instanceName(
-            instanceName).settings(settings).verboseLogging(false).build();
+        SzEnvironment env = SzCoreEnvironment.newBuilder()
+                                             .instanceName(instanceName)
+                                             .settings(settings)
+                                             .verboseLogging(false)
+                                             .build();
 
         try {
             String config1 = this.createConfig(env, CUSTOMERS_DATA_SOURCE);
             String config2 = this.createConfig(env, EMPLOYEES_DATA_SOURCE);
-            String config3 = this.createConfig(
-                env, CUSTOMERS_DATA_SOURCE, EMPLOYEES_DATA_SOURCE);
+            String config3 = this.createConfig(env, CUSTOMERS_DATA_SOURCE,
+                                               EMPLOYEES_DATA_SOURCE);
 
             SzConfigManager configMgr = env.getConfigManager();
             this.configId1 = configMgr.registerConfig(config1, "Config 1");
@@ -111,43 +114,49 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest
     @Test
     void testNewDefaultBuilder()
     {
-        this.performTest(() -> {    
-            SzAutoCoreEnvironment env  = null;
-            
+        this.performTest(() -> {
+            SzAutoCoreEnvironment env = null;
+
             try {
                 env = SzAutoCoreEnvironment.newAutoBuilder().build();
-    
-                assertEquals(0, env.getConcurrency(), 
-                    "Environment concurrency is NOT disabled");
+
+                assertEquals(0, env.getConcurrency(),
+                             "Environment concurrency is NOT disabled");
                 assertEquals(DISABLED, env.getConfigRefreshMode(),
-                    "Environment refresh mode is not as expected");
-                assertEquals(DISABLED_CONFIG_REFRESH, env.getConfigRefreshPeriod(),
+                             "Environment refresh mode is not as expected");
+                assertEquals(
+                    DISABLED_CONFIG_REFRESH,
+                    env.getConfigRefreshPeriod(),
                     "Environment config refresh period is not as expected");
-    
             } finally {
-                if (env != null) env.destroy();
-            }    
+                if (env != null) {
+                    env.destroy();
+                }
+            }
         });
     }
 
     @ParameterizedTest
-    @CsvSource({ "true,Custom Instance,0,0", "false,Custom Instance,4,2000", "true,  ,0,3000", "false,,6,0" })
-    void testNewCustomBuilder(boolean   verboseLogging, 
+    @CsvSource({
+        "true,Custom Instance,0,0", "false,Custom Instance,4,2000",
+        "true,  ,0,3000", "false,,6,0"
+    })
+    void testNewCustomBuilder(boolean   verboseLogging,
                               String    instanceName,
                               int       concurrency,
                               long      duration)
     {
         this.performTest(() -> {
             String settings = this.getRepoSettings();
-            
-            SzAutoCoreEnvironment env  = null;
-            
+
+            SzAutoCoreEnvironment env = null;
+
             try {
-                SzAutoCoreEnvironment.Builder builder 
+                SzAutoCoreEnvironment.Builder builder
                     = SzAutoCoreEnvironment.newAutoBuilder();
-                
+
                 Duration configRefreshPeriod = Duration.ofMillis(duration);
-                
+
                 env = builder.instanceName(instanceName)
                              .settings(settings)
                              .verboseLogging(verboseLogging)
@@ -155,32 +164,39 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest
                              .configRefreshPeriod(configRefreshPeriod)
                              .build();
 
-                String expectedName = (instanceName == null || instanceName.trim().length() == 0)
+                String expectedName = (instanceName == null
+                                       || instanceName.trim().length() == 0)
                     ? SzCoreEnvironment.DEFAULT_INSTANCE_NAME : instanceName;
- 
-                int expectedConcurrency = (concurrency == 0) 
+
+                int expectedConcurrency = (concurrency == 0)
                     ? Runtime.getRuntime().availableProcessors() : concurrency;
-                
+
                 assertEquals(expectedName, builder.getInstanceName(),
-                        "Builder instance name is not as expected");
+                             "Builder instance name is not as expected");
 
                 assertEquals(settings, builder.getSettings(),
-                        "Builder settings are not as expected");
+                             "Builder settings are not as expected");
 
-                assertEquals(verboseLogging, builder.isVerboseLogging(),
-                        "Builder verbose logging did not default to false");
-                
-                assertNull(builder.getConfigId(), "Builder config ID is not null");
+                assertEquals(
+                    verboseLogging,
+                    builder.isVerboseLogging(),
+                    "Builder verbose logging did not default to false");
+
+                assertNull(builder.getConfigId(),
+                           "Builder config ID is not null");
 
                 assertEquals(expectedConcurrency, env.getConcurrency(),
-                    "Environment concurrency is not as expected");
-                
-                assertEquals(configRefreshPeriod, env.getConfigRefreshPeriod(),
-                        "Environment config refresh period is not as expected");
-                    
+                             "Environment concurrency is not as expected");
+
+                assertEquals(
+                    configRefreshPeriod,
+                    env.getConfigRefreshPeriod(),
+                    "Environment config refresh period is not as expected");
             } finally {
-                if (env != null) env.destroy();
-            }    
+                if (env != null) {
+                    env.destroy();
+                }
+            }
         });
     }
 
@@ -192,15 +208,15 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest
             SzAutoCoreEnvironment env2 = null;
             try {
                 env1 = (new SzAutoCoreEnvironment.Builder()).build();
-    
+
                 try {
                     env2 = SzAutoCoreEnvironment.newAutoBuilder()
-                                                     .settings(DEFAULT_SETTINGS)
-                                                     .build();
-        
+                                                .settings(DEFAULT_SETTINGS)
+                                                .build();
+
                     // if we get here then we failed
-                    fail("Was able to construct a second environment when first was not yet destroyed");
-        
+                    fail("Was able to construct a second environment when "
+                         + "first was not yet destroyed");
                 } catch (IllegalStateException expected) {
                     // this exception was expected
                 } finally {
@@ -212,7 +228,7 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest
                 if (env1 != null) {
                     env1.destroy();
                 }
-            }    
+            }
         });
     }
 
@@ -224,15 +240,15 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest
             SzAutoCoreEnvironment env2 = null;
             try {
                 env1 = SzCoreEnvironment.newBuilder().build();
-    
+
                 try {
                     env2 = SzAutoCoreEnvironment.newAutoBuilder()
-                                                     .settings(DEFAULT_SETTINGS)
-                                                     .build();
-        
+                                                .settings(DEFAULT_SETTINGS)
+                                                .build();
+
                     // if we get here then we failed
-                    fail("Was able to construct a second environment when first was not yet destroyed");
-        
+                    fail("Was able to construct a second environment when "
+                         + "first was not yet destroyed");
                 } catch (IllegalStateException expected) {
                     // this exception was expected
                 } finally {
@@ -244,7 +260,7 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest
                 if (env1 != null) {
                     env1.destroy();
                 }
-            }    
+            }
         });
     }
 
@@ -256,20 +272,19 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest
             SzAutoCoreEnvironment env2 = null;
             try {
                 env1 = SzAutoCoreEnvironment.newAutoBuilder()
-                                                 .instanceName("Instance 1")
-                                                 .build();
-    
+                                            .instanceName("Instance 1")
+                                            .build();
+
                 env1.destroy();
                 env1 = null;
-    
+
                 env2 = SzAutoCoreEnvironment.newAutoBuilder()
-                                                 .instanceName("Instance 2")
-                                                 .settings(DEFAULT_SETTINGS)
-                                                 .build();
-    
+                                            .instanceName("Instance 2")
+                                            .settings(DEFAULT_SETTINGS)
+                                            .build();
+
                 env2.destroy();
                 env2 = null;
-    
             } finally {
                 if (env1 != null) {
                     env1.destroy();
@@ -277,7 +292,7 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest
                 if (env2 != null) {
                     env2.destroy();
                 }
-            }    
+            }
         });
     }
 
@@ -291,18 +306,17 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest
                 env1 = SzCoreEnvironment.newBuilder()
                                         .instanceName("Instance 1")
                                         .build();
-    
+
                 env1.destroy();
                 env1 = null;
-    
+
                 env2 = SzAutoCoreEnvironment.newAutoBuilder()
-                                                 .instanceName("Instance 2")
-                                                 .settings(DEFAULT_SETTINGS)
-                                                 .build();
-    
+                                            .instanceName("Instance 2")
+                                            .settings(DEFAULT_SETTINGS)
+                                            .build();
+
                 env2.destroy();
                 env2 = null;
-    
             } finally {
                 if (env1 != null) {
                     env1.destroy();
@@ -310,7 +324,7 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest
                 if (env2 != null) {
                     env2.destroy();
                 }
-            }    
+            }
         });
     }
 
@@ -323,38 +337,41 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest
             try {
                 // get the first environment
                 env1 = SzAutoCoreEnvironment.newAutoBuilder()
-                                                 .instanceName("Instance 1")
-                                                 .build();
-    
+                                            .instanceName("Instance 1")
+                                            .build();
+
                 // ensure it is active
-                assertFalse(env1.isDestroyed(),  "First Environment instance is destroyed.");
-    
+                assertFalse(env1.isDestroyed(),
+                            "First Environment instance is destroyed.");
+
                 // destroy the first environment
                 env1.destroy();
-    
+
                 // check it is now inactive
-                assertTrue(env1.isDestroyed(), "First Environment instance is still active.");
-    
+                assertTrue(env1.isDestroyed(),
+                           "First Environment instance is still active.");
+
                 // clear the env1 reference
                 env1 = null;
-                
+
                 // create a second environment instance
                 env2 = SzAutoCoreEnvironment.newAutoBuilder()
-                                                 .instanceName("Instance 2")
-                                                 .settings(DEFAULT_SETTINGS)
-                                                 .build();
-    
+                                            .instanceName("Instance 2")
+                                            .settings(DEFAULT_SETTINGS)
+                                            .build();
+
                 // ensure it is active
-                assertFalse(env2.isDestroyed(),  "Second Environment instance is destroyed.");
-    
+                assertFalse(env2.isDestroyed(),
+                            "Second Environment instance is destroyed.");
+
                 // destroy the first environment
                 env2.destroy();
-    
+
                 // check it is now inactive
-                assertTrue(env2.isDestroyed(), "Second Environment instance is still active.");
-    
+                assertTrue(env2.isDestroyed(),
+                           "Second Environment instance is still active.");
+
                 env2 = null;
-    
             } finally {
                 if (env1 != null) {
                     env1.destroy();
@@ -362,7 +379,7 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest
                 if (env2 != null) {
                     env2.destroy();
                 }
-            }    
+            }
         });
     }
 
@@ -386,34 +403,41 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest
         = (r) -> new CallingThread(r);
 
     @ParameterizedTest
-    @CsvSource({"1, 1, Foo", "1, 0, Foo", "2, 0, Bar", "2, 1, Bar", "2, 2, Bar", 
-                "3, 0, Phoo", "3, 1, Phoo", "3, 2, Phoo", "4, 0, Phoox", "4, 1, Phoox",
-                "4, 2, Phoox", "4, 3, Phoox", "4, 4, Phoox"})
+    @CsvSource({
+        "1, 1, Foo", "1, 0, Foo", "2, 0, Bar", "2, 1, Bar", "2, 2, Bar",
+        "3, 0, Phoo", "3, 1, Phoo", "3, 2, Phoo", "4, 0, Phoox", "4, 1, Phoox",
+        "4, 2, Phoox", "4, 3, Phoox", "4, 4, Phoox"
+    })
     void testExecute(int threadCount, int concurrencyParam, String expected)
     {
         Integer concurrency = (concurrencyParam == 0) ? null : concurrencyParam;
         this.performTest(() -> {
-            SzAutoCoreEnvironment env  = null;
+            SzAutoCoreEnvironment env = null;
 
-            final IdentityHashMap<Thread,Integer> threadMap = new IdentityHashMap<>();
+            final IdentityHashMap<Thread, Integer> threadMap
+                = new IdentityHashMap<>();
 
             ThreadPoolExecutor threadPool = new ThreadPoolExecutor(
-                threadCount, threadCount, 10L, SECONDS, 
-                new LinkedBlockingQueue<>(), THREAD_FACTORY);
-    
+                threadCount,
+                threadCount,
+                10L,
+                SECONDS,
+                new LinkedBlockingQueue<>(),
+                THREAD_FACTORY);
+
             List<Future<String>> futures = new ArrayList<>(threadCount);
             try {
-                env  = SzAutoCoreEnvironment.newAutoBuilder()
-                                                 .concurrency(concurrency)
-                                                 .build();
-    
+                env = SzAutoCoreEnvironment.newAutoBuilder()
+                                           .concurrency(concurrency)
+                                           .build();
+
                 final SzAutoCoreEnvironment environment = env;
-    
+
                 Callable<String> task = () -> {
                     synchronized (threadMap) {
                         Thread currentThread = Thread.currentThread();
                         Integer count = threadMap.get(currentThread);
-                        if (count == null) { 
+                        if (count == null) {
                             count = 1;
                         } else {
                             count = count + 1;
@@ -441,18 +465,19 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest
                     try {
                         String actual = environment.execute(task);
 
-                        assertEquals(expected, actual, "Unexpected result from execute()");
-
+                        assertEquals(expected, actual,
+                                     "Unexpected result from execute()");
                     } catch (Exception e) {
                         fail("Failed with unexpected exception", e);
                     }
                 }
-                
+
                 // loop through the futures
                 for (Future<String> future : futures) {
                     try {
                         String actual = future.get();
-                        assertEquals(expected, actual, "Unexpected result from execute()");
+                        assertEquals(expected, actual,
+                                     "Unexpected result from execute()");
                     } catch (Exception e) {
                         fail("Failed execute with exception", e);
                     }
@@ -460,46 +485,79 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest
 
                 // check the thread map
                 if (concurrency == null) {
-                    assertTrue(threadMap.containsKey(Thread.currentThread()),
-                                "Tasks were unexpectedly executed in a thread other "
-                                + "than the calling thread");
+                    assertTrue(
+                        threadMap.containsKey(Thread.currentThread()),
+                        "Tasks were unexpectedly executed in a thread other "
+                        + "than the calling thread");
 
-                    assertEquals(threadCount, threadMap.get(Thread.currentThread()),
-                                 "Unexpected number of tasks executed in primary calling thread");
+                    assertEquals(
+                        threadCount,
+                        threadMap.get(Thread.currentThread()),
+                        "Unexpected number of tasks executed in primary "
+                        + "calling thread");
 
-                    assertEquals(threadCount, 
-                                 threadMap.entrySet().stream()
-                                          .filter((e) -> (e.getKey() instanceof CallingThread))
-                                          .mapToInt(e -> e.getValue()).sum(),
-                                 "Unexpected number of tasks executed in pooled calling threads");
+                    assertEquals(
+                        threadCount,
+                        threadMap
+                            .entrySet()
+                            .stream()
+                            .filter(
+                                (e) -> (e.getKey() instanceof CallingThread))
+                            .mapToInt(e -> e.getValue())
+                            .sum(),
+                        "Unexpected number of tasks executed in pooled "
+                        + "calling threads");
 
-                    assertTrue(threadMap.keySet().stream().noneMatch(thread -> thread instanceof CoreThread), 
-                               "At least some tasks were executed in a CoreThread");
+                    assertTrue(
+                        threadMap
+                            .keySet()
+                            .stream()
+                            .noneMatch(thread -> thread instanceof CoreThread),
+                        "At least some tasks were executed in a CoreThread");
 
-                    assertTrue(threadMap.keySet().stream().allMatch(
-                               thread -> (thread instanceof CallingThread || thread == Thread.currentThread())), 
-                               "At least some tasks were executed in an unexpected thread");
-                        
+                    assertTrue(
+                        threadMap
+                            .keySet()
+                            .stream()
+                            .allMatch(
+                                thread -> (thread instanceof CallingThread
+                                    || thread == Thread.currentThread())),
+                        "At least some tasks were executed in an unexpected "
+                        + "thread");
                 } else {
-                    assertTrue(threadMap.keySet().stream().noneMatch(
-                               thread -> (thread instanceof CallingThread || thread == Thread.currentThread())), 
-                               "At least some tasks were executed in a calling thread");
+                    assertTrue(
+                        threadMap
+                            .keySet()
+                            .stream()
+                            .noneMatch(
+                                thread -> (thread instanceof CallingThread
+                                    || thread == Thread.currentThread())),
+                        "At least some tasks were executed in a calling "
+                        + "thread");
 
-                    assertTrue(threadMap.keySet().stream().allMatch(thread -> thread instanceof CoreThread), 
-                               "At least some tasks were executed outside a CoreThread");
+                    assertTrue(
+                        threadMap
+                            .keySet()
+                            .stream()
+                            .allMatch(thread -> thread instanceof CoreThread),
+                        "At least some tasks were executed outside a "
+                        + "CoreThread");
 
-                    assertEquals(threadCount * 2, 
-                                 threadMap.entrySet().stream().mapToInt(e -> e.getValue()).sum(),
-                                 "Unexpected number of tasks executed in core execution threads");
+                    assertEquals(
+                        threadCount * 2,
+                        threadMap.entrySet()
+                                 .stream()
+                                 .mapToInt(e -> e.getValue())
+                                 .sum(),
+                        "Unexpected number of tasks executed in core "
+                        + "execution threads");
                 }
                 threadMap.clear();
-
-    
             } finally {
                 if (env != null) {
                     env.destroy();
                 }
-            }    
+            }
         });
     }
 
@@ -509,29 +567,25 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest
             SzAutoCoreEnvironment env = null;
             try {
                 env = SzAutoCoreEnvironment.newAutoBuilder()
-                                                .concurrency(DISABLED_CONCURRENCY)
-                                                .build();
-            
+                                           .concurrency(DISABLED_CONCURRENCY)
+                                           .build();
+
                 boolean fail = true;
                 Future<String> future = env.submitTask(() -> {
-                    if (fail) {
-                        throw new IllegalArgumentException("TEST");
-                    }
+                    if (fail) throw new IllegalArgumentException("TEST");
                     return "SUCCESS";
                 });
                 try {
                     future.get();
 
                     fail("Unexpectedly succeeded future");
-
                 } catch (ExecutionException expected) {
                     Throwable cause = expected.getCause();
                     assertInstanceOf(IllegalArgumentException.class, cause,
-                                "Unexpected cause exception type");
+                                     "Unexpected cause exception type");
 
                     assertEquals("TEST", cause.getMessage(),
                                  "Unexpected cause exception message");
-                                 
                 } catch (Exception e) {
                     fail("Unexpected exception", e);
                 }
@@ -540,7 +594,6 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest
                     env.destroy();
                 }
             }
-
         });
     }
 
@@ -550,9 +603,9 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest
             SzAutoCoreEnvironment env = null;
             try {
                 env = SzAutoCoreEnvironment.newAutoBuilder()
-                                                .concurrency(DISABLED_CONCURRENCY)
-                                                .build();
-            
+                                           .concurrency(DISABLED_CONCURRENCY)
+                                           .build();
+
                 Future<?> future = env.submitTask(() -> {
                     throw new IllegalArgumentException("TEST");
                 });
@@ -560,15 +613,13 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest
                     future.get();
 
                     fail("Unexpectedly succeeded future");
-
                 } catch (ExecutionException expected) {
                     Throwable cause = expected.getCause();
                     assertInstanceOf(IllegalArgumentException.class, cause,
-                                "Unexpected cause exception type");
+                                     "Unexpected cause exception type");
 
                     assertEquals("TEST", cause.getMessage(),
                                  "Unexpected cause exception message");
-
                 } catch (Exception e) {
                     fail("Unexpected exception", e);
                 }
@@ -577,7 +628,6 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest
                     env.destroy();
                 }
             }
-
         });
     }
 
@@ -587,26 +637,25 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest
             SzAutoCoreEnvironment env = null;
             try {
                 env = SzAutoCoreEnvironment.newAutoBuilder()
-                                                .concurrency(DISABLED_CONCURRENCY)
-                                                .build();
-            
+                                           .concurrency(DISABLED_CONCURRENCY)
+                                           .build();
+
                 Future<String> future = env.submitTask(() -> {
                     throw new IllegalArgumentException("TEST");
-                }, "SUCCESS");
+                },
+                                                       "SUCCESS");
 
                 try {
                     future.get();
 
                     fail("Unexpectedly succeeded future");
-
                 } catch (ExecutionException expected) {
                     Throwable cause = expected.getCause();
                     assertInstanceOf(IllegalArgumentException.class, cause,
-                                "Unexpected cause exception type");
+                                     "Unexpected cause exception type");
 
                     assertEquals("TEST", cause.getMessage(),
                                  "Unexpected cause exception message");
-
                 } catch (Exception e) {
                     fail("Unexpected exception", e);
                 }
@@ -615,41 +664,47 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest
                     env.destroy();
                 }
             }
-
         });
     }
 
     @ParameterizedTest
-    @CsvSource({"1, 1, Foo", "1, 0, Foo", "2, 0, Bar", "2, 1, Bar", "2, 2, Bar", 
-                "3, 0, Phoo", "3, 1, Phoo", "3, 2, Phoo", "4, 0, Phoox", "4, 1, Phoox",
-                "4, 2, Phoox", "4, 3, Phoox", "4, 4, Phoox"})
+    @CsvSource({
+        "1, 1, Foo", "1, 0, Foo", "2, 0, Bar", "2, 1, Bar", "2, 2, Bar",
+        "3, 0, Phoo", "3, 1, Phoo", "3, 2, Phoo", "4, 0, Phoox", "4, 1, Phoox",
+        "4, 2, Phoox", "4, 3, Phoox", "4, 4, Phoox"
+    })
     void testSubmitTaskCallable(int threadCount,
                                 int concurrencyParam,
                                 String expected)
     {
         Integer concurrency = (concurrencyParam == 0) ? null : concurrencyParam;
         this.performTest(() -> {
-            SzAutoCoreEnvironment env  = null;
+            SzAutoCoreEnvironment env = null;
 
-            final IdentityHashMap<Thread,Integer> threadMap = new IdentityHashMap<>();
+            final IdentityHashMap<Thread, Integer> threadMap
+                = new IdentityHashMap<>();
 
             ThreadPoolExecutor threadPool = new ThreadPoolExecutor(
-                threadCount, threadCount, 10L, SECONDS, 
-                new LinkedBlockingQueue<>(), THREAD_FACTORY);
-    
+                threadCount,
+                threadCount,
+                10L,
+                SECONDS,
+                new LinkedBlockingQueue<>(),
+                THREAD_FACTORY);
+
             List<Future<String>> futures = new ArrayList<>(threadCount);
             try {
-                env  = SzAutoCoreEnvironment.newAutoBuilder()
-                                                 .concurrency(concurrency)
-                                                 .build();
-    
+                env = SzAutoCoreEnvironment.newAutoBuilder()
+                                           .concurrency(concurrency)
+                                           .build();
+
                 final SzAutoCoreEnvironment environment = env;
-    
+
                 Callable<String> task = () -> {
                     synchronized (threadMap) {
                         Thread currentThread = Thread.currentThread();
                         Integer count = threadMap.get(currentThread);
-                        if (count == null) { 
+                        if (count == null) {
                             count = 1;
                         } else {
                             count = count + 1;
@@ -667,8 +722,9 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest
                 // loop through the threads
                 for (int index = 0; index < threadCount; index++) {
                     Future<String> future = threadPool.submit(() -> {
-                         Future<String> subFuture = environment.submitTask(task);
-                         return subFuture.get();
+                        Future<String> subFuture = environment.submitTask(
+                            task);
+                        return subFuture.get();
                     });
                     futures.add(future);
                 }
@@ -678,17 +734,17 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest
                     try {
                         Future<String> future = environment.submitTask(task);
                         futures.add(future);
-
                     } catch (Exception e) {
                         fail("Failed with unexpected exception", e);
                     }
                 }
-                
+
                 // loop through the futures
                 for (Future<String> future : futures) {
                     try {
                         String actual = future.get();
-                        assertEquals(expected, actual, "Unexpected result from execute()");
+                        assertEquals(expected, actual,
+                                     "Unexpected result from execute()");
                     } catch (Exception e) {
                         fail("Failed execute with exception", e);
                     }
@@ -708,80 +764,120 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest
 
                 // check the thread map
                 if (concurrency == null) {
-                    assertTrue(threadMap.containsKey(Thread.currentThread()),
-                                "Tasks were unexpectedly executed in a thread other "
-                                + "than the calling thread");
+                    assertTrue(
+                        threadMap.containsKey(Thread.currentThread()),
+                        "Tasks were unexpectedly executed in a thread other "
+                        + "than the calling thread");
 
-                    assertEquals(threadCount, threadMap.get(Thread.currentThread()),
-                                 "Unexpected number of tasks executed in primary calling thread");
+                    assertEquals(
+                        threadCount,
+                        threadMap.get(Thread.currentThread()),
+                        "Unexpected number of tasks executed in primary "
+                        + "calling thread");
 
-                    assertEquals(threadCount, 
-                                 threadMap.entrySet().stream()
-                                          .filter((e) -> (e.getKey() instanceof CallingThread))
-                                          .mapToInt(e -> e.getValue()).sum(),
-                                 "Unexpected number of tasks executed in pooled calling threads");
+                    assertEquals(
+                        threadCount,
+                        threadMap
+                            .entrySet()
+                            .stream()
+                            .filter(
+                                (e) -> (e.getKey() instanceof CallingThread))
+                            .mapToInt(e -> e.getValue())
+                            .sum(),
+                        "Unexpected number of tasks executed in pooled "
+                        + "calling threads");
 
-                    assertTrue(threadMap.keySet().stream().noneMatch(thread -> thread instanceof CoreThread), 
-                               "At least some tasks were executed in a CoreThread");
+                    assertTrue(
+                        threadMap
+                            .keySet()
+                            .stream()
+                            .noneMatch(thread -> thread instanceof CoreThread),
+                        "At least some tasks were executed in a CoreThread");
 
-                    assertTrue(threadMap.keySet().stream().allMatch(
-                               thread -> (thread instanceof CallingThread || thread == Thread.currentThread())), 
-                               "At least some tasks were executed in an unexpected thread");
-                        
+                    assertTrue(
+                        threadMap
+                            .keySet()
+                            .stream()
+                            .allMatch(
+                                thread -> (thread instanceof CallingThread
+                                    || thread == Thread.currentThread())),
+                        "At least some tasks were executed in an unexpected "
+                        + "thread");
                 } else {
-                    assertTrue(threadMap.keySet().stream().noneMatch(
-                               thread -> (thread instanceof CallingThread || thread == Thread.currentThread())), 
-                               "At least some tasks were executed in a calling thread");
+                    assertTrue(
+                        threadMap
+                            .keySet()
+                            .stream()
+                            .noneMatch(
+                                thread -> (thread instanceof CallingThread
+                                    || thread == Thread.currentThread())),
+                        "At least some tasks were executed in a calling "
+                        + "thread");
 
-                    assertTrue(threadMap.keySet().stream().allMatch(thread -> thread instanceof CoreThread), 
-                               "At least some tasks were executed outside a CoreThread");
+                    assertTrue(
+                        threadMap
+                            .keySet()
+                            .stream()
+                            .allMatch(thread -> thread instanceof CoreThread),
+                        "At least some tasks were executed outside a "
+                        + "CoreThread");
 
-                    assertEquals(threadCount * 2, 
-                                 threadMap.entrySet().stream().mapToInt(e -> e.getValue()).sum(),
-                                 "Unexpected number of tasks executed in core execution threads");
+                    assertEquals(
+                        threadCount * 2,
+                        threadMap.entrySet()
+                                 .stream()
+                                 .mapToInt(e -> e.getValue())
+                                 .sum(),
+                        "Unexpected number of tasks executed in core "
+                        + "execution threads");
                 }
                 threadMap.clear();
-
-    
             } finally {
                 if (env != null) {
                     env.destroy();
                 }
-            }    
+            }
         });
     }
 
     @ParameterizedTest
-    @CsvSource({"1, 1, Foo", "1, 0, Foo", "2, 0, Bar", "2, 1, Bar", "2, 2, Bar", 
-                "3, 0, Phoo", "3, 1, Phoo", "3, 2, Phoo", "4, 0, Phoox", "4, 1, Phoox",
-                "4, 2, Phoox", "4, 3, Phoox", "4, 4, Phoox"})
+    @CsvSource({
+        "1, 1, Foo", "1, 0, Foo", "2, 0, Bar", "2, 1, Bar", "2, 2, Bar",
+        "3, 0, Phoo", "3, 1, Phoo", "3, 2, Phoo", "4, 0, Phoox", "4, 1, Phoox",
+        "4, 2, Phoox", "4, 3, Phoox", "4, 4, Phoox"
+    })
     void testSubmitTaskRunnableResult(int threadCount,
                                       int concurrencyParam,
                                       String expected)
     {
         Integer concurrency = (concurrencyParam == 0) ? null : concurrencyParam;
         this.performTest(() -> {
-            SzAutoCoreEnvironment env  = null;
+            SzAutoCoreEnvironment env = null;
 
-            final IdentityHashMap<Thread,Integer> threadMap = new IdentityHashMap<>();
+            final IdentityHashMap<Thread, Integer> threadMap
+                = new IdentityHashMap<>();
 
             ThreadPoolExecutor threadPool = new ThreadPoolExecutor(
-                threadCount, threadCount, 10L, SECONDS, 
-                new LinkedBlockingQueue<>(), THREAD_FACTORY);
-    
+                threadCount,
+                threadCount,
+                10L,
+                SECONDS,
+                new LinkedBlockingQueue<>(),
+                THREAD_FACTORY);
+
             List<Future<String>> futures = new ArrayList<>(threadCount);
             try {
-                env  = SzAutoCoreEnvironment.newAutoBuilder()
-                                                 .concurrency(concurrency)
-                                                 .build();
-    
+                env = SzAutoCoreEnvironment.newAutoBuilder()
+                                           .concurrency(concurrency)
+                                           .build();
+
                 final SzAutoCoreEnvironment environment = env;
-    
+
                 Runnable task = () -> {
                     synchronized (threadMap) {
                         Thread currentThread = Thread.currentThread();
                         Integer count = threadMap.get(currentThread);
-                        if (count == null) { 
+                        if (count == null) {
                             count = 1;
                         } else {
                             count = count + 1;
@@ -798,8 +894,9 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest
                 // loop through the threads
                 for (int index = 0; index < threadCount; index++) {
                     Future<String> future = threadPool.submit(() -> {
-                         Future<String> subFuture = environment.submitTask(task, expected);
-                         return subFuture.get();
+                        Future<String> subFuture = environment.submitTask(
+                            task, expected);
+                        return subFuture.get();
                     });
                     futures.add(future);
                 }
@@ -807,19 +904,20 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest
                 // execute the same tasks from this thread
                 for (int index = 0; index < threadCount; index++) {
                     try {
-                        Future<String> future = environment.submitTask(task, expected);
+                        Future<String> future = environment.submitTask(
+                            task, expected);
                         futures.add(future);
-                        
                     } catch (Exception e) {
                         fail("Failed with unexpected exception", e);
                     }
                 }
-                
+
                 // loop through the futures
                 for (Future<String> future : futures) {
                     try {
                         String actual = future.get();
-                        assertEquals(expected, actual, "Unexpected result from execute()");
+                        assertEquals(expected, actual,
+                                     "Unexpected result from execute()");
                     } catch (Exception e) {
                         fail("Failed execute with exception", e);
                     }
@@ -839,76 +937,116 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest
 
                 // check the thread map
                 if (concurrency == null) {
-                    assertTrue(threadMap.containsKey(Thread.currentThread()),
-                                "Tasks were unexpectedly executed in a thread other "
-                                + "than the calling thread");
+                    assertTrue(
+                        threadMap.containsKey(Thread.currentThread()),
+                        "Tasks were unexpectedly executed in a thread other "
+                        + "than the calling thread");
 
-                    assertEquals(threadCount, threadMap.get(Thread.currentThread()),
-                                 "Unexpected number of tasks executed in primary calling thread");
+                    assertEquals(
+                        threadCount,
+                        threadMap.get(Thread.currentThread()),
+                        "Unexpected number of tasks executed in primary "
+                        + "calling thread");
 
-                    assertEquals(threadCount, 
-                                 threadMap.entrySet().stream()
-                                          .filter((e) -> (e.getKey() instanceof CallingThread))
-                                          .mapToInt(e -> e.getValue()).sum(),
-                                 "Unexpected number of tasks executed in pooled calling threads");
+                    assertEquals(
+                        threadCount,
+                        threadMap
+                            .entrySet()
+                            .stream()
+                            .filter(
+                                (e) -> (e.getKey() instanceof CallingThread))
+                            .mapToInt(e -> e.getValue())
+                            .sum(),
+                        "Unexpected number of tasks executed in pooled "
+                        + "calling threads");
 
-                    assertTrue(threadMap.keySet().stream().noneMatch(thread -> thread instanceof CoreThread), 
-                               "At least some tasks were executed in a CoreThread");
+                    assertTrue(
+                        threadMap
+                            .keySet()
+                            .stream()
+                            .noneMatch(thread -> thread instanceof CoreThread),
+                        "At least some tasks were executed in a CoreThread");
 
-                    assertTrue(threadMap.keySet().stream().allMatch(
-                               thread -> (thread instanceof CallingThread || thread == Thread.currentThread())), 
-                               "At least some tasks were executed in an unexpected thread");
-                        
+                    assertTrue(
+                        threadMap
+                            .keySet()
+                            .stream()
+                            .allMatch(
+                                thread -> (thread instanceof CallingThread
+                                    || thread == Thread.currentThread())),
+                        "At least some tasks were executed in an unexpected "
+                        + "thread");
                 } else {
-                    assertTrue(threadMap.keySet().stream().noneMatch(
-                               thread -> (thread instanceof CallingThread || thread == Thread.currentThread())), 
-                               "At least some tasks were executed in a calling thread");
+                    assertTrue(
+                        threadMap
+                            .keySet()
+                            .stream()
+                            .noneMatch(
+                                thread -> (thread instanceof CallingThread
+                                    || thread == Thread.currentThread())),
+                        "At least some tasks were executed in a calling "
+                        + "thread");
 
-                    assertTrue(threadMap.keySet().stream().allMatch(thread -> thread instanceof CoreThread), 
-                               "At least some tasks were executed outside a CoreThread");
+                    assertTrue(
+                        threadMap
+                            .keySet()
+                            .stream()
+                            .allMatch(thread -> thread instanceof CoreThread),
+                        "At least some tasks were executed outside a "
+                        + "CoreThread");
 
-                    assertEquals(threadCount * 2, 
-                                 threadMap.entrySet().stream().mapToInt(e -> e.getValue()).sum(),
-                                 "Unexpected number of tasks executed in core execution threads");
+                    assertEquals(
+                        threadCount * 2,
+                        threadMap.entrySet()
+                                 .stream()
+                                 .mapToInt(e -> e.getValue())
+                                 .sum(),
+                        "Unexpected number of tasks executed in core "
+                        + "execution threads");
                 }
                 threadMap.clear();
-
-    
             } finally {
                 if (env != null) {
                     env.destroy();
                 }
-            }    
+            }
         });
     }
 
     @ParameterizedTest
-    @CsvSource({"1, 1", "1, 0", "2, 0", "2, 1", "2, 2", "3, 0", "3, 1", 
-                "3, 2", "4, 0", "4, 1", "4, 2", "4, 3", "4, 4"})
+    @CsvSource({
+        "1, 1", "1, 0", "2, 0", "2, 1", "2, 2", "3, 0", "3, 1", "3, 2", "4, 0",
+        "4, 1", "4, 2", "4, 3", "4, 4"
+    })
     void testSubmitTaskRunnable(int threadCount, int concurrencyParam)
     {
         Integer concurrency = (concurrencyParam == 0) ? null : concurrencyParam;
         this.performTest(() -> {
-            SzAutoCoreEnvironment env  = null;
+            SzAutoCoreEnvironment env = null;
 
-            final IdentityHashMap<Thread,Integer> threadMap = new IdentityHashMap<>();
+            final IdentityHashMap<Thread, Integer> threadMap
+                = new IdentityHashMap<>();
 
             ThreadPoolExecutor threadPool = new ThreadPoolExecutor(
-                threadCount, threadCount, 10L, SECONDS, 
-                new LinkedBlockingQueue<>(), THREAD_FACTORY);
-    
+                threadCount,
+                threadCount,
+                10L,
+                SECONDS,
+                new LinkedBlockingQueue<>(),
+                THREAD_FACTORY);
+
             try {
-                env  = SzAutoCoreEnvironment.newAutoBuilder()
-                                                 .concurrency(concurrency)
-                                                 .build();
-    
+                env = SzAutoCoreEnvironment.newAutoBuilder()
+                                           .concurrency(concurrency)
+                                           .build();
+
                 final SzAutoCoreEnvironment environment = env;
-    
+
                 Runnable task = () -> {
                     synchronized (threadMap) {
                         Thread currentThread = Thread.currentThread();
                         Integer count = threadMap.get(currentThread);
-                        if (count == null) { 
+                        if (count == null) {
                             count = 1;
                         } else {
                             count = count + 1;
@@ -933,7 +1071,6 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest
                 for (int index = 0; index < threadCount; index++) {
                     try {
                         environment.submitTask(task);
-                        
                     } catch (Exception e) {
                         fail("Failed with unexpected exception", e);
                     }
@@ -953,46 +1090,79 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest
 
                 // check the thread map
                 if (concurrency == null) {
-                    assertTrue(threadMap.containsKey(Thread.currentThread()),
-                                "Tasks were unexpectedly executed in a thread other "
-                                + "than the calling thread");
+                    assertTrue(
+                        threadMap.containsKey(Thread.currentThread()),
+                        "Tasks were unexpectedly executed in a thread other "
+                        + "than the calling thread");
 
-                    assertEquals(threadCount, threadMap.get(Thread.currentThread()),
-                                 "Unexpected number of tasks executed in primary calling thread");
+                    assertEquals(
+                        threadCount,
+                        threadMap.get(Thread.currentThread()),
+                        "Unexpected number of tasks executed in primary "
+                        + "calling thread");
 
-                    assertEquals(threadCount, 
-                                 threadMap.entrySet().stream()
-                                          .filter((e) -> (e.getKey() instanceof CallingThread))
-                                          .mapToInt(e -> e.getValue()).sum(),
-                                 "Unexpected number of tasks executed in pooled calling threads");
+                    assertEquals(
+                        threadCount,
+                        threadMap
+                            .entrySet()
+                            .stream()
+                            .filter(
+                                (e) -> (e.getKey() instanceof CallingThread))
+                            .mapToInt(e -> e.getValue())
+                            .sum(),
+                        "Unexpected number of tasks executed in pooled "
+                        + "calling threads");
 
-                    assertTrue(threadMap.keySet().stream().noneMatch(thread -> thread instanceof CoreThread), 
-                               "At least some tasks were executed in a CoreThread");
+                    assertTrue(
+                        threadMap
+                            .keySet()
+                            .stream()
+                            .noneMatch(thread -> thread instanceof CoreThread),
+                        "At least some tasks were executed in a CoreThread");
 
-                    assertTrue(threadMap.keySet().stream().allMatch(
-                               thread -> (thread instanceof CallingThread || thread == Thread.currentThread())), 
-                               "At least some tasks were executed in an unexpected thread");
-                        
+                    assertTrue(
+                        threadMap
+                            .keySet()
+                            .stream()
+                            .allMatch(
+                                thread -> (thread instanceof CallingThread
+                                    || thread == Thread.currentThread())),
+                        "At least some tasks were executed in an unexpected "
+                        + "thread");
                 } else {
-                    assertTrue(threadMap.keySet().stream().noneMatch(
-                               thread -> (thread instanceof CallingThread || thread == Thread.currentThread())), 
-                               "At least some tasks were executed in a calling thread");
+                    assertTrue(
+                        threadMap
+                            .keySet()
+                            .stream()
+                            .noneMatch(
+                                thread -> (thread instanceof CallingThread
+                                    || thread == Thread.currentThread())),
+                        "At least some tasks were executed in a calling "
+                        + "thread");
 
-                    assertTrue(threadMap.keySet().stream().allMatch(thread -> thread instanceof CoreThread), 
-                               "At least some tasks were executed outside a CoreThread");
+                    assertTrue(
+                        threadMap
+                            .keySet()
+                            .stream()
+                            .allMatch(thread -> thread instanceof CoreThread),
+                        "At least some tasks were executed outside a "
+                        + "CoreThread");
 
-                    assertEquals(threadCount * 2, 
-                                 threadMap.entrySet().stream().mapToInt(e -> e.getValue()).sum(),
-                                 "Unexpected number of tasks executed in core execution threads");
+                    assertEquals(
+                        threadCount * 2,
+                        threadMap.entrySet()
+                                 .stream()
+                                 .mapToInt(e -> e.getValue())
+                                 .sum(),
+                        "Unexpected number of tasks executed in core "
+                        + "execution threads");
                 }
                 threadMap.clear();
-
-    
             } finally {
                 if (env != null) {
                     env.destroy();
                 }
-            }    
+            }
         });
     }
 
@@ -1001,29 +1171,27 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest
     void testExecuteFail(String expected)
     {
         this.performTest(() -> {
-            SzAutoCoreEnvironment env  = null;
+            SzAutoCoreEnvironment env = null;
             try {
-                env  = SzAutoCoreEnvironment.newAutoBuilder().build();
-    
+                env = SzAutoCoreEnvironment.newAutoBuilder().build();
+
                 try {
-                   env.execute(() -> {
+                    env.execute(() -> {
                         throw new SzException(expected);
-                   });
-    
-                   fail("Expected SzException was not thrown");
-    
+                    });
+
+                    fail("Expected SzException was not thrown");
                 } catch (SzException e) {
-                    assertEquals(expected, e.getMessage(), "Unexpected exception messasge");
-    
+                    assertEquals(expected, e.getMessage(),
+                                 "Unexpected exception messasge");
                 } catch (Exception e) {
                     fail("Failed execute with exception", e);
                 }
-    
             } finally {
                 if (env != null) {
                     env.destroy();
                 }
-            }    
+            }
         });
     }
 
@@ -1031,7 +1199,8 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest
     void testDestroyRaceConditions()
     {
         this.performTest(() -> {
-            SzAutoCoreEnvironment env = SzAutoCoreEnvironment.newAutoBuilder().build();
+            SzAutoCoreEnvironment env = SzAutoCoreEnvironment.newAutoBuilder()
+                                                             .build();
 
             final Object monitor = new Object();
             final Exception[] failures = { null, null, null };
@@ -1055,7 +1224,7 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest
                     long start = System.nanoTime();
                     env.destroy();
                     long end = System.nanoTime();
-        
+
                     destroyDuration[0] = (end - start) / 1000000L;
                 } catch (Exception e) {
                     failures[1] = e;
@@ -1077,7 +1246,7 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest
 
             boolean destroyed = env.isDestroyed();
             assertTrue(destroyed, "Environment NOT marked as destroyed");
-            
+
             SzCoreEnvironment active = SzCoreEnvironment.getActiveInstance();
 
             assertNull(active, "Active instance was NOT null when destroying");
@@ -1087,8 +1256,8 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest
                 env.execute(() -> {
                     return null;
                 });
-                fail("Unexpectedly managed to execute on a destroyed instance");
-
+                fail(
+                    "Unexpectedly managed to execute on a destroyed instance");
             } catch (IllegalStateException expected) {
                 // all is well
             } catch (Exception e) {
@@ -1102,9 +1271,11 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest
                 fail("Thread joining failed with an exception.", e);
             }
 
-            assertNotNull(destroyDuration[0], "Destroy duration was not record");
-            assertTrue(destroyDuration[0] > 2000L, "Destroy occurred too quickly: " 
-                        + destroyDuration[0] + "ms");
+            assertNotNull(destroyDuration[0],
+                          "Destroy duration was not record");
+            assertTrue(
+                destroyDuration[0] > 2000L,
+                "Destroy occurred too quickly: " + destroyDuration[0] + "ms");
 
             if (failures[0] != null) {
                 fail("Busy thread got an exception.", failures[0]);
@@ -1112,7 +1283,6 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest
             if (failures[1] != null) {
                 fail("Destroying thread got an exception.", failures[1]);
             }
-
         });
     }
 
@@ -1125,44 +1295,52 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest
             try {
                 // get the first environment
                 env1 = SzAutoCoreEnvironment.newAutoBuilder()
-                                                 .instanceName("Instance 1")
-                                                 .build();
-    
-                SzCoreEnvironment active = SzCoreEnvironment.getActiveInstance();
+                                            .instanceName("Instance 1")
+                                            .build();
 
-                assertNotNull(active, "No active instance found when it should have been: " 
-                              + env1);
+                SzCoreEnvironment active
+                    = SzCoreEnvironment.getActiveInstance();
+
+                assertNotNull(
+                    active,
+                    "No active instance found when it should have been: "
+                    + env1);
                 assertSame(env1, active,
-                            "Active instance was not as expected: " + active);
-    
+                           "Active instance was not as expected: " + active);
+
                 // destroy the first environment
                 env1.destroy();
-    
+
                 active = SzCoreEnvironment.getActiveInstance();
-                assertNull(active,
-                           "Active instance found when there should be none: " + active);
-                            
+                assertNull(
+                    active,
+                    "Active instance found when there should be none: "
+                    + active);
+
                 // create a second Environment instance
                 env2 = SzAutoCoreEnvironment.newAutoBuilder()
-                                                 .instanceName("Instance 2")
-                                                 .settings(DEFAULT_SETTINGS)
-                                                 .build();
-    
+                                            .instanceName("Instance 2")
+                                            .settings(DEFAULT_SETTINGS)
+                                            .build();
+
                 active = SzCoreEnvironment.getActiveInstance();
-                assertNotNull(active, "No active instance found when it should have been: " 
-                              + env2);
+                assertNotNull(
+                    active,
+                    "No active instance found when it should have been: "
+                    + env2);
                 assertSame(env2, active,
                            "Active instance was not as expected: " + active);
-                    
+
                 // destroy the second environment
                 env2.destroy();
-    
+
                 active = SzCoreEnvironment.getActiveInstance();
-                assertNull(active,
-                    "Active instance found when there should be none: " + active);
-                
+                assertNull(
+                    active,
+                    "Active instance found when there should be none: "
+                    + active);
+
                 env2 = null;
-    
             } finally {
                 if (env1 != null) {
                     env1.destroy();
@@ -1170,8 +1348,8 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest
                 if (env2 != null) {
                     env2.destroy();
                 }
-            }    
-       });
+            }
+        });
     }
 
     @Test
@@ -1179,32 +1357,34 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest
     {
         this.performTest(() -> {
             String settings = this.getRepoSettings();
-            
-            SzAutoCoreEnvironment env  = null;
-            
+
+            SzAutoCoreEnvironment env = null;
+
             try {
-                env = SzAutoCoreEnvironment.newAutoBuilder()
-                                                .instanceName("GetConfigManager Instance")
-                                                .settings(settings)
-                                                .verboseLogging(false)
-                                                .configRefreshPeriod(REACTIVE_CONFIG_REFRESH)
-                                                .build();
+                env = SzAutoCoreEnvironment
+                    .newAutoBuilder()
+                    .instanceName("GetConfigManager Instance")
+                    .settings(settings)
+                    .verboseLogging(false)
+                    .configRefreshPeriod(REACTIVE_CONFIG_REFRESH)
+                    .build();
 
                 SzConfigManager configMgr1 = env.getConfigManager();
                 SzConfigManager configMgr2 = env.getConfigManager();
 
                 assertNotNull(configMgr1, "SzConfigManager was null");
-                assertSame(configMgr1, configMgr2, "SzConfigManager not returning the same object");
+                assertSame(configMgr1, configMgr2,
+                           "SzConfigManager not returning the same object");
 
                 env.destroy();
-                env  = null;
-
+                env = null;
             } catch (SzException e) {
                 fail("Got SzException during test", e);
-
             } finally {
-                if (env != null) env.destroy();
-            }    
+                if (env != null) {
+                    env.destroy();
+                }
+            }
         });
     }
 
@@ -1213,32 +1393,34 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest
     {
         this.performTest(() -> {
             String settings = this.getRepoSettings();
-            
-            SzCoreEnvironment env  = null;
-            
+
+            SzCoreEnvironment env = null;
+
             try {
-                env = SzAutoCoreEnvironment.newAutoBuilder()
-                                                .instanceName("GetDiagnostic Instance")
-                                                .settings(settings)
-                                                .verboseLogging(false)
-                                                .configRefreshPeriod(REACTIVE_CONFIG_REFRESH)
-                                                .build();
+                env = SzAutoCoreEnvironment
+                    .newAutoBuilder()
+                    .instanceName("GetDiagnostic Instance")
+                    .settings(settings)
+                    .verboseLogging(false)
+                    .configRefreshPeriod(REACTIVE_CONFIG_REFRESH)
+                    .build();
 
                 SzDiagnostic diagnostic1 = env.getDiagnostic();
                 SzDiagnostic diagnostic2 = env.getDiagnostic();
 
                 assertNotNull(diagnostic1, "SzDiagnostic was null");
-                assertSame(diagnostic1, diagnostic2, "SzDiagnostic not returning the same object");
+                assertSame(diagnostic1, diagnostic2,
+                           "SzDiagnostic not returning the same object");
 
                 env.destroy();
-                env  = null;
-
+                env = null;
             } catch (SzException e) {
                 fail("Got SzException during test", e);
-
             } finally {
-                if (env != null) env.destroy();
-            }    
+                if (env != null) {
+                    env.destroy();
+                }
+            }
         });
     }
 
@@ -1247,32 +1429,34 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest
     {
         this.performTest(() -> {
             String settings = this.getRepoSettings();
-            
-            SzCoreEnvironment env  = null;
-            
+
+            SzCoreEnvironment env = null;
+
             try {
-                env = SzAutoCoreEnvironment.newAutoBuilder()
-                                                .instanceName("GetEngine Instance")
-                                                .settings(settings)
-                                                .verboseLogging(false)
-                                                .configRefreshPeriod(REACTIVE_CONFIG_REFRESH)
-                                                .build();
+                env = SzAutoCoreEnvironment
+                    .newAutoBuilder()
+                    .instanceName("GetEngine Instance")
+                    .settings(settings)
+                    .verboseLogging(false)
+                    .configRefreshPeriod(REACTIVE_CONFIG_REFRESH)
+                    .build();
 
                 SzEngine engine1 = env.getEngine();
                 SzEngine engine2 = env.getEngine();
 
                 assertNotNull(engine1, "SzEngine was null");
-                assertSame(engine1, engine2, "SzEngine not returning the same object");
+                assertSame(engine1, engine2,
+                           "SzEngine not returning the same object");
 
                 env.destroy();
-                env  = null;
-
+                env = null;
             } catch (SzException e) {
                 fail("Got SzException during test", e);
-
             } finally {
-                if (env != null) env.destroy();
-            }    
+                if (env != null) {
+                    env.destroy();
+                }
+            }
         });
     }
 
@@ -1282,32 +1466,34 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest
         this.performTest(() -> {
             this.performTest(() -> {
                 String settings = this.getRepoSettings();
-            
-                SzCoreEnvironment env  = null;
-                
+
+                SzCoreEnvironment env = null;
+
                 try {
-                    env = SzAutoCoreEnvironment.newAutoBuilder()
-                                                    .instanceName("GetProduct Instance")
-                                                    .settings(settings)
-                                                    .verboseLogging(false)
-                                                    .configRefreshPeriod(REACTIVE_CONFIG_REFRESH)
-                                                    .build();
-    
+                    env = SzAutoCoreEnvironment
+                        .newAutoBuilder()
+                        .instanceName("GetProduct Instance")
+                        .settings(settings)
+                        .verboseLogging(false)
+                        .configRefreshPeriod(REACTIVE_CONFIG_REFRESH)
+                        .build();
+
                     SzProduct product1 = env.getProduct();
                     SzProduct product2 = env.getProduct();
-    
+
                     assertNotNull(product1, "SzProduct was null");
-                    assertSame(product1, product2, "SzProduct not returning the same object");
+                    assertSame(product1, product2,
+                               "SzProduct not returning the same object");
 
                     env.destroy();
-                    env  = null;
-    
+                    env = null;
                 } catch (SzException e) {
                     fail("Got SzException during test", e);
-    
                 } finally {
-                    if (env != null) env.destroy();
-                }        
+                    if (env != null) {
+                        env.destroy();
+                    }
+                }
             });
         });
     }
@@ -1331,34 +1517,37 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest
     public void testGetActiveConfigId(long configId, boolean initEngine)
     {
         this.performTest(() -> {
-            SzAutoCoreEnvironment env  = null;
+            SzAutoCoreEnvironment env = null;
 
-            String info = "configId=[ " + configId + " ], initEngine=[ " 
-                    + initEngine + " ]";
-                
+            String info = "configId=[ " + configId
+                + " ], initEngine=[ " + initEngine
+                + " ]";
+
             try {
                 String settings = this.getRepoSettings();
-                String instanceName = this.getInstanceName(
-                    "ActiveConfig-" + configId);
-    
+                String instanceName = this.getInstanceName("ActiveConfig-"
+                                                           + configId);
+
                 env = SzAutoCoreEnvironment.newAutoBuilder()
-                                                .settings(settings)
-                                                .instanceName(instanceName)
-                                                .configId(configId)
-                                                .build();
-    
+                                           .settings(settings)
+                                           .instanceName(instanceName)
+                                           .configId(configId)
+                                           .build();
+
                 // get the active config
                 long activeConfigId = env.getActiveConfigId();
-    
-                assertEquals(configId, activeConfigId,
+
+                assertEquals(
+                    configId,
+                    activeConfigId,
                     "The active config ID is not as expected: " + info);
-                        
             } catch (Exception e) {
                 fail("Got exception in testGetActiveConfigId: " + info, e);
-    
             } finally {
-                if (env != null) env.destroy();
-            }    
+                if (env != null) {
+                    env.destroy();
+                }
+            }
         });
     }
 
@@ -1367,40 +1556,44 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest
     public void testGetActiveConfigIdDefault(boolean initEngine)
     {
         this.performTest(() -> {
-            SzAutoCoreEnvironment env  = null;
-        
+            SzAutoCoreEnvironment env = null;
+
             String info = "initEngine=[ " + initEngine + " ]";
-    
+
             try {
                 String settings = this.getRepoSettings();
                 String instanceName = this.getInstanceName(
                     "ActiveConfigDefault");
-                    
+
                 env = SzAutoCoreEnvironment.newAutoBuilder()
-                                                .settings(settings)
-                                                .instanceName(instanceName)
-                                                .build();
+                                           .settings(settings)
+                                           .instanceName(instanceName)
+                                           .build();
 
                 // check if we should init the engine first
                 if (initEngine) {
                     env.getEngine();
                 }
-    
+
                 // get the default config ID
-                long defaultConfigId = env.getConfigManager().getDefaultConfigId();
+                long defaultConfigId = env.getConfigManager()
+                                          .getDefaultConfigId();
 
                 // get the active config
                 long activeConfigId = env.getActiveConfigId();
-    
-                assertEquals(defaultConfigId, activeConfigId,
+
+                assertEquals(
+                    defaultConfigId,
+                    activeConfigId,
                     "The active config ID is not as expected: " + info);
-                        
             } catch (Exception e) {
-                fail("Got exception in testGetActiveConfigIdDefault: " + info, e);
-                
+                fail("Got exception in testGetActiveConfigIdDefault: " + info,
+                     e);
             } finally {
-                if (env != null) env.destroy();
-            }    
+                if (env != null) {
+                    env.destroy();
+                }
+            }
         });
     }
 
@@ -1411,10 +1604,10 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest
 
         Random prng = new Random(System.currentTimeMillis());
 
-        List<Long> configIds
-            = List.of(this.configId1, this.configId2, this.configId3);
-        List<List<?>> configIdCombos
-            = generateCombinations(configIds, configIds);
+        List<Long> configIds = List.of(this.configId1, this.configId2,
+                                       this.configId3);
+        List<List<?>> configIdCombos = generateCombinations(configIds,
+                                                            configIds);
 
         Collections.shuffle(configIdCombos, prng);
         Collections.shuffle(booleanCombos, prng);
@@ -1426,15 +1619,16 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest
             boolean initDiagnostic = bools.get(1);
 
             for (Long configId : configIds) {
-                result.add(Arguments.of(null, configId, initEngine,
-                                        initDiagnostic));
+                result.add(
+                    Arguments.of(null, configId, initEngine, initDiagnostic));
             }
 
             List<?> configs = configIdIter.next();
-            result.add(Arguments.of(configs.get(0), 
-                                    configs.get(1),
-                                    initEngine,
-                                    initDiagnostic));
+            result.add(
+                Arguments.of(configs.get(0),
+                             configs.get(1),
+                             initEngine,
+                             initDiagnostic));
         }
 
         return result;
@@ -1444,76 +1638,91 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest
     public void testExecuteException()
     {
         this.performTest(() -> {
-            SzAutoCoreEnvironment env = SzAutoCoreEnvironment.newAutoBuilder().build();
+            SzAutoCoreEnvironment env = SzAutoCoreEnvironment.newAutoBuilder()
+                                                             .build();
             try {
                 env.execute(() -> {
                     throw new IOException("Test exception");
                 });
             } catch (SzException e) {
                 Throwable cause = e.getCause();
-                assertInstanceOf(IOException.class, cause, "The cause was not an IOException");
+                assertInstanceOf(IOException.class, cause,
+                                 "The cause was not an IOException");
             } catch (Exception e) {
                 fail("Caught an unexpected exeption", e);
             } finally {
-                if (env != null) env.destroy();
+                if (env != null) {
+                    env.destroy();
+                }
             }
         });
     }
 
     @ParameterizedTest
     @MethodSource("getReinitializeParams")
-    public void testReinitialize(Long       startConfig, 
+    public void testReinitialize(Long       startConfig,
                                  Long       endConfig,
-                                 boolean    initEngine, 
+                                 boolean    initEngine,
                                  boolean    initDiagnostic)
     {
         this.performTest(() -> {
             SzAutoCoreEnvironment env = null;
-            
-            String info = "startConfig=[ " + startConfig + " ], endConfig=[ " 
-                 + endConfig + " ], initEngine=[ " + initEngine
-                 + " ], initDiagnostic=[ " + initDiagnostic + " ]";
-    
+
+            String info = "startConfig=[ " + startConfig
+                + " ], endConfig=[ " + endConfig
+                + " ], initEngine=[ " + initEngine
+                + " ], initDiagnostic=[ " + initDiagnostic
+                + " ]";
+
             try {
                 String settings = this.getRepoSettings();
                 String instanceName = this.getInstanceName("Reinitialize");
-    
+
                 env = SzAutoCoreEnvironment.newAutoBuilder()
-                                                .settings(settings)
-                                                .instanceName(instanceName)
-                                                .configId(startConfig)
-                                                .build();
-        
+                                           .settings(settings)
+                                           .instanceName(instanceName)
+                                           .configId(startConfig)
+                                           .build();
+
                 // check if we should initialize the engine first
-                if (initEngine) env.getEngine();
-    
+                if (initEngine) {
+                    env.getEngine();
+                }
+
                 // check if we should initialize diagnostics first
-                if (initDiagnostic) env.getDiagnostic();
-    
+                if (initDiagnostic) {
+                    env.getDiagnostic();
+                }
+
                 Long activeConfigId = null;
                 if (startConfig != null) {
                     // get the active config
                     activeConfigId = env.getActiveConfigId();
-    
-                    assertEquals(startConfig, activeConfigId,
-                        "The starting active config ID is not as expected: " + info);
+
+                    assertEquals(
+                        startConfig,
+                        activeConfigId,
+                        "The starting active config ID is not as expected: "
+                        + info);
                 }
-    
+
                 // reinitialize
                 env.reinitialize(endConfig);
-            
+
                 // check the initialize config ID
                 activeConfigId = env.getActiveConfigId();
-    
-                assertEquals(endConfig, activeConfigId,
+
+                assertEquals(
+                    endConfig,
+                    activeConfigId,
                     "The ending active config ID is not as expected: " + info);
-    
             } catch (Exception e) {
                 fail("Got exception in testReinitialize: " + info, e);
-    
             } finally {
-                if (env != null) env.destroy();
-            }    
+                if (env != null) {
+                    env.destroy();
+                }
+            }
         });
     }
 
@@ -1526,14 +1735,16 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest
         public MockEnvironment(String instanceName, String settings)
             throws SzException
         {
-            super(SzAutoCoreEnvironment.newAutoBuilder()
-                    .settings(settings).instanceName(instanceName)
+            super(
+                SzAutoCoreEnvironment
+                    .newAutoBuilder()
+                    .settings(settings)
+                    .instanceName(instanceName)
                     .configRefreshPeriod(REACTIVE_CONFIG_REFRESH));
 
             // revert the default config
             SzConfigManager configMgr = this.getConfigManager();
-            configMgr.setDefaultConfig(
-                configMgr.createConfig().export());
+            configMgr.setDefaultConfig(configMgr.createConfig().export());
 
             // ensure we initialize
             this.getEngine();
@@ -1567,11 +1778,10 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest
             throws SzException
         {
             SzConfigManager configMgr = this.getConfigManager();
-            SzConfig config
-                = configMgr.createConfig(configMgr.getDefaultConfigId());
+            SzConfig config = configMgr.createConfig(
+                configMgr.getDefaultConfigId());
             String dataSource = ("DUMMY_SOURCE_"
-                + TextUtilities.randomAlphanumericText(5)
-                + "-"
+                + TextUtilities.randomAlphanumericText(5) + "-"
                 + (++configIndex)).toUpperCase();
             config.registerDataSource(dataSource);
             configMgr.setDefaultConfig(config.export(), "Added " + dataSource);
@@ -1585,17 +1795,15 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest
 
         public MockRetryCallable(boolean succeedOnRetry)
         {
-            this(succeedOnRetry,
-                 TextUtilities.randomAlphanumericText(20));
+            this(succeedOnRetry, TextUtilities.randomAlphanumericText(20));
         }
 
         public MockRetryCallable(int failureCount)
         {
-            this(failureCount,
-                 TextUtilities.randomAlphanumericText(20));
+            this(failureCount, TextUtilities.randomAlphanumericText(20));
         }
 
-        public MockRetryCallable(boolean    succeedOnRetry, 
+        public MockRetryCallable(boolean    succeedOnRetry,
                                  String     errorMessage)
         {
             this.retryList = new LinkedList<>();
@@ -1636,11 +1844,11 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest
     {
         this.performTest(() -> {
             SzAutoCoreEnvironment env = null;
-    
+
             try {
                 String settings = this.getRepoSettings();
                 String instanceName = this.getInstanceName("Mock Retry Test");
-    
+
                 env = new MockEnvironment(instanceName, settings);
 
                 // ensure we succeed if succeed on retry
@@ -1649,13 +1857,13 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest
                     SzAutoCoreEnvironment.CONFIG_RETRY_FLAG.set(Boolean.TRUE);
                     Integer result = env.execute(mrc);
 
-                    assertEquals(0, result, 
-                        "Unexpectedly succeeded on first try");
-
+                    assertEquals(0, result,
+                                 "Unexpectedly succeeded on first try");
                 } catch (SzException e) {
-                    fail("Failed retry when expected success on retry: " + e.getErrorCode(), 
-                         e);
-
+                    fail(
+                        "Failed retry when expected success on retry: "
+                        + e.getErrorCode(),
+                        e);
                 } finally {
                     SzAutoCoreEnvironment.CONFIG_RETRY_FLAG.set(Boolean.FALSE);
                 }
@@ -1666,17 +1874,21 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest
                     SzAutoCoreEnvironment.CONFIG_RETRY_FLAG.set(Boolean.TRUE);
                     Integer result = env.execute(mrc);
 
-                    fail("Unexpectedly succeeded when we should have failed on retry: " 
-                         + result);
-
+                    fail(
+                        "Unexpectedly succeeded when we should have failed on "
+                            + "retry: "
+                            + result);
                 } catch (SzException expected) {
-                    assertEquals(0, expected.getErrorCode(),
-                                 "Retry failed as expected, but unexpectedly threw "
-                                 + "the original exception");
-                    assertEquals(mrc.getErrorMessage(), expected.getMessage(),
-                                 "Retry failed as expected, but not with the expected "
-                                 + "error message.");
-
+                    assertEquals(
+                        0,
+                        expected.getErrorCode(),
+                        "Retry failed as expected, but unexpectedly threw "
+                        + "the original exception");
+                    assertEquals(
+                        mrc.getErrorMessage(),
+                        expected.getMessage(),
+                        "Retry failed as expected, but not with the expected "
+                            + "error message.");
                 } finally {
                     SzAutoCoreEnvironment.CONFIG_RETRY_FLAG.set(Boolean.FALSE);
                 }
@@ -1689,22 +1901,22 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest
 
                     fail("Unexpectedly succeeded when we should have "
                          + "failed with no retry: " + result);
-
                 } catch (SzException expected) {
-                    assertEquals(1, expected.getErrorCode(),
-                                "Task without retry failed as expected, but did not "
-                                + "throw the an exception on first try");
-                    assertEquals(mrc.getErrorMessage(), expected.getMessage(),
-                                "Task without retry failed as expected, but not with "
-                                + "the expected error message.");
-
+                    assertEquals(
+                        1,
+                        expected.getErrorCode(),
+                        "Task without retry failed as expected, but did not "
+                        + "throw the an exception on first try");
+                    assertEquals(
+                        mrc.getErrorMessage(),
+                        expected.getMessage(),
+                        "Task without retry failed as expected, but not with "
+                            + "the expected error message.");
                 } finally {
                     SzAutoCoreEnvironment.CONFIG_RETRY_FLAG.set(Boolean.FALSE);
                 }
-
-            } catch (SzException e) { 
+            } catch (SzException e) {
                 fail("Unexpected exception", e);
-
             } finally {
                 if (env != null) {
                     env.destroy();
@@ -1720,13 +1932,13 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest
             try {
                 new SzAutoCoreEnvironment(
                     new SzAutoCoreEnvironment.Builder() {
-                        public Integer getConcurrency() {
+                        public Integer getConcurrency()
+                        {
                             return -1;
                         }
-                });
+                    });
 
                 fail("Unexpectedly succeeded environment construction");
-
             } catch (IllegalArgumentException expected) {
                 // do nothing
             } catch (Exception e) {
@@ -1742,13 +1954,13 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest
             try {
                 new SzAutoCoreEnvironment(
                     new SzAutoCoreEnvironment.Builder() {
-                        public int getMaxBasicRetries() {
+                        public int getMaxBasicRetries()
+                        {
                             return -1;
                         }
-                });
+                    });
 
                 fail("Unexpectedly succeeded environment construction");
-
             } catch (IllegalArgumentException expected) {
                 // do nothing
             } catch (Exception e) {
@@ -1764,13 +1976,13 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest
             try {
                 new SzAutoCoreEnvironment(
                     new SzAutoCoreEnvironment.Builder() {
-                        public Duration getConfigRefreshPeriod() {
+                        public Duration getConfigRefreshPeriod()
+                        {
                             return Duration.ofSeconds(-1);
                         }
-                });
+                    });
 
                 fail("Unexpectedly succeeded environment construction");
-
             } catch (IllegalArgumentException expected) {
                 // do nothing
             } catch (Exception e) {
@@ -1787,17 +1999,17 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest
             try {
                 Duration period = Duration.ofMinutes(30);
                 env = SzAutoCoreEnvironment.newAutoBuilder()
-                                                .configId(12L)
-                                                .configRefreshPeriod(period)
-                                                .build();
-                
-                fail("Unexpected success despite conflicting builder settings");
+                                           .configId(12L)
+                                           .configRefreshPeriod(period)
+                                           .build();
 
+                fail(
+                    "Unexpected success despite conflicting builder settings");
             } catch (IllegalStateException expected) {
                 // do nothing
             } catch (Exception e) {
-                fail("Unexpected exception for conflicting builder settings",e);
-
+                fail("Unexpected exception for conflicting builder settings",
+                     e);
             } finally {
                 if (env != null) {
                     env.destroy();
@@ -1826,36 +2038,42 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest
             SzAutoCoreEnvironment env = null;
 
             try {
-                SzAutoCoreEnvironment.Builder builder 
+                SzAutoCoreEnvironment.Builder builder
                     = SzAutoCoreEnvironment.newAutoBuilder()
-                                                .concurrency(concurrency);
+                                           .concurrency(concurrency);
 
                 if (concurrency != null && concurrency < 0) {
                     fail("Unexpected success for concurrency: " + concurrency);
                 }
 
-                assertEquals(concurrency, builder.getConcurrency(),
-                             "Result from getConcurrency() is not as expected");
-                
+                assertEquals(
+                    concurrency,
+                    builder.getConcurrency(),
+                    "Result from getConcurrency() is not as expected");
+
                 // build the environment
                 env = builder.build();
 
                 // check the concurrency
-                int expected = (concurrency == null) ? 0
-                             : ((concurrency != 0) ? concurrency
-                                : Runtime.getRuntime().availableProcessors());
+                int expected = (concurrency == null)
+                    ? 0 : ((concurrency != 0)
+                           ? concurrency : Runtime.getRuntime()
+                               .availableProcessors());
 
-                assertEquals(expected, env.getConcurrency(),
-                             "Environment concurrency is not as expected: " + concurrency);
-
+                assertEquals(
+                    expected,
+                    env.getConcurrency(),
+                    "Environment concurrency is not as expected: "
+                    + concurrency);
             } catch (IllegalArgumentException e) {
                 if (concurrency == null || concurrency > 0) {
-                    fail("Unexpected exception for concurrency: " + concurrency, e);
+                    fail(
+                        "Unexpected exception for concurrency: " + concurrency,
+                        e);
                 }
-
             } catch (Exception e) {
-                fail("Unexpected exception for concurrency: " + concurrency, e);
-
+                fail("Unexpected exception for concurrency: " + concurrency,
+                     e);
             } finally {
                 if (env != null) {
                     env.destroy();
@@ -1883,39 +2101,50 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest
             SzAutoCoreEnvironment env = null;
 
             try {
-                SzAutoCoreEnvironment.Builder builder 
+                SzAutoCoreEnvironment.Builder builder
                     = SzAutoCoreEnvironment.newAutoBuilder()
-                                                .configRefreshPeriod(duration);
-                                                
+                                           .configRefreshPeriod(duration);
+
                 if (duration != null && duration.isNegative()) {
-                    fail("Unexpected success for config refresh period: " + duration);
+                    fail("Unexpected success for config refresh period: "
+                         + duration);
                 }
 
-                assertEquals(duration, builder.getConfigRefreshPeriod(),
-                             "Result from getConfigRefreshPeriod() is not as expected");
-                
+                assertEquals(
+                    duration,
+                    builder.getConfigRefreshPeriod(),
+                    "Result from getConfigRefreshPeriod() is not as expected");
+
                 // build the environment
                 env = builder.build();
 
                 // check the value from the SzEnvironment
-                assertEquals(duration, env.getConfigRefreshPeriod(),
-                             "Environment config refresh period is not as expected");
+                assertEquals(
+                    duration,
+                    env.getConfigRefreshPeriod(),
+                    "Environment config refresh period is not as expected");
 
                 RefreshMode expectedMode = (duration == null)
-                    ? RefreshMode.DISABLED
-                    : (duration.isZero() ? RefreshMode.REACTIVE : RefreshMode.PROACTIVE);
-                
-                assertEquals(expectedMode, env.getConfigRefreshMode(),
-                             "Environment config refresh mode is not as expected");
+                    ? RefreshMode.DISABLED : (duration.isZero()
+                                              ? RefreshMode.REACTIVE
+                                              : RefreshMode.PROACTIVE);
 
+                assertEquals(
+                    expectedMode,
+                    env.getConfigRefreshMode(),
+                    "Environment config refresh mode is not as expected");
             } catch (IllegalArgumentException e) {
                 if (duration == null || !duration.isNegative()) {
-                    fail("Unexpected exception for config refresh period: " + duration, e);
+                    fail(
+                        "Unexpected exception for config refresh period: "
+                        + duration,
+                        e);
                 }
-
             } catch (Exception e) {
-                fail("Unexpected exception for config refresh period: " + duration, e);
-
+                fail(
+                    "Unexpected exception for config refresh period: "
+                    + duration,
+                    e);
             } finally {
                 if (env != null) {
                     env.destroy();
@@ -1943,32 +2172,35 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest
             SzAutoCoreEnvironment env = null;
 
             try {
-                SzAutoCoreEnvironment.Builder builder 
+                SzAutoCoreEnvironment.Builder builder
                     = SzAutoCoreEnvironment.newAutoBuilder()
-                                                .maxBasicRetries(maxRetries);
-                
+                                           .maxBasicRetries(maxRetries);
+
                 if (maxRetries < 0) {
                     fail("Unexpected success for max retries: " + maxRetries);
                 }
 
-                assertEquals(maxRetries, builder.getMaxBasicRetries(),
-                             "Result from getMaxBasicRetries() is not as expected");
-                
+                assertEquals(
+                    maxRetries,
+                    builder.getMaxBasicRetries(),
+                    "Result from getMaxBasicRetries() is not as expected");
+
                 // build the environment
                 env = builder.build();
 
                 // check the value from the environment
-                assertEquals(maxRetries, env.getMaxBasicRetries(),
-                             "Environment max basic retries is not as expected");
-                             
+                assertEquals(
+                    maxRetries,
+                    env.getMaxBasicRetries(),
+                    "Environment max basic retries is not as expected");
             } catch (IllegalArgumentException e) {
                 if (maxRetries > 0) {
-                    fail("Unexpected exception for max retries: " + maxRetries, e);
+                    fail(
+                        "Unexpected exception for max retries: " + maxRetries,
+                        e);
                 }
-
             } catch (Exception e) {
                 fail("Unexpected exception for max retries: " + maxRetries, e);
-
             } finally {
                 if (env != null) {
                     env.destroy();
@@ -1981,7 +2213,8 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest
     public void formatStackTraceTest()
     {
         this.performTest(() -> {
-            StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
+            StackTraceElement[] stackTrace = Thread.currentThread()
+                                                   .getStackTrace();
 
             Reinitializer.formatStackTrace(stackTrace);
         });
@@ -2003,7 +2236,8 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest
                 refreshCount = env.getConfigRefreshCount();
                 env.setBumpOnReinitialize(true);
 
-                assertEquals(refreshCount, 0, "Unexpected initial refresh count");
+                assertEquals(refreshCount, 0,
+                             "Unexpected initial refresh count");
 
                 MockRetryCallable mrc = new MockRetryCallable(
                     SzAutoCoreEnvironment.MAX_REINITIALIZE_COUNT + 1);
@@ -2011,18 +2245,16 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest
                 SzAutoCoreEnvironment.CONFIG_RETRY_FLAG.set(Boolean.TRUE);
                 executing = true;
                 env.execute(mrc);
-                
-                fail("Unexpectedly succeeded despite mocked exceptions");
 
-            } catch (SzException e) { 
+                fail("Unexpectedly succeeded despite mocked exceptions");
+            } catch (SzException e) {
                 if (executing) {
                     assertEquals(SzAutoCoreEnvironment.MAX_REINITIALIZE_COUNT,
                                  env.getConfigRefreshCount(),
-                                "Unexpected config refresh count");
+                                 "Unexpected config refresh count");
                 } else {
                     fail("Unexpected exception", e);
                 }
-
             } finally {
                 if (env != null) {
                     env.destroy();

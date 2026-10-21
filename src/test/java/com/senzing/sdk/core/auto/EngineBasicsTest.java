@@ -32,10 +32,14 @@ public class EngineBasicsTest
 
         String instanceName = this.getClass().getSimpleName();
 
-        this.env = SzAutoCoreEnvironment.newAutoBuilder().instanceName(
-            instanceName).settings(settings).verboseLogging(false).concurrency(
-            this.getConcurrency()).configRefreshPeriod(
-            this.getConfigRefreshPeriod()).build();
+        this.env = SzAutoCoreEnvironment
+            .newAutoBuilder()
+            .instanceName(instanceName)
+            .settings(settings)
+            .verboseLogging(false)
+            .concurrency(this.getConcurrency())
+            .configRefreshPeriod(this.getConfigRefreshPeriod())
+            .build();
     }
 
     @AfterAll

@@ -125,11 +125,12 @@ public class SzAutoCoreEnvironment
     /**
      * The classes to be proxied using the {@link RetryHandler}.
      */
-    private static final Set<Class<?>> PROXY_CLASSES = Set.of(SzEngine.class,
-                 SzProduct.class,
-                 SzConfigManager.class,
-                 SzDiagnostic.class,
-                 SzConfig.class);
+    private static final Set<Class<?>> PROXY_CLASSES = Set.of(
+        SzEngine.class,
+        SzProduct.class,
+        SzConfigManager.class,
+        SzDiagnostic.class,
+        SzConfig.class);
 
     /**
      * The maximum number of time to try to reinitialize with the latest default
@@ -165,8 +166,8 @@ public class SzAutoCoreEnvironment
      * are performed on demand when a method annotated with {@link
      * SzConfigRetryable} fails with an {@link SzException}.
      */
-    public static final Duration REACTIVE_CONFIG_REFRESH
-        = Duration.ofSeconds(0);
+    public static final Duration REACTIVE_CONFIG_REFRESH = Duration.ofSeconds(
+        0);
 
     /**
      * A <code>null</code> {@link Integer} reference that can be used with
@@ -406,7 +407,8 @@ public class SzAutoCoreEnvironment
      *            implementation.
      */
     // CSOFF
-    public abstract static class AbstractBuilder<E extends SzAutoCoreEnvironment,
+    public abstract static class AbstractBuilder<
+        E extends SzAutoCoreEnvironment,
         B extends AbstractBuilder<E, B>>
         extends SzCoreEnvironment.AbstractBuilder<E, B> implements Initializer
     {
@@ -469,8 +471,7 @@ public class SzAutoCoreEnvironment
         {
             if (duration != null && duration.isNegative()) {
                 throw new IllegalArgumentException(
-                    "The specified duration cannot be negative: " 
-                    + duration);
+                    "The specified duration cannot be negative: " + duration);
             }
             this.configRefreshPeriod = duration;
             return ((B) this);
@@ -622,14 +623,14 @@ public class SzAutoCoreEnvironment
         public SzAutoCoreEnvironment build()
             throws IllegalStateException
         {
-            if (this.getConfigId() != null && this.getConfigRefreshPeriod()
-                != null) {
+            if (this.getConfigId() != null
+                && this.getConfigRefreshPeriod() != null)
+            {
                 throw new IllegalStateException(
-                    "Cannot provide an explicit configuration ID (" 
-                    + this.getConfigId() + ") and enable configuration "
-                    + "refresh with a non-null configuration refresh "
-                    + "period (" + this.getConfigRefreshPeriod()
-                    + ").");
+                    "Cannot provide an explicit configuration ID ("
+                        + this.getConfigId() + ") and enable configuration "
+                        + "refresh with a non-null configuration refresh "
+                        + "period (" + this.getConfigRefreshPeriod() + ").");
             }
 
             return new SzAutoCoreEnvironment(this);
@@ -677,8 +678,8 @@ public class SzAutoCoreEnvironment
         public Object invoke(Object proxy, Method method, Object[] args)
             throws Throwable
         {
-            SzConfigRetryable retryable
-                = method.getAnnotation(SzConfigRetryable.class);
+            SzConfigRetryable retryable = method.getAnnotation(
+                SzConfigRetryable.class);
 
             Object result = null;
             // check if no annotation and just do a standard invocation
@@ -704,8 +705,11 @@ public class SzAutoCoreEnvironment
 
             // check the result to see if we need to proxy it
             final Object r = result;
-            if (r != null && (PROXY_CLASSES.contains(method.getReturnType())
-                || PROXY_CLASSES.stream().anyMatch((c) -> c.isInstance(r)))) {
+            if (r != null
+                && (PROXY_CLASSES.contains(method.getReturnType())
+                    || PROXY_CLASSES.stream()
+                        .anyMatch((c) -> c.isInstance(r))))
+            {
                 Class<?>[] interfaces = result.getClass().getInterfaces();
                 ClassLoader classLoader = this.getClass().getClassLoader();
                 RetryHandler handler = new RetryHandler(result);
@@ -721,8 +725,8 @@ public class SzAutoCoreEnvironment
     /**
      * The {@link ThreadFactory} to be used by instances of this class.
      */
-    private static final ThreadFactory THREAD_FACTORY
-        = (r) -> new CoreThread(r);
+    private static final ThreadFactory THREAD_FACTORY = (r) -> new CoreThread(
+        r);
 
     /**
      * Creates a new instance of {@link Builder} for setting up an instance of
@@ -866,7 +870,7 @@ public class SzAutoCoreEnvironment
             if (this.maxBasicRetries < 0) {
                 throw new IllegalArgumentException(
                     "The maximum number of basic retries cannot be negative: "
-                    + this.maxBasicRetries);
+                        + this.maxBasicRetries);
             }
 
             // determine the configuration refresh period and mode
@@ -879,7 +883,7 @@ public class SzAutoCoreEnvironment
             } else if (this.configRefreshPeriod.isNegative()) {
                 throw new IllegalArgumentException(
                     "The configuration refresh period cannot be negative: "
-                    + this.configRefreshPeriod);
+                        + this.configRefreshPeriod);
             } else {
                 this.refreshMode = RefreshMode.PROACTIVE;
             }
@@ -1133,10 +1137,14 @@ public class SzAutoCoreEnvironment
                 if (tryCount >= MAX_REINITIALIZE_COUNT) {
                     System.err.println(
                         "*** WARNING: Default configuration is constantly "
-                        + "changing.  Could not reinitialize to the latest "
-                        + "default configuration ID after " + tryCount
-                        + " attempts.  activeConfigId=[ " + activeConfigId
-                        + " ], defaultConfigId=[ " + defaultConfigId + " ]");
+                            + "changing.  Could not reinitialize to the latest "
+                            + "default configuration ID after "
+                            + tryCount
+                            + " attempts.  activeConfigId=[ "
+                            + activeConfigId
+                            + " ], defaultConfigId=[ "
+                            + defaultConfigId
+                            + " ]");
 
                     // allow the caller to retry anyway since we did update the
                     // config
@@ -1217,9 +1225,8 @@ public class SzAutoCoreEnvironment
             Class<?>[] interfaces = engine.getClass().getInterfaces();
             ClassLoader classLoader = this.getClass().getClassLoader();
             RetryHandler handler = new RetryHandler(engine);
-            this.engine = (SzEngine) Proxy.newProxyInstance(classLoader,
-                                                            interfaces,
-                                                            handler);
+            this.engine = (SzEngine) Proxy.newProxyInstance(
+                classLoader, interfaces, handler);
             return this.engine;
         }
     }
@@ -1243,9 +1250,8 @@ public class SzAutoCoreEnvironment
             Class<?>[] interfaces = product.getClass().getInterfaces();
             ClassLoader classLoader = this.getClass().getClassLoader();
             RetryHandler handler = new RetryHandler(product);
-            this.product = (SzProduct) Proxy.newProxyInstance(classLoader,
-                                                              interfaces,
-                                                              handler);
+            this.product = (SzProduct) Proxy.newProxyInstance(
+                classLoader, interfaces, handler);
             return this.product;
         }
     }
@@ -1270,9 +1276,7 @@ public class SzAutoCoreEnvironment
             ClassLoader classLoader = this.getClass().getClassLoader();
             RetryHandler handler = new RetryHandler(configManager);
             this.configManager = (SzConfigManager) Proxy.newProxyInstance(
-                classLoader,
-                interfaces,
-                handler);
+                classLoader, interfaces, handler);
             return this.configManager;
         }
     }
@@ -1297,9 +1301,7 @@ public class SzAutoCoreEnvironment
             ClassLoader classLoader = this.getClass().getClassLoader();
             RetryHandler handler = new RetryHandler(diagnostic);
             this.diagnostic = (SzDiagnostic) Proxy.newProxyInstance(
-                classLoader,
-                interfaces,
-                handler);
+                classLoader, interfaces, handler);
             return this.diagnostic;
         }
     }
@@ -1337,7 +1339,7 @@ public class SzAutoCoreEnvironment
 
                 for (int tryCount = 0;
                      (tryCount < SHUTDOWN_WAIT_COUNT
-                          && this.reinitializer.isAlive());
+                      && this.reinitializer.isAlive());
                      tryCount++)
                 {
                     try {
@@ -1372,13 +1374,12 @@ public class SzAutoCoreEnvironment
                 this.coreExecutor.shutdown();
                 for (int retryCount = 0;
                      (retryCount < SHUTDOWN_WAIT_COUNT
-                          && !this.coreExecutor.isTerminated());
+                      && !this.coreExecutor.isTerminated());
                      retryCount++)
                 {
                     try {
                         this.coreExecutor.awaitTermination(
-                            SHUTDOWN_WAIT_SECONDS,
-                            TimeUnit.SECONDS);
+                            SHUTDOWN_WAIT_SECONDS, TimeUnit.SECONDS);
                     } catch (InterruptedException ignore) {
                         // ignore
                     }
@@ -1486,10 +1487,10 @@ public class SzAutoCoreEnvironment
                 // if we are not refreshing the configuration, we are
                 // already ensuring the config is current, or the
                 // retry flag is not set then just execute the task
-                if (this.refreshMode
-                    == RefreshMode.DISABLED || Boolean.TRUE.equals(
-                        ENSURING_CONFIG.get()) || (!Boolean.TRUE.equals(
-                        CONFIG_RETRY_FLAG.get()))) {
+                if (this.refreshMode == RefreshMode.DISABLED
+                    || Boolean.TRUE.equals(ENSURING_CONFIG.get())
+                    || (!Boolean.TRUE.equals(CONFIG_RETRY_FLAG.get())))
+                {
                     return this.executeWithBasicRetry(task);
                 }
 

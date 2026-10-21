@@ -63,10 +63,14 @@ public class EngineWhyTest
 
         String instanceName = this.getClass().getSimpleName();
 
-        this.env = SzAutoCoreEnvironment.newAutoBuilder().instanceName(
-            instanceName).settings(settings).verboseLogging(false).concurrency(
-            this.getConcurrency()).configRefreshPeriod(
-            this.getConfigRefreshPeriod()).build();
+        this.env = SzAutoCoreEnvironment
+            .newAutoBuilder()
+            .instanceName(instanceName)
+            .settings(settings)
+            .verboseLogging(false)
+            .concurrency(this.getConcurrency())
+            .configRefreshPeriod(this.getConfigRefreshPeriod())
+            .build();
     }
 
     /**
@@ -77,8 +81,11 @@ public class EngineWhyTest
         String instanceName = this.getInstanceName();
         String settings = this.getRepoSettings();
 
-        SzCoreEnvironment env = SzCoreEnvironment.newBuilder().instanceName(
-            instanceName).settings(settings).verboseLogging(false).build();
+        SzCoreEnvironment env = SzCoreEnvironment.newBuilder()
+                                                 .instanceName(instanceName)
+                                                 .settings(settings)
+                                                 .verboseLogging(false)
+                                                 .build();
         try {
             TestDataLoader loader = new StandardTestDataLoader(env);
 
@@ -136,18 +143,17 @@ public class EngineWhyTest
                     : engine.whySearch(attributes, entityId, searchProfile);
 
                 String explicitResult = (searchProfile == null)
-                    ? engine.whySearch(attributes,
-                                       entityId,   
+                    ? engine.whySearch(attributes, entityId,
                                        SZ_WHY_SEARCH_DEFAULT_FLAGS)
-                    : engine.whySearch(attributes,
-                                       entityId,
-                                       searchProfile,
+                    : engine.whySearch(attributes, entityId, searchProfile,
                                        SZ_WHY_SEARCH_DEFAULT_FLAGS);
 
-                assertEquals(explicitResult, defaultResult,
-                    "Explicitly setting default flags yields a different result "
-                    + "than omitting the flags parameter to the SDK function.");
-
+                assertEquals(
+                    explicitResult,
+                    defaultResult,
+                    "Explicitly setting default flags yields a different "
+                    + "result than omitting the flags parameter to the "
+                    + "SDK function.");
             } catch (Exception e) {
                 fail("Unexpectedly failed why-search operation", e);
             }
@@ -156,14 +162,14 @@ public class EngineWhyTest
 
     public static List<Arguments> getRecordCombinations()
     {
-        List<Arguments> result
-            = new ArrayList<>(RECORD_KEYS.size() * RECORD_KEYS.size());
+        List<Arguments> result = new ArrayList<>(RECORD_KEYS.size()
+                                                 * RECORD_KEYS.size());
 
         RECORD_KEYS.forEach(key1 -> {
-                RECORD_KEYS.forEach(key2 -> {
-                        if (key1.equals(key2)) return;
-                        result.add(Arguments.of(key1, key2));
-                });
+            RECORD_KEYS.forEach(key2 -> {
+                if (key1.equals(key2)) return;
+                result.add(Arguments.of(key1, key2));
+            });
         });
 
         return result;
@@ -174,7 +180,7 @@ public class EngineWhyTest
         List<Arguments> result = new ArrayList<>(RECORD_KEYS.size());
 
         RECORD_KEYS.forEach(key -> {
-                result.add(Arguments.of(key));
+            result.add(Arguments.of(key));
         });
 
         return result;
@@ -194,15 +200,18 @@ public class EngineWhyTest
                 long entityId1 = lookup.getMapByRecordKey().get(recordKey1);
                 long entityId2 = lookup.getMapByRecordKey().get(recordKey2);
 
-                String defaultResult = engine.whyEntities(entityId1, entityId2);
+                String defaultResult = engine.whyEntities(entityId1,
+                                                          entityId2);
 
                 String explicitResult = engine.whyEntities(
                     entityId1, entityId2, SZ_WHY_ENTITIES_DEFAULT_FLAGS);
-                
-                assertEquals(explicitResult, defaultResult,
-                    "Explicitly setting default flags yields a different result "
-                    + "than omitting the flags parameter to the SDK function.");
 
+                assertEquals(
+                    explicitResult,
+                    defaultResult,
+                    "Explicitly setting default flags yields a different "
+                    + "result than omitting the flags parameter to the "
+                    + "SDK function.");
             } catch (Exception e) {
                 fail("Unexpectedly failed analyzing why entities", e);
             }
@@ -218,14 +227,16 @@ public class EngineWhyTest
                 SzEngine engine = (SzEngine) this.env.getEngine();
 
                 String defaultResult = engine.whyRecordInEntity(recordKey);
-                
+
                 String explicitResult = engine.whyRecordInEntity(
-                        recordKey, SZ_WHY_RECORD_IN_ENTITY_DEFAULT_FLAGS);
+                    recordKey, SZ_WHY_RECORD_IN_ENTITY_DEFAULT_FLAGS);
 
-                assertEquals(explicitResult, defaultResult,
-                    "Explicitly setting default flags yields a different result "
-                    + "than omitting the flags parameter to the SDK function.");
-
+                assertEquals(
+                    explicitResult,
+                    defaultResult,
+                    "Explicitly setting default flags yields a different "
+                    + "result than omitting the flags parameter to the "
+                    + "SDK function.");
             } catch (Exception e) {
                 fail("Unexpectedly failed analyzing why record in entity", e);
             }
@@ -241,16 +252,18 @@ public class EngineWhyTest
             try {
                 SzEngine engine = (SzEngine) this.env.getEngine();
 
-                String defaultResult = engine.whyRecords(recordKey1, recordKey2);
-                
-                String explicitResult = engine.whyRecords(recordKey1,
-                                                          recordKey2,
-                                                          SZ_WHY_RECORDS_DEFAULT_FLAGS);
+                String defaultResult = engine.whyRecords(recordKey1,
+                                                         recordKey2);
 
-                assertEquals(explicitResult, defaultResult,
-                    "Explicitly setting default flags yields a different result "
-                    + "than omitting the flags parameter to the SDK function.");
+                String explicitResult = engine.whyRecords(
+                    recordKey1, recordKey2, SZ_WHY_RECORDS_DEFAULT_FLAGS);
 
+                assertEquals(
+                    explicitResult,
+                    defaultResult,
+                    "Explicitly setting default flags yields a different "
+                    + "result than omitting the flags parameter to the "
+                    + "SDK function.");
             } catch (Exception e) {
                 fail("Unexpectedly failed getting entity by record", e);
             }

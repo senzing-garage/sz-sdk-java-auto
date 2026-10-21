@@ -58,10 +58,14 @@ public class EngineReadTest
 
         String instanceName = this.getClass().getSimpleName();
 
-        this.env = SzAutoCoreEnvironment.newAutoBuilder().instanceName(
-            instanceName).settings(settings).verboseLogging(false).concurrency(
-            this.getConcurrency()).configRefreshPeriod(
-            this.getConfigRefreshPeriod()).build();
+        this.env = SzAutoCoreEnvironment
+            .newAutoBuilder()
+            .instanceName(instanceName)
+            .settings(settings)
+            .verboseLogging(false)
+            .concurrency(this.getConcurrency())
+            .configRefreshPeriod(this.getConfigRefreshPeriod())
+            .build();
     }
 
     /**
@@ -72,8 +76,11 @@ public class EngineReadTest
         String instanceName = this.getInstanceName();
         String settings = this.getRepoSettings();
 
-        SzCoreEnvironment env = SzCoreEnvironment.newBuilder().instanceName(
-            instanceName).settings(settings).verboseLogging(false).build();
+        SzCoreEnvironment env = SzCoreEnvironment.newBuilder()
+                                                 .instanceName(instanceName)
+                                                 .settings(settings)
+                                                 .verboseLogging(false)
+                                                 .build();
         try {
             TestDataLoader loader = new StandardTestDataLoader(env);
 
@@ -106,15 +113,17 @@ public class EngineReadTest
                 SzEngine engine = (SzEngine) this.env.getEngine();
 
                 String defaultResult = engine.getEntity(recordKey);
-                
+
                 String explicitResult = engine.getEntity(
                     recordKey, SZ_ENTITY_DEFAULT_FLAGS);
-                
-                assertEquals(explicitResult, defaultResult,
-                    "Explicitly setting default flags yields a different result "
-                    + "than omitting the flags parameter to the SDK function.");
-            }
-            catch (Exception e) {
+
+                assertEquals(
+                    explicitResult,
+                    defaultResult,
+                    "Explicitly setting default flags yields a different "
+                    + "result than omitting the flags parameter to the "
+                    + "SDK function.");
+            } catch (Exception e) {
                 fail("Unexpectedly failed getting entity by record", e);
             }
         });
@@ -131,15 +140,17 @@ public class EngineReadTest
                 long entityId = this.getEntityId(recordKey);
 
                 String defaultResult = engine.getEntity(entityId);
-                
+
                 String explicitResult = engine.getEntity(
                     entityId, SZ_ENTITY_DEFAULT_FLAGS);
-                    
-                assertEquals(explicitResult, defaultResult,
-                    "Explicitly setting default flags yields a different result "
-                    + "than omitting the flags parameter to the SDK function.");
-            }
-            catch (Exception e) {
+
+                assertEquals(
+                    explicitResult,
+                    defaultResult,
+                    "Explicitly setting default flags yields a different "
+                    + "result than omitting the flags parameter to the "
+                    + "SDK function.");
+            } catch (Exception e) {
                 fail("Unexpectedly failed getting entity by entity ID", e);
             }
         });
@@ -154,14 +165,16 @@ public class EngineReadTest
                 SzEngine engine = (SzEngine) this.env.getEngine();
 
                 String defaultResult = engine.getRecord(recordKey);
-                
+
                 String explicitResult = engine.getRecord(
                     recordKey, SZ_RECORD_DEFAULT_FLAGS);
-                    
-                assertEquals(explicitResult, defaultResult,
-                    "Explicitly setting default flags yields a different result "
-                    + "than omitting the flags parameter to the SDK function.");
-            
+
+                assertEquals(
+                    explicitResult,
+                    defaultResult,
+                    "Explicitly setting default flags yields a different "
+                    + "result than omitting the flags parameter to the "
+                    + "SDK function.");
             } catch (Exception e) {
                 fail("Unexpectedly failed getting entity by record", e);
             }
@@ -176,7 +189,7 @@ public class EngineReadTest
 
         searchParams.forEach(args -> {
             Object[] arr = args.get();
-            
+
             // skip parameters that expect exceptions
             if (arr[arr.length - 1] != null) return;
 
@@ -205,16 +218,20 @@ public class EngineReadTest
                 }
 
                 String explicitResult = (searchProfile == null)
-                    ? engine.searchByAttributes(attributes, 
-                                                SzFlag.SZ_SEARCH_BY_ATTRIBUTES_DEFAULT_FLAGS)
-                    : engine.searchByAttributes(attributes, 
-                                                searchProfile,
-                                                SzFlag.SZ_SEARCH_BY_ATTRIBUTES_DEFAULT_FLAGS);
-                    
-                assertEquals(explicitResult, defaultResult,
-                    "Explicitly setting default flags yields a different result "
-                    + "than omitting the flags parameter to the SDK function.");
+                    ? engine.searchByAttributes(
+                        attributes,
+                        SzFlag.SZ_SEARCH_BY_ATTRIBUTES_DEFAULT_FLAGS)
+                    : engine.searchByAttributes(
+                        attributes,
+                        searchProfile,
+                        SzFlag.SZ_SEARCH_BY_ATTRIBUTES_DEFAULT_FLAGS);
 
+                assertEquals(
+                    explicitResult,
+                    defaultResult,
+                    "Explicitly setting default flags yields a different "
+                    + "result than omitting the flags parameter to the "
+                    + "SDK function.");
             } catch (Exception e) {
                 fail("Unexpectedly failed getting entity by record", e);
             }

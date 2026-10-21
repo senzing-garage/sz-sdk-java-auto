@@ -57,8 +57,11 @@ public class EnsureConfigRecursionTest extends AbstractAutoCoreTest
 
         public MockEnvironment(String instanceName, String settings)
         {
-            super(SzAutoCoreEnvironment.newAutoBuilder()
-                    .settings(settings).instanceName(instanceName)
+            super(
+                SzAutoCoreEnvironment
+                    .newAutoBuilder()
+                    .settings(settings)
+                    .instanceName(instanceName)
                     .configRefreshPeriod(REACTIVE_CONFIG_REFRESH)
                     .concurrency(null));
         }
@@ -144,17 +147,16 @@ public class EnsureConfigRecursionTest extends AbstractAutoCoreTest
                                       "{ \"NAME_FULL\": \"Test\" }");
 
                 fail("Expected SzException from persistent failure");
-
             } catch (SzException e) {
                 // expected -- the ENSURING_CONFIG guard prevents recursion
-                // verify this is our simulated failure, not some other SzException
-                assertTrue(e.getMessage().contains("Simulated persistent failure"),
-                           "Unexpected SzException: " + e.getMessage());
-
+                // verify this is our simulated
+                // failure, not some other SzException
+                assertTrue(
+                    e.getMessage().contains("Simulated persistent failure"),
+                    "Unexpected SzException: " + e.getMessage());
             } catch (StackOverflowError e) {
                 fail("Infinite recursion between execute() and "
                      + "ensureConfigCurrent() -- StackOverflowError thrown");
-
             } finally {
                 this.env.setAlwaysFail(false);
             }

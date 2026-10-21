@@ -51,10 +51,14 @@ public class DiagnosticTest
 
         String instanceName = this.getClass().getSimpleName();
 
-        this.env = SzAutoCoreEnvironment.newAutoBuilder().instanceName(
-            instanceName).settings(settings).verboseLogging(false).concurrency(
-            this.getConcurrency()).configRefreshPeriod(
-            this.getConfigRefreshPeriod()).build();
+        this.env = SzAutoCoreEnvironment
+            .newAutoBuilder()
+            .instanceName(instanceName)
+            .settings(settings)
+            .verboseLogging(false)
+            .concurrency(this.getConcurrency())
+            .configRefreshPeriod(this.getConfigRefreshPeriod())
+            .build();
     }
 
     /**
@@ -65,8 +69,11 @@ public class DiagnosticTest
         String instanceName = this.getInstanceName();
         String settings = this.getRepoSettings();
 
-        SzCoreEnvironment env = SzCoreEnvironment.newBuilder().instanceName(
-            instanceName).settings(settings).verboseLogging(false).build();
+        SzCoreEnvironment env = SzCoreEnvironment.newBuilder()
+                                                 .instanceName(instanceName)
+                                                 .settings(settings)
+                                                 .verboseLogging(false)
+                                                 .build();
         try {
             TestDataLoader loader = new StandardTestDataLoader(env);
 

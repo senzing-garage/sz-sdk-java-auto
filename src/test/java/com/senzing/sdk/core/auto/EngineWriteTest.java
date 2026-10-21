@@ -71,10 +71,14 @@ public class EngineWriteTest
 
         String instanceName = this.getClass().getSimpleName();
 
-        this.env = SzAutoCoreEnvironment.newAutoBuilder().instanceName(
-            instanceName).settings(settings).verboseLogging(false).concurrency(
-            this.getConcurrency()).configRefreshPeriod(
-            this.getConfigRefreshPeriod()).build();
+        this.env = SzAutoCoreEnvironment
+            .newAutoBuilder()
+            .instanceName(instanceName)
+            .settings(settings)
+            .verboseLogging(false)
+            .concurrency(this.getConcurrency())
+            .configRefreshPeriod(this.getConfigRefreshPeriod())
+            .build();
 
         this.senzingVersion = SdkTest.getSenzingVersion(this.env);
     }
@@ -87,8 +91,11 @@ public class EngineWriteTest
         String instanceName = this.getInstanceName();
         String settings = this.getRepoSettings();
 
-        SzCoreEnvironment env = SzCoreEnvironment.newBuilder().instanceName(
-            instanceName).settings(settings).verboseLogging(false).build();
+        SzCoreEnvironment env = SzCoreEnvironment.newBuilder()
+                                                 .instanceName(instanceName)
+                                                 .settings(settings)
+                                                 .verboseLogging(false)
+                                                 .build();
         try {
             TestDataLoader loader = new StandardTestDataLoader(env);
 
@@ -137,15 +144,18 @@ public class EngineWriteTest
             try {
                 SzEngine engine = (SzEngine) this.env.getEngine();
 
-                String defaultResult = engine.getRecordPreview(record.toString());
+                String defaultResult = engine.getRecordPreview(
+                    record.toString());
 
                 String explicitResult = engine.getRecordPreview(
                     record.toString(), SZ_RECORD_PREVIEW_DEFAULT_FLAGS);
-                    
-                assertEquals(explicitResult, defaultResult,
-                    "Explicitly setting default flags yields a different result "
-                    + "than omitting the flags parameter to the SDK function.");
-            
+
+                assertEquals(
+                    explicitResult,
+                    defaultResult,
+                    "Explicitly setting default flags yields a different "
+                    + "result than omitting the flags parameter to the "
+                    + "SDK function.");
             } catch (Exception e) {
                 fail("Unexpectedly failed getting entity by record", e);
             }
@@ -177,15 +187,18 @@ public class EngineWriteTest
             try {
                 SzEngine engine = (SzEngine) this.env.getEngine();
 
-                String defaultResult = engine.addRecord(recordKey, record.toString());
+                String defaultResult = engine.addRecord(recordKey,
+                                                        record.toString());
 
                 String explicitResult = engine.addRecord(
                     recordKey, record.toString(), SZ_ADD_RECORD_DEFAULT_FLAGS);
-                    
-                assertEquals(explicitResult, defaultResult,
-                    "Explicitly setting default flags yields a different result "
-                    + "than omitting the flags parameter to the SDK function.");
 
+                assertEquals(
+                    explicitResult,
+                    defaultResult,
+                    "Explicitly setting default flags yields a different "
+                    + "result than omitting the flags parameter to the "
+                    + "SDK function.");
             } catch (Exception e) {
                 fail("Unexpectedly failed adding record", e);
             }
@@ -218,14 +231,16 @@ public class EngineWriteTest
                 SzEngine engine = (SzEngine) this.env.getEngine();
 
                 String defaultResult = engine.reevaluateRecord(recordKey);
-                
+
                 String explicitResult = engine.reevaluateRecord(
                     recordKey, SZ_REEVALUATE_RECORD_DEFAULT_FLAGS);
-                    
-                assertEquals(explicitResult, defaultResult,
-                    "Explicitly setting default flags yields a different result "
-                    + "than omitting the flags parameter to the SDK function.");
 
+                assertEquals(
+                    explicitResult,
+                    defaultResult,
+                    "Explicitly setting default flags yields a different "
+                    + "result than omitting the flags parameter to the "
+                    + "SDK function.");
             } catch (Exception e) {
                 fail("Unexpectedly failed reevaluating record", e);
             }
@@ -258,14 +273,16 @@ public class EngineWriteTest
                 SzEngine engine = (SzEngine) this.env.getEngine();
 
                 String defaultResult = engine.reevaluateEntity(entityId);
-                
+
                 String explicitResult = engine.reevaluateEntity(
                     entityId, SZ_REEVALUATE_ENTITY_DEFAULT_FLAGS);
-                    
-                assertEquals(explicitResult, defaultResult,
-                    "Explicitly setting default flags yields a different result "
-                    + "than omitting the flags parameter to the SDK function.");
-            
+
+                assertEquals(
+                    explicitResult,
+                    defaultResult,
+                    "Explicitly setting default flags yields a different "
+                    + "result than omitting the flags parameter to the "
+                    + "SDK function.");
             } catch (Exception e) {
                 fail("Unexpectedly failed reevaluating entity", e);
             }
@@ -298,14 +315,16 @@ public class EngineWriteTest
                 SzEngine engine = (SzEngine) this.env.getEngine();
 
                 String defaultResult = engine.deleteRecord(recordKey);
-                
+
                 String explicitResult = engine.deleteRecord(
                     recordKey, SZ_DELETE_RECORD_DEFAULT_FLAGS);
-                    
-                assertEquals(explicitResult, defaultResult,
-                    "Explicitly setting default flags yields a different result "
-                    + "than omitting the flags parameter to the SDK function.");
 
+                assertEquals(
+                    explicitResult,
+                    defaultResult,
+                    "Explicitly setting default flags yields a different "
+                    + "result than omitting the flags parameter to the "
+                    + "SDK function.");
             } catch (Exception e) {
                 fail("Unexpectedly failed deleting record", e);
             }

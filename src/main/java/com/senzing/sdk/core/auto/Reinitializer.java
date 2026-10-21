@@ -84,7 +84,7 @@ class Reinitializer extends Thread
                 if (errorCount > MAX_ERROR_COUNT) {
                     System.err.println(
                         "Giving up on monitoring active configuration after "
-                        + errorCount + " failures");
+                            + errorCount + " failures");
                     return;
                 }
 
@@ -93,15 +93,17 @@ class Reinitializer extends Thread
 
                 // check if zero or null (we should not really get here since
                 // this thread should not be started if the delay is zero)
-                if (duration
-                    == null || duration.isZero() || this.env.isDestroyed()) {
+                if (duration == null
+                    || duration.isZero()
+                    || this.env.isDestroyed())
+                {
                     this.complete();
                     continue;
                 }
 
                 // convert to milliseconds
-                long delay = duration.getSeconds()
-                    * ONE_THOUSAND + (duration.getNano() / ONE_MILLION);
+                long delay = duration.getSeconds() * ONE_THOUSAND
+                    + (duration.getNano() / ONE_MILLION);
 
                 try {
                     synchronized (this) {

@@ -48,8 +48,11 @@ public class ConfigManagerTest
 
         String instanceName = this.getClass().getSimpleName();
 
-        SzEnvironment env = SzCoreEnvironment.newBuilder().instanceName(
-            instanceName).settings(settings).verboseLogging(false).build();
+        SzEnvironment env = SzCoreEnvironment.newBuilder()
+                                             .instanceName(instanceName)
+                                             .settings(settings)
+                                             .verboseLogging(false)
+                                             .build();
 
         try {
             StandardTestConfigurator configurator
@@ -60,10 +63,14 @@ public class ConfigManagerTest
             env.destroy();
         }
 
-        this.env = SzAutoCoreEnvironment.newAutoBuilder().instanceName(
-            instanceName).settings(settings).verboseLogging(false).concurrency(
-            this.getConcurrency()).configRefreshPeriod(
-            this.getConfigRefreshPeriod()).build();
+        this.env = SzAutoCoreEnvironment
+            .newAutoBuilder()
+            .instanceName(instanceName)
+            .settings(settings)
+            .verboseLogging(false)
+            .concurrency(this.getConcurrency())
+            .configRefreshPeriod(this.getConfigRefreshPeriod())
+            .build();
     }
 
     @AfterAll

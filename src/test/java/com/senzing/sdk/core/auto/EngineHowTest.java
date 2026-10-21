@@ -61,10 +61,14 @@ public class EngineHowTest
 
         String instanceName = this.getClass().getSimpleName();
 
-        this.env = SzAutoCoreEnvironment.newAutoBuilder().instanceName(
-            instanceName).settings(settings).verboseLogging(false).concurrency(
-            this.getConcurrency()).configRefreshPeriod(
-            this.getConfigRefreshPeriod()).build();
+        this.env = SzAutoCoreEnvironment
+            .newAutoBuilder()
+            .instanceName(instanceName)
+            .settings(settings)
+            .verboseLogging(false)
+            .concurrency(this.getConcurrency())
+            .configRefreshPeriod(this.getConfigRefreshPeriod())
+            .build();
     }
 
     /**
@@ -75,8 +79,11 @@ public class EngineHowTest
         String instanceName = this.getInstanceName();
         String settings = this.getRepoSettings();
 
-        SzCoreEnvironment env = SzCoreEnvironment.newBuilder().instanceName(
-            instanceName).settings(settings).verboseLogging(false).build();
+        SzCoreEnvironment env = SzCoreEnvironment.newBuilder()
+                                                 .instanceName(instanceName)
+                                                 .settings(settings)
+                                                 .verboseLogging(false)
+                                                 .build();
         try {
             TestDataLoader loader = new StandardTestDataLoader(env);
 
@@ -112,7 +119,6 @@ public class EngineHowTest
             // skip the ones that expect an exception
             if (arr[arr.length - 1] != null) return;
             result.add(Arguments.of(arr[0]));
-
         });
 
         return result;
@@ -130,12 +136,14 @@ public class EngineHowTest
 
                 String explicitResult = engine.getVirtualEntity(
                     recordKeys, SZ_VIRTUAL_ENTITY_DEFAULT_FLAGS);
-                    
-                assertEquals(explicitResult, defaultResult,
-                    "Explicitly setting default flags yields a different result "
-                    + "than omitting the flags parameter to the SDK function.");
-            }
-            catch (Exception e) {
+
+                assertEquals(
+                    explicitResult,
+                    defaultResult,
+                    "Explicitly setting default flags yields a different "
+                    + "result than omitting the flags parameter to the "
+                    + "SDK function.");
+            } catch (Exception e) {
                 fail("Unexpectedly failed getting entity by record", e);
             }
         });
@@ -166,12 +174,14 @@ public class EngineHowTest
 
                 String explicitResult = engine.howEntity(
                     entityID, SZ_HOW_ENTITY_DEFAULT_FLAGS);
-                    
-                assertEquals(explicitResult, defaultResult,
-                    "Explicitly setting default flags yields a different result "
-                    + "than omitting the flags parameter to the SDK function.");
-            }
-            catch (Exception e) {
+
+                assertEquals(
+                    explicitResult,
+                    defaultResult,
+                    "Explicitly setting default flags yields a different "
+                    + "result than omitting the flags parameter to the "
+                    + "SDK function.");
+            } catch (Exception e) {
                 fail("Unexpectedly failed getting entity by record", e);
             }
         });

@@ -94,8 +94,11 @@ public class ConfigRetryTest extends AbstractAutoCoreTest
 
         public MockEnvironment(String instanceName, String settings)
         {
-            super(SzAutoCoreEnvironment.newAutoBuilder()
-                    .settings(settings).instanceName(instanceName)
+            super(
+                SzAutoCoreEnvironment
+                    .newAutoBuilder()
+                    .settings(settings)
+                    .instanceName(instanceName)
                     .configRefreshPeriod(REACTIVE_CONFIG_REFRESH));
         }
 
@@ -150,26 +153,26 @@ public class ConfigRetryTest extends AbstractAutoCoreTest
     /**
      * The {@link SzRecordKey} for customer ABC123.
      */
-    public static final SzRecordKey CUSTOMER_ABC123
-        = SzRecordKey.of(CUSTOMERS, ABC123);
+    public static final SzRecordKey CUSTOMER_ABC123 = SzRecordKey.of(CUSTOMERS,
+                                                                     ABC123);
 
     /**
      * The {@link SzRecordKey} for customer DEF456.
      */
-    public static final SzRecordKey CUSTOMER_DEF456
-        = SzRecordKey.of(CUSTOMERS, DEF456);
+    public static final SzRecordKey CUSTOMER_DEF456 = SzRecordKey.of(CUSTOMERS,
+                                                                     DEF456);
 
     /**
      * The {@link SzRecordKey} for employee ABC123.
      */
-    public static final SzRecordKey EMPLOYEE_ABC123
-        = SzRecordKey.of(EMPLOYEES, ABC123);
+    public static final SzRecordKey EMPLOYEE_ABC123 = SzRecordKey.of(EMPLOYEES,
+                                                                     ABC123);
 
     /**
      * The {@link SzRecordKey} for employee DEF456.
      */
-    public static final SzRecordKey EMPLOYEE_DEF456
-        = SzRecordKey.of(EMPLOYEES, DEF456);
+    public static final SzRecordKey EMPLOYEE_DEF456 = SzRecordKey.of(EMPLOYEES,
+                                                                     DEF456);
 
     /**
      * The record definition for the {@link #CUSTOMER_ABC123} and {@link
@@ -203,46 +206,36 @@ public class ConfigRetryTest extends AbstractAutoCoreTest
      * SzEngine#processRedoRecord(String)} can be tested.
      */
     public static final Set<SzRecord> PROCESS_REDO_TRIGGER_RECORDS = Set.of(
-        new SzRecord(
-            SzRecordKey.of(EMPLOYEES, "SAME-SSN-11"),
-            SzFullName.of("Anthony Stark"),
-            SzSocialSecurity.of("888-88-8888")),
-        new SzRecord(
-            SzRecordKey.of(EMPLOYEES, "SAME-SSN-12"),
-            SzFullName.of("Janet Van Dyne"),
-            SzSocialSecurity.of("888-88-8888")),
-        new SzRecord(
-            SzRecordKey.of(EMPLOYEES, "SAME-SSN-13"),
-            SzFullName.of("Henry Pym"),
-            SzSocialSecurity.of("888-88-8888")),
-        new SzRecord(
-            SzRecordKey.of(EMPLOYEES, "SAME-SSN-14"),
-            SzFullName.of("Bruce Banner"),
-            SzSocialSecurity.of("888-88-8888")),
-        new SzRecord(
-            SzRecordKey.of(EMPLOYEES, "SAME-SSN-15"),
-            SzFullName.of("Steven Rogers"),
-            SzSocialSecurity.of("888-88-8888")),
-        new SzRecord(
-            SzRecordKey.of(EMPLOYEES, "SAME-SSN-16"),
-            SzFullName.of("Clinton Barton"),
-            SzSocialSecurity.of("888-88-8888")),
-        new SzRecord(
-            SzRecordKey.of(EMPLOYEES, "SAME-SSN-17"),
-            SzFullName.of("Wanda Maximoff"),
-            SzSocialSecurity.of("888-88-8888")),
-        new SzRecord(
-            SzRecordKey.of(EMPLOYEES, "SAME-SSN-18"),
-            SzFullName.of("Victor Shade"),
-            SzSocialSecurity.of("888-88-8888")),
-        new SzRecord(
-            SzRecordKey.of(EMPLOYEES, "SAME-SSN-19"),
-            SzFullName.of("Natasha Romanoff"),
-            SzSocialSecurity.of("888-88-8888")),
-        new SzRecord(
-            SzRecordKey.of(EMPLOYEES, "SAME-SSN-20"),
-            SzFullName.of("James Rhodes"),
-            SzSocialSecurity.of("888-88-8888")));
+        new SzRecord(SzRecordKey.of(EMPLOYEES, "SAME-SSN-11"),
+                     SzFullName.of("Anthony Stark"),
+                     SzSocialSecurity.of("888-88-8888")),
+        new SzRecord(SzRecordKey.of(EMPLOYEES, "SAME-SSN-12"),
+                     SzFullName.of("Janet Van Dyne"),
+                     SzSocialSecurity.of("888-88-8888")),
+        new SzRecord(SzRecordKey.of(EMPLOYEES, "SAME-SSN-13"),
+                     SzFullName.of("Henry Pym"),
+                     SzSocialSecurity.of("888-88-8888")),
+        new SzRecord(SzRecordKey.of(EMPLOYEES, "SAME-SSN-14"),
+                     SzFullName.of("Bruce Banner"),
+                     SzSocialSecurity.of("888-88-8888")),
+        new SzRecord(SzRecordKey.of(EMPLOYEES, "SAME-SSN-15"),
+                     SzFullName.of("Steven Rogers"),
+                     SzSocialSecurity.of("888-88-8888")),
+        new SzRecord(SzRecordKey.of(EMPLOYEES, "SAME-SSN-16"),
+                     SzFullName.of("Clinton Barton"),
+                     SzSocialSecurity.of("888-88-8888")),
+        new SzRecord(SzRecordKey.of(EMPLOYEES, "SAME-SSN-17"),
+                     SzFullName.of("Wanda Maximoff"),
+                     SzSocialSecurity.of("888-88-8888")),
+        new SzRecord(SzRecordKey.of(EMPLOYEES, "SAME-SSN-18"),
+                     SzFullName.of("Victor Shade"),
+                     SzSocialSecurity.of("888-88-8888")),
+        new SzRecord(SzRecordKey.of(EMPLOYEES, "SAME-SSN-19"),
+                     SzFullName.of("Natasha Romanoff"),
+                     SzSocialSecurity.of("888-88-8888")),
+        new SzRecord(SzRecordKey.of(EMPLOYEES, "SAME-SSN-20"),
+                     SzFullName.of("James Rhodes"),
+                     SzSocialSecurity.of("888-88-8888")));
 
     /**
      * A fake redo record for attempting redo pre-reinitialize.
@@ -254,17 +247,22 @@ public class ConfigRetryTest extends AbstractAutoCoreTest
         List<String> list = new LinkedList<>();
         for (SzRecord record : PROCESS_REDO_TRIGGER_RECORDS) {
             SzRecordKey recordKey = record.getRecordKey();
-            list.add("""
-                {
-                    "REASON": "LibFeatID[?] of FTypeID[7] went generic for CANDIDATES",
-                    "DATA_SOURCE": "<DATA_SOURCE>",
-                    "RECORD_ID": "<RECORD_ID>",
-                    "REEVAL_ITERATION": 1,
-                    "ENTITY_CORRUPTION_TRANSIENT": false,
-                    "DSRC_ACTION": "X"
-                }
-                """.replaceAll("<DATA_SOURCE>", recordKey.dataSourceCode())
-                   .replaceAll("<RECORD_ID>", recordKey.recordId()));
+            // CSOFF: LineLength -- verbatim JSON fixture; the standards exempt
+            // text-block content from the line limit, checkstyle does not.
+            list.add(
+                """
+                    {
+                        "REASON": "LibFeatID[?] of FTypeID[7] went generic for CANDIDATES",
+                        "DATA_SOURCE": "<DATA_SOURCE>",
+                        "RECORD_ID": "<RECORD_ID>",
+                        "REEVAL_ITERATION": 1,
+                        "ENTITY_CORRUPTION_TRANSIENT": false,
+                        "DSRC_ACTION": "X"
+                    }
+                    """
+                    .replaceAll("<DATA_SOURCE>", recordKey.dataSourceCode())
+                    .replaceAll("<RECORD_ID>", recordKey.recordId()));
+            // CSON: LineLength
         }
         FAKE_REDO_RECORDS = circularIterator(list);
     }
@@ -391,8 +389,10 @@ public class ConfigRetryTest extends AbstractAutoCoreTest
         String settings = this.getRepoSettings();
         String instanceName = this.getInstanceName();
 
-        SzEnvironment env = SzCoreEnvironment.newBuilder().instanceName(
-            instanceName).settings(settings).build();
+        SzEnvironment env = SzCoreEnvironment.newBuilder()
+                                             .instanceName(instanceName)
+                                             .settings(settings)
+                                             .build();
 
         try {
             StandardTestDataLoader loader = new StandardTestDataLoader(env);
@@ -412,9 +412,7 @@ public class ConfigRetryTest extends AbstractAutoCoreTest
         try {
             // setup the server socket
             this.serverSocket = new ServerSocket(
-                0,
-                20,
-                InetAddress.getLoopbackAddress());
+                0, 20, InetAddress.getLoopbackAddress());
 
             File repoDirectory = this.getRepositoryDirectory();
             File initFile = new File(repoDirectory, "sz-init.json");
@@ -445,7 +443,7 @@ public class ConfigRetryTest extends AbstractAutoCoreTest
             if (!process.isAlive()) {
                 int exitCode = process.exitValue();
                 fail("Failed to launch alternate process to update config: "
-                    + exitCode);
+                     + exitCode);
             }
 
             this.socket = this.serverSocket.accept();
@@ -472,11 +470,11 @@ public class ConfigRetryTest extends AbstractAutoCoreTest
 
                 // get the feature ID's
                 JsonObject features = getJsonObject(entityObj, "FEATURES");
-                features
-                    .values()
-                    .forEach((jsonVal) -> {
+                features.values().forEach((jsonVal) -> {
                     JsonArray featureArr = (JsonArray) jsonVal;
-                    for (JsonObject featureObj : featureArr.getValuesAs(JsonObject.class)) {
+                    for (JsonObject featureObj
+                            : featureArr.getValuesAs(JsonObject.class))
+                    {
                         Long featureId = getLong(featureObj, "LIB_FEAT_ID");
                         featureIds.add(featureId);
                     }
@@ -487,14 +485,15 @@ public class ConfigRetryTest extends AbstractAutoCoreTest
 
                 // get the record keys
                 JsonArray recordArr = getJsonArray(entityObj, "RECORDS");
-                for (JsonObject recordObj : recordArr.getValuesAs(
-                    JsonObject.class)) {
+                for (JsonObject recordObj
+                        : recordArr.getValuesAs(JsonObject.class))
+                {
                     String dataSource = getString(recordObj, "DATA_SOURCE");
                     String recordId = getString(recordObj, "RECORD_ID");
 
                     if (CUSTOMERS.equals(dataSource)) {
-                        SzRecordKey recordKey
-                            = SzRecordKey.of(dataSource, recordId);
+                        SzRecordKey recordKey = SzRecordKey.of(dataSource,
+                                                               recordId);
                         byRecordKeyMap.put(recordKey, entityId);
                     }
                 }
@@ -584,7 +583,7 @@ public class ConfigRetryTest extends AbstractAutoCoreTest
     private static void addMethod(Set<Method>       handledMethods,
                                   List<Arguments>   results,
                                   Getter<?>         getter,
-                                  Method            method, 
+                                  Method            method,
                                   Boolean           expectRetryable,
                                   Getter<Object[]>  paramGetter)
     {
@@ -595,15 +594,20 @@ public class ConfigRetryTest extends AbstractAutoCoreTest
     private static void addMethod(Set<Method>       handledMethods,
                                   List<Arguments>   results,
                                   Getter<?>         getter,
-                                  Method            method, 
+                                  Method            method,
                                   Boolean           expectRetryable,
                                   Getter<Object[]>  paramGetter,
                                   PreProcess        preProcess,
                                   PostProcess       postProcess)
     {
         if (handledMethods.contains(method)) return;
-        results.add(Arguments.of(getter, method, expectRetryable, paramGetter,
-                                 preProcess, postProcess));
+        results.add(
+            Arguments.of(getter,
+                         method,
+                         expectRetryable,
+                         paramGetter,
+                         preProcess,
+                         postProcess));
         handledMethods.add(method);
     }
 
@@ -611,28 +615,25 @@ public class ConfigRetryTest extends AbstractAutoCoreTest
                                           List<Arguments>   results)
     {
         try {
-            addMethod(handledMethods, 
-                     results, 
-                     (test, pre) -> test.env.getProduct(),
-                     SzProduct.class.getMethod("getVersion"),
-                     false,
-                     EMPTY_GETTER);
+            addMethod(handledMethods,
+                      results,
+                      (test, pre) -> test.env.getProduct(),
+                      SzProduct.class.getMethod("getVersion"),
+                      false,
+                      EMPTY_GETTER);
 
-            addMethod(handledMethods, 
-                     results, 
-                     (test, pre) -> test.env.getProduct(),
-                     SzProduct.class.getMethod("getLicense"),
-                     false,
-                     EMPTY_GETTER);
+            addMethod(handledMethods,
+                      results,
+                      (test, pre) -> test.env.getProduct(),
+                      SzProduct.class.getMethod("getLicense"),
+                      false,
+                      EMPTY_GETTER);
 
             // handle any methods not explicitly handled
             Method[] methods = SzProduct.class.getMethods();
             for (Method method : methods) {
-                addMethod(handledMethods, results, 
-                          (test, pre) -> null,
-                          method,
-                          null,
-                          null);
+                addMethod(handledMethods, results, (test, pre) -> null, method,
+                          null, null);
             }
         } catch (NoSuchMethodException e) {
             throw new RuntimeException(e);
@@ -646,95 +647,110 @@ public class ConfigRetryTest extends AbstractAutoCoreTest
             // handle config manager methods
             addMethod(handledMethods,
                       results,
-                      (test, pre) -> test.env.getConfigManager(), 
+                      (test, pre) -> test.env.getConfigManager(),
                       SzConfigManager.class.getMethod("createConfig"),
                       Boolean.FALSE,
                       EMPTY_GETTER);
 
-            addMethod(handledMethods,
-                      results, 
-                      (test, pre) -> test.env.getConfigManager(),
-                      SzConfigManager.class.getMethod("createConfig", Long.TYPE),
-                      Boolean.FALSE,
-                      (test, pre) -> arrayOf(test.env.getConfigManager().getDefaultConfigId()));
+            addMethod(
+                handledMethods,
+                results,
+                (test, pre) -> test.env.getConfigManager(),
+                SzConfigManager.class.getMethod("createConfig", Long.TYPE),
+                Boolean.FALSE,
+                (test, pre) -> arrayOf(
+                    test.env.getConfigManager().getDefaultConfigId()));
+
+            addMethod(
+                handledMethods,
+                results,
+                (test, pre) -> test.env.getConfigManager(),
+                SzConfigManager.class.getMethod("createConfig", String.class),
+                Boolean.FALSE,
+                (test, pre) -> arrayOf(
+                    test.env.getConfigManager().createConfig().export()));
+
+            addMethod(
+                handledMethods,
+                results,
+                (test, pre) -> test.env.getConfigManager(),
+                SzConfigManager.class.getMethod("registerConfig",
+                                                String.class,
+                                                String.class),
+                Boolean.FALSE,
+                (test, pre) -> arrayOf(
+                    test.env.getConfigManager().createConfig().export(),
+                    "Template Config"));
+
+            addMethod(
+                handledMethods,
+                results,
+                (test, pre) -> test.env.getConfigManager(),
+                SzConfigManager.class.getMethod("registerConfig", String.class),
+                Boolean.FALSE,
+                (test, pre) -> {
+                    SzConfig config = test.env.getConfigManager()
+                                              .createConfig();
+                    config.registerDataSource(EMPLOYEES);
+                    return arrayOf(config.export());
+                });
 
             addMethod(handledMethods,
-                      results, 
-                      (test, pre) -> test.env.getConfigManager(),
-                      SzConfigManager.class.getMethod("createConfig", String.class),
-                      Boolean.FALSE,
-                      (test, pre) -> arrayOf(test.env.getConfigManager().createConfig().export()));
-
-            addMethod(handledMethods,
-                      results, 
-                      (test, pre) -> test.env.getConfigManager(),
-                      SzConfigManager.class.getMethod(
-                        "registerConfig", String.class, String.class),
-                      Boolean.FALSE,
-                      (test, pre) -> arrayOf(test.env.getConfigManager().createConfig().export(), "Template Config"));
-
-            addMethod(handledMethods,
-                      results, 
-                      (test, pre) -> test.env.getConfigManager(),
-                      SzConfigManager.class.getMethod(
-                        "registerConfig", String.class),
-                      Boolean.FALSE,
-                      (test, pre) -> {
-                        SzConfig config = test.env.getConfigManager().createConfig();
-                        config.registerDataSource(EMPLOYEES);
-                        return arrayOf(config.export());
-                      });
-
-            addMethod(handledMethods,
-                      results, 
+                      results,
                       (test, pre) -> test.env.getConfigManager(),
                       SzConfigManager.class.getMethod("getConfigRegistry"),
                       Boolean.FALSE,
                       EMPTY_GETTER);
 
             addMethod(handledMethods,
-                      results, 
+                      results,
                       (test, pre) -> test.env.getConfigManager(),
                       SzConfigManager.class.getMethod("getDefaultConfigId"),
                       Boolean.FALSE,
                       EMPTY_GETTER);
 
-            addMethod(handledMethods,
-                      results, 
-                      (test, pre) -> test.env.getConfigManager(),
-                      SzConfigManager.class.getMethod("replaceDefaultConfigId", Long.TYPE, Long.TYPE),
-                      Boolean.FALSE,
-                      null);
+            addMethod(
+                handledMethods,
+                results,
+                (test, pre) -> test.env.getConfigManager(),
+                SzConfigManager.class.getMethod("replaceDefaultConfigId",
+                                                Long.TYPE,
+                                                Long.TYPE),
+                Boolean.FALSE,
+                null);
 
-            addMethod(handledMethods,
-                      results, 
-                      (test, pre) -> test.env.getConfigManager(),
-                      SzConfigManager.class.getMethod("setDefaultConfigId", Long.TYPE),
-                      Boolean.FALSE,
-                      null);
+            addMethod(
+                handledMethods,
+                results,
+                (test, pre) -> test.env.getConfigManager(),
+                SzConfigManager.class.getMethod("setDefaultConfigId",
+                                                Long.TYPE),
+                Boolean.FALSE,
+                null);
 
-            addMethod(handledMethods,
-                      results, 
-                      (test, pre) -> test.env.getConfigManager(),
-                      SzConfigManager.class.getMethod("setDefaultConfig", String.class, String.class),
-                      Boolean.FALSE,
-                      null);
+            addMethod(
+                handledMethods,
+                results,
+                (test, pre) -> test.env.getConfigManager(),
+                SzConfigManager.class.getMethod("setDefaultConfig",
+                                                String.class,
+                                                String.class),
+                Boolean.FALSE,
+                null);
 
-            addMethod(handledMethods,
-                      results, 
-                      (test, pre) -> test.env.getConfigManager(),
-                      SzConfigManager.class.getMethod("setDefaultConfig", String.class),
-                      Boolean.FALSE,
-                      null);
+            addMethod(
+                handledMethods,
+                results,
+                (test, pre) -> test.env.getConfigManager(),
+                SzConfigManager.class.getMethod("setDefaultConfig",
+                                                String.class),
+                Boolean.FALSE,
+                null);
 
             Method[] methods = SzConfigManager.class.getMethods();
             for (Method method : methods) {
-                addMethod(handledMethods, 
-                          results,
-                          (test, pre) -> null,
-                          method,
-                          null,
-                          null);
+                addMethod(handledMethods, results, (test, pre) -> null, method,
+                          null, null);
             }
         } catch (NoSuchMethodException e) {
             throw new RuntimeException(e);
@@ -746,43 +762,45 @@ public class ConfigRetryTest extends AbstractAutoCoreTest
     {
         try {
             // handle config methods
-            addMethod(handledMethods, 
-                      results,
-                      (test, pre) -> test.env.getConfigManager().createConfig(),
-                      SzConfig.class.getMethod("export"),
-                      Boolean.FALSE,
-                      EMPTY_GETTER);
+            addMethod(
+                handledMethods,
+                results,
+                (test, pre) -> test.env.getConfigManager().createConfig(),
+                SzConfig.class.getMethod("export"),
+                Boolean.FALSE,
+                EMPTY_GETTER);
 
-            addMethod(handledMethods, 
-                      results,
-                      (test, pre) -> test.env.getConfigManager().createConfig(),
-                      SzConfig.class.getMethod("getDataSourceRegistry"),
-                      Boolean.FALSE,
-                      EMPTY_GETTER);
+            addMethod(
+                handledMethods,
+                results,
+                (test, pre) -> test.env.getConfigManager().createConfig(),
+                SzConfig.class.getMethod("getDataSourceRegistry"),
+                Boolean.FALSE,
+                EMPTY_GETTER);
 
-            addMethod(handledMethods,
-                      results,
-                      (test, pre) -> test.env.getConfigManager().createConfig(),
-                      SzConfig.class.getMethod("registerDataSource", String.class),
-                      Boolean.FALSE,
-                      (test, pre) -> arrayOf(CUSTOMERS));
+            addMethod(
+                handledMethods,
+                results,
+                (test, pre) -> test.env.getConfigManager().createConfig(),
+                SzConfig.class.getMethod("registerDataSource", String.class),
+                Boolean.FALSE,
+                (test, pre) -> arrayOf(CUSTOMERS));
 
-            addMethod(handledMethods,
-                      results,
-                      (test, pre) -> test.env.getConfigManager().createConfig(
+            addMethod(
+                handledMethods,
+                results,
+                (test, pre) -> test.env
+                    .getConfigManager()
+                    .createConfig(
                         test.env.getConfigManager().getDefaultConfigId()),
-                      SzConfig.class.getMethod("unregisterDataSource", String.class),
-                      Boolean.FALSE,
-                      (test, pre) -> arrayOf(CUSTOMERS));
+                SzConfig.class.getMethod("unregisterDataSource", String.class),
+                Boolean.FALSE,
+                (test, pre) -> arrayOf(CUSTOMERS));
 
             Method[] methods = SzConfig.class.getMethods();
             for (Method method : methods) {
-                addMethod(handledMethods, 
-                          results,
-                          (test, pre) -> null,
-                          method,
-                          null,
-                          null);
+                addMethod(handledMethods, results, (test, pre) -> null, method,
+                          null, null);
             }
         } catch (NoSuchMethodException e) {
             throw new RuntimeException(e);
@@ -794,19 +812,21 @@ public class ConfigRetryTest extends AbstractAutoCoreTest
     {
         try {
             // handle config methods
-            addMethod(handledMethods, 
+            addMethod(handledMethods,
                       results,
                       (test, pre) -> test.env.getDiagnostic(),
                       SzDiagnostic.class.getMethod("getRepositoryInfo"),
                       Boolean.FALSE,
                       EMPTY_GETTER);
 
-            addMethod(handledMethods, 
-                      results,
-                      (test, pre) -> test.env.getDiagnostic(),
-                      SzDiagnostic.class.getMethod("checkRepositoryPerformance", Integer.TYPE),
-                      Boolean.FALSE,
-                      (test, pre) -> arrayOf(5));
+            addMethod(
+                handledMethods,
+                results,
+                (test, pre) -> test.env.getDiagnostic(),
+                SzDiagnostic.class.getMethod("checkRepositoryPerformance",
+                                             Integer.TYPE),
+                Boolean.FALSE,
+                (test, pre) -> arrayOf(5));
 
             addMethod(handledMethods,
                       results,
@@ -815,23 +835,20 @@ public class ConfigRetryTest extends AbstractAutoCoreTest
                       Boolean.FALSE,
                       null);
 
-            addMethod(handledMethods,
-                      results,
-                      (test, pre) -> test.env.getDiagnostic(),
-                      SzDiagnostic.class.getMethod("getFeature", Long.TYPE),
-                      Boolean.TRUE,
-                      (test, pre) -> arrayOf(test.featureIds.iterator().next()),
-                      (test) -> test.env.mock(new SzConfigurationException("mock")),
-                      null);
+            addMethod(
+                handledMethods,
+                results,
+                (test, pre) -> test.env.getDiagnostic(),
+                SzDiagnostic.class.getMethod("getFeature", Long.TYPE),
+                Boolean.TRUE,
+                (test, pre) -> arrayOf(test.featureIds.iterator().next()),
+                (test) -> test.env.mock(new SzConfigurationException("mock")),
+                null);
 
             Method[] methods = SzDiagnostic.class.getMethods();
             for (Method method : methods) {
-                addMethod(handledMethods, 
-                          results,
-                          (test, pre) -> null,
-                          method,
-                          null,
-                          null);
+                addMethod(handledMethods, results, (test, pre) -> null, method,
+                          null, null);
             }
         } catch (NoSuchMethodException e) {
             throw new RuntimeException(e);
@@ -843,122 +860,168 @@ public class ConfigRetryTest extends AbstractAutoCoreTest
     {
         try {
             // handle config methods
-            addMethod(handledMethods, 
+            addMethod(handledMethods,
                       results,
                       (test, pre) -> test.env.getEngine(),
                       SzEngine.class.getMethod("primeEngine"),
                       Boolean.FALSE,
                       EMPTY_GETTER);
 
-            addMethod(handledMethods, 
+            addMethod(handledMethods,
                       results,
                       (test, pre) -> test.env.getEngine(),
                       SzEngine.class.getMethod("getStats"),
                       Boolean.FALSE,
                       EMPTY_GETTER);
 
-            addMethod(handledMethods,
-                      results,
-                      (test, pre) -> test.env.getEngine(),
-                      SzEngine.class.getMethod("getRecordPreview", String.class, Set.class),
-                      Boolean.TRUE,
-                      (test, pre) -> arrayOf(RECORD_ABC123, SZ_RECORD_PREVIEW_ALL_FLAGS),
-                      (test) -> test.env.mock(new SzConfigurationException("mock")),
-                      null);
+            addMethod(
+                handledMethods,
+                results,
+                (test, pre) -> test.env.getEngine(),
+                SzEngine.class.getMethod("getRecordPreview",
+                                         String.class,
+                                         Set.class),
+                Boolean.TRUE,
+                (test, pre) -> arrayOf(RECORD_ABC123,
+                                       SZ_RECORD_PREVIEW_ALL_FLAGS),
+                (test) -> test.env.mock(new SzConfigurationException("mock")),
+                null);
 
-            addMethod(handledMethods,
-                      results,
-                      (test, pre) -> test.env.getEngine(),
-                      SzEngine.class.getMethod("getRecordPreview", String.class),
-                      Boolean.TRUE,
-                      (test, pre) -> arrayOf(RECORD_ABC123),
-                      (test) -> test.env.mock(new SzConfigurationException("mock")),
-                      null);
+            addMethod(
+                handledMethods,
+                results,
+                (test, pre) -> test.env.getEngine(),
+                SzEngine.class.getMethod("getRecordPreview", String.class),
+                Boolean.TRUE,
+                (test, pre) -> arrayOf(RECORD_ABC123),
+                (test) -> test.env.mock(new SzConfigurationException("mock")),
+                null);
 
-            addMethod(handledMethods,
-                      results,
-                      (test, pre) -> test.env.getEngine(),
-                      SzEngine.class.getMethod("searchByAttributes", String.class, String.class, Set.class),
-                      Boolean.TRUE,
-                      (test, pre) -> arrayOf(RECORD_ABC123, null, SZ_SEARCH_ALL_FLAGS));
+            addMethod(
+                handledMethods,
+                results,
+                (test, pre) -> test.env.getEngine(),
+                SzEngine.class.getMethod("searchByAttributes",
+                                         String.class,
+                                         String.class,
+                                         Set.class),
+                Boolean.TRUE,
+                (test, pre) -> arrayOf(RECORD_ABC123,
+                                       null,
+                                       SZ_SEARCH_ALL_FLAGS));
 
-            addMethod(handledMethods,
-                      results,
-                      (test, pre) -> test.env.getEngine(),
-                      SzEngine.class.getMethod("searchByAttributes", String.class, String.class),
-                      Boolean.TRUE,
-                      (test, pre) -> arrayOf(RECORD_ABC123, null));
+            addMethod(
+                handledMethods,
+                results,
+                (test, pre) -> test.env.getEngine(),
+                SzEngine.class.getMethod("searchByAttributes",
+                                         String.class,
+                                         String.class),
+                Boolean.TRUE,
+                (test, pre) -> arrayOf(RECORD_ABC123, null));
 
-            addMethod(handledMethods,
-                      results,
-                      (test, pre) -> test.env.getEngine(),
-                      SzEngine.class.getMethod("searchByAttributes", String.class, Set.class),
-                      Boolean.TRUE,
-                      (test, pre) -> arrayOf(RECORD_ABC123, SZ_SEARCH_ALL_FLAGS));
+            addMethod(
+                handledMethods,
+                results,
+                (test, pre) -> test.env.getEngine(),
+                SzEngine.class.getMethod("searchByAttributes",
+                                         String.class,
+                                         Set.class),
+                Boolean.TRUE,
+                (test, pre) -> arrayOf(RECORD_ABC123, SZ_SEARCH_ALL_FLAGS));
 
-            addMethod(handledMethods,
-                      results,
-                      (test, pre) -> test.env.getEngine(),
-                      SzEngine.class.getMethod("searchByAttributes", String.class),
-                      Boolean.TRUE,
-                      (test, pre) -> arrayOf(RECORD_ABC123));
+            addMethod(
+                handledMethods,
+                results,
+                (test, pre) -> test.env.getEngine(),
+                SzEngine.class.getMethod("searchByAttributes", String.class),
+                Boolean.TRUE,
+                (test, pre) -> arrayOf(RECORD_ABC123));
 
-            addMethod(handledMethods,
-                      results,
-                      (test, pre) -> test.env.getEngine(),
-                      SzEngine.class.getMethod("whySearch", String.class, Long.TYPE, String.class, Set.class),
-                      Boolean.TRUE,
-                      (test, pre) -> arrayOf(RECORD_ABC123, test.getEntityId(CUSTOMER_DEF456), null, SZ_WHY_SEARCH_ALL_FLAGS),
-                      (test) -> test.env.mock(new SzConfigurationException("mock")),
-                      null);
+            addMethod(
+                handledMethods,
+                results,
+                (test, pre) -> test.env.getEngine(),
+                SzEngine.class.getMethod("whySearch",
+                                         String.class,
+                                         Long.TYPE,
+                                         String.class,
+                                         Set.class),
+                Boolean.TRUE,
+                (test, pre) -> arrayOf(RECORD_ABC123,
+                                       test.getEntityId(CUSTOMER_DEF456),
+                                       null,
+                                       SZ_WHY_SEARCH_ALL_FLAGS),
+                (test) -> test.env.mock(new SzConfigurationException("mock")),
+                null);
 
-            addMethod(handledMethods,
-                      results,
-                      (test, pre) -> test.env.getEngine(),
-                      SzEngine.class.getMethod("whySearch", String.class, Long.TYPE, String.class),
-                      Boolean.TRUE,
-                      (test, pre) -> arrayOf(RECORD_ABC123, test.getEntityId(CUSTOMER_DEF456), null),
-                      (test) -> test.env.mock(new SzConfigurationException("mock")),
-                      null);
+            addMethod(
+                handledMethods,
+                results,
+                (test, pre) -> test.env.getEngine(),
+                SzEngine.class.getMethod("whySearch",
+                                         String.class,
+                                         Long.TYPE,
+                                         String.class),
+                Boolean.TRUE,
+                (test, pre) -> arrayOf(RECORD_ABC123,
+                                       test.getEntityId(CUSTOMER_DEF456),
+                                       null),
+                (test) -> test.env.mock(new SzConfigurationException("mock")),
+                null);
 
-            addMethod(handledMethods,
-                      results,
-                      (test, pre) -> test.env.getEngine(),
-                      SzEngine.class.getMethod("whySearch", String.class, Long.TYPE, Set.class),
-                      Boolean.TRUE,
-                      (test, pre) -> arrayOf(RECORD_ABC123, test.getEntityId(CUSTOMER_DEF456), SZ_WHY_SEARCH_ALL_FLAGS),
-                      (test) -> test.env.mock(new SzConfigurationException("mock")),
-                      null);
+            addMethod(
+                handledMethods,
+                results,
+                (test, pre) -> test.env.getEngine(),
+                SzEngine.class.getMethod("whySearch",
+                                         String.class,
+                                         Long.TYPE,
+                                         Set.class),
+                Boolean.TRUE,
+                (test, pre) -> arrayOf(RECORD_ABC123,
+                                       test.getEntityId(CUSTOMER_DEF456),
+                                       SZ_WHY_SEARCH_ALL_FLAGS),
+                (test) -> test.env.mock(new SzConfigurationException("mock")),
+                null);
 
-            addMethod(handledMethods,
-                      results,
-                      (test, pre) -> test.env.getEngine(),
-                      SzEngine.class.getMethod("whySearch", String.class, Long.TYPE),
-                      Boolean.TRUE,
-                      (test, pre) -> arrayOf(RECORD_ABC123, test.getEntityId(CUSTOMER_DEF456)),
-                      (test) -> test.env.mock(new SzConfigurationException("mock")),
-                      null);
+            addMethod(
+                handledMethods,
+                results,
+                (test, pre) -> test.env.getEngine(),
+                SzEngine.class.getMethod("whySearch", String.class, Long.TYPE),
+                Boolean.TRUE,
+                (test, pre) -> arrayOf(RECORD_ABC123,
+                                       test.getEntityId(CUSTOMER_DEF456)),
+                (test) -> test.env.mock(new SzConfigurationException("mock")),
+                null);
 
-            addMethod(handledMethods,
-                      results,
-                      (test, pre) -> test.env.getEngine(),
-                      SzEngine.class.getMethod("getEntity", Long.TYPE, Set.class),
-                      Boolean.TRUE,
-                      (test, pre) -> arrayOf(test.getEntityId(CUSTOMER_ABC123), SZ_ENTITY_ALL_FLAGS));
+            addMethod(
+                handledMethods,
+                results,
+                (test, pre) -> test.env.getEngine(),
+                SzEngine.class.getMethod("getEntity", Long.TYPE, Set.class),
+                Boolean.TRUE,
+                (test, pre) -> arrayOf(test.getEntityId(CUSTOMER_ABC123),
+                                       SZ_ENTITY_ALL_FLAGS));
 
-            addMethod(handledMethods,
-                      results,
-                      (test, pre) -> test.env.getEngine(),
-                      SzEngine.class.getMethod("getEntity", Long.TYPE),
-                      Boolean.TRUE,
-                      (test, pre) -> arrayOf(test.getEntityId(CUSTOMER_ABC123)));
+            addMethod(
+                handledMethods,
+                results,
+                (test, pre) -> test.env.getEngine(),
+                SzEngine.class.getMethod("getEntity", Long.TYPE),
+                Boolean.TRUE,
+                (test, pre) -> arrayOf(test.getEntityId(CUSTOMER_ABC123)));
 
-            addMethod(handledMethods,
-                      results,
-                      (test, pre) -> test.env.getEngine(),
-                      SzEngine.class.getMethod("getEntity", SzRecordKey.class, Set.class),
-                      Boolean.TRUE,
-                      (test, pre) -> arrayOf(CUSTOMER_ABC123, SZ_ENTITY_ALL_FLAGS));
+            addMethod(
+                handledMethods,
+                results,
+                (test, pre) -> test.env.getEngine(),
+                SzEngine.class.getMethod("getEntity",
+                                         SzRecordKey.class,
+                                         Set.class),
+                Boolean.TRUE,
+                (test, pre) -> arrayOf(CUSTOMER_ABC123, SZ_ENTITY_ALL_FLAGS));
 
             addMethod(handledMethods,
                       results,
@@ -967,257 +1030,364 @@ public class ConfigRetryTest extends AbstractAutoCoreTest
                       Boolean.TRUE,
                       (test, pre) -> arrayOf(CUSTOMER_ABC123));
 
-            addMethod(handledMethods,
-                      results,
-                      (test, pre) -> test.env.getEngine(),
-                      SzEngine.class.getMethod("findInterestingEntities", Long.TYPE, Set.class),
-                      Boolean.TRUE,
-                      (test, pre) -> arrayOf(test.getEntityId(CUSTOMER_ABC123), SZ_ENTITY_ALL_FLAGS),
-                      (test) -> test.env.mock(new SzConfigurationException("mock")),
-                      null);
+            addMethod(
+                handledMethods,
+                results,
+                (test, pre) -> test.env.getEngine(),
+                SzEngine.class.getMethod("findInterestingEntities",
+                                         Long.TYPE,
+                                         Set.class),
+                Boolean.TRUE,
+                (test, pre) -> arrayOf(test.getEntityId(CUSTOMER_ABC123),
+                                       SZ_ENTITY_ALL_FLAGS),
+                (test) -> test.env.mock(new SzConfigurationException("mock")),
+                null);
 
-            addMethod(handledMethods,
-                      results,
-                      (test, pre) -> test.env.getEngine(),
-                      SzEngine.class.getMethod("findInterestingEntities", Long.TYPE),
-                      Boolean.TRUE,
-                      (test, pre) -> arrayOf(test.getEntityId(CUSTOMER_ABC123)),
-                      (test) -> test.env.mock(new SzConfigurationException("mock")),
-                      null);
+            addMethod(
+                handledMethods,
+                results,
+                (test, pre) -> test.env.getEngine(),
+                SzEngine.class.getMethod("findInterestingEntities", Long.TYPE),
+                Boolean.TRUE,
+                (test, pre) -> arrayOf(test.getEntityId(CUSTOMER_ABC123)),
+                (test) -> test.env.mock(new SzConfigurationException("mock")),
+                null);
 
-            addMethod(handledMethods,
-                      results,
-                      (test, pre) -> test.env.getEngine(),
-                      SzEngine.class.getMethod("findInterestingEntities", SzRecordKey.class, Set.class),
-                      Boolean.TRUE,
-                      (test, pre) -> arrayOf(test.getRecordKey(ABC123), SZ_ENTITY_ALL_FLAGS));
+            addMethod(
+                handledMethods,
+                results,
+                (test, pre) -> test.env.getEngine(),
+                SzEngine.class.getMethod("findInterestingEntities",
+                                         SzRecordKey.class,
+                                         Set.class),
+                Boolean.TRUE,
+                (test, pre) -> arrayOf(test.getRecordKey(ABC123),
+                                       SZ_ENTITY_ALL_FLAGS));
 
-            addMethod(handledMethods,
-                      results,
-                      (test, pre) -> test.env.getEngine(),
-                      SzEngine.class.getMethod("findInterestingEntities", SzRecordKey.class),
-                      Boolean.TRUE,
-                      (test, pre) -> arrayOf(test.getRecordKey(ABC123)));
+            addMethod(
+                handledMethods,
+                results,
+                (test, pre) -> test.env.getEngine(),
+                SzEngine.class.getMethod("findInterestingEntities",
+                                         SzRecordKey.class),
+                Boolean.TRUE,
+                (test, pre) -> arrayOf(test.getRecordKey(ABC123)));
 
-            addMethod(handledMethods,
-                      results,
-                      (test, pre) -> test.env.getEngine(),
-                      SzEngine.class.getMethod(
-                        "findPath", Long.TYPE, Long.TYPE, Integer.TYPE, SzEntityIds.class, Set.class, Set.class),
-                      Boolean.TRUE,
-                      (test, pre) -> arrayOf(test.getEntityId(CUSTOMER_ABC123),
-                                        test.getEntityId(CUSTOMER_DEF456),
-                                        3,
-                                        null,
-                                        null,
-                                        SZ_FIND_PATH_ALL_FLAGS));
+            addMethod(
+                handledMethods,
+                results,
+                (test, pre) -> test.env.getEngine(),
+                SzEngine.class.getMethod("findPath",
+                                         Long.TYPE,
+                                         Long.TYPE,
+                                         Integer.TYPE,
+                                         SzEntityIds.class,
+                                         Set.class,
+                                         Set.class),
+                Boolean.TRUE,
+                (test, pre) -> arrayOf(test.getEntityId(CUSTOMER_ABC123),
+                                       test.getEntityId(CUSTOMER_DEF456),
+                                       3,
+                                       null,
+                                       null,
+                                       SZ_FIND_PATH_ALL_FLAGS));
 
-            addMethod(handledMethods,
-                      results,
-                      (test, pre) -> test.env.getEngine(),
-                      SzEngine.class.getMethod(
-                        "findPath", Long.TYPE, Long.TYPE, Integer.TYPE, SzEntityIds.class, Set.class),
-                      Boolean.TRUE,
-                      (test, pre) -> arrayOf(test.getEntityId(CUSTOMER_ABC123),
-                                        test.getEntityId(CUSTOMER_DEF456),
-                                        3,
-                                        null,
-                                        null));
+            addMethod(
+                handledMethods,
+                results,
+                (test, pre) -> test.env.getEngine(),
+                SzEngine.class.getMethod("findPath",
+                                         Long.TYPE,
+                                         Long.TYPE,
+                                         Integer.TYPE,
+                                         SzEntityIds.class,
+                                         Set.class),
+                Boolean.TRUE,
+                (test, pre) -> arrayOf(test.getEntityId(CUSTOMER_ABC123),
+                                       test.getEntityId(CUSTOMER_DEF456),
+                                       3,
+                                       null,
+                                       null));
 
-            addMethod(handledMethods,
-                      results,
-                      (test, pre) -> test.env.getEngine(),
-                      SzEngine.class.getMethod(
-                        "findPath", Long.TYPE, Long.TYPE, Integer.TYPE, Set.class),
-                      Boolean.TRUE,
-                      (test, pre) -> arrayOf(test.getEntityId(CUSTOMER_ABC123),
-                                        test.getEntityId(CUSTOMER_DEF456),
-                                        3,
-                                        SZ_FIND_PATH_ALL_FLAGS));
+            addMethod(
+                handledMethods,
+                results,
+                (test, pre) -> test.env.getEngine(),
+                SzEngine.class.getMethod("findPath",
+                                         Long.TYPE,
+                                         Long.TYPE,
+                                         Integer.TYPE,
+                                         Set.class),
+                Boolean.TRUE,
+                (test, pre) -> arrayOf(test.getEntityId(CUSTOMER_ABC123),
+                                       test.getEntityId(CUSTOMER_DEF456),
+                                       3,
+                                       SZ_FIND_PATH_ALL_FLAGS));
 
-            addMethod(handledMethods,
-                      results,
-                      (test, pre) -> test.env.getEngine(),
-                      SzEngine.class.getMethod(
-                        "findPath", Long.TYPE, Long.TYPE, Integer.TYPE),
-                      Boolean.TRUE,
-                      (test, pre) -> arrayOf(test.getEntityId(CUSTOMER_ABC123),
-                                        test.getEntityId(CUSTOMER_DEF456),
-                                        3));
+            addMethod(
+                handledMethods,
+                results,
+                (test, pre) -> test.env.getEngine(),
+                SzEngine.class.getMethod("findPath",
+                                         Long.TYPE,
+                                         Long.TYPE,
+                                         Integer.TYPE),
+                Boolean.TRUE,
+                (test, pre) -> arrayOf(test.getEntityId(CUSTOMER_ABC123),
+                                       test.getEntityId(CUSTOMER_DEF456),
+                                       3));
 
-            addMethod(handledMethods,
-                      results,
-                      (test, pre) -> test.env.getEngine(),
-                      SzEngine.class.getMethod(
-                        "findPath", SzRecordKey.class, SzRecordKey.class, Integer.TYPE, SzRecordKeys.class, Set.class, Set.class),
-                      Boolean.TRUE,
-                      (test, pre) -> arrayOf(CUSTOMER_ABC123,
-                                        CUSTOMER_DEF456,
-                                        3,
-                                        null,
-                                        null,
-                                        SZ_FIND_PATH_ALL_FLAGS));
+            addMethod(
+                handledMethods,
+                results,
+                (test, pre) -> test.env.getEngine(),
+                SzEngine.class.getMethod("findPath",
+                                         SzRecordKey.class,
+                                         SzRecordKey.class,
+                                         Integer.TYPE,
+                                         SzRecordKeys.class,
+                                         Set.class,
+                                         Set.class),
+                Boolean.TRUE,
+                (test, pre) -> arrayOf(CUSTOMER_ABC123,
+                                       CUSTOMER_DEF456,
+                                       3,
+                                       null,
+                                       null,
+                                       SZ_FIND_PATH_ALL_FLAGS));
 
-            addMethod(handledMethods,
-                      results,
-                      (test, pre) -> test.env.getEngine(),
-                      SzEngine.class.getMethod(
-                        "findPath", SzRecordKey.class, SzRecordKey.class, Integer.TYPE, SzRecordKeys.class, Set.class),
-                      Boolean.TRUE,
-                      (test, pre) -> arrayOf(CUSTOMER_ABC123,
-                                        CUSTOMER_DEF456,
-                                        3,
-                                        null,
-                                        null));
+            addMethod(
+                handledMethods,
+                results,
+                (test, pre) -> test.env.getEngine(),
+                SzEngine.class.getMethod("findPath",
+                                         SzRecordKey.class,
+                                         SzRecordKey.class,
+                                         Integer.TYPE,
+                                         SzRecordKeys.class,
+                                         Set.class),
+                Boolean.TRUE,
+                (test, pre) -> arrayOf(CUSTOMER_ABC123,
+                                       CUSTOMER_DEF456,
+                                       3,
+                                       null,
+                                       null));
 
-            addMethod(handledMethods,
-                      results,
-                      (test, pre) -> test.env.getEngine(),
-                      SzEngine.class.getMethod(
-                        "findPath", SzRecordKey.class, SzRecordKey.class, Integer.TYPE, Set.class),
-                      Boolean.TRUE,
-                      (test, pre) -> arrayOf(CUSTOMER_ABC123,
-                                        CUSTOMER_DEF456,
-                                        3,
-                                        SZ_FIND_PATH_ALL_FLAGS));
+            addMethod(
+                handledMethods,
+                results,
+                (test, pre) -> test.env.getEngine(),
+                SzEngine.class.getMethod("findPath",
+                                         SzRecordKey.class,
+                                         SzRecordKey.class,
+                                         Integer.TYPE,
+                                         Set.class),
+                Boolean.TRUE,
+                (test, pre) -> arrayOf(CUSTOMER_ABC123,
+                                       CUSTOMER_DEF456,
+                                       3,
+                                       SZ_FIND_PATH_ALL_FLAGS));
 
-            addMethod(handledMethods,
-                      results,
-                      (test, pre) -> test.env.getEngine(),
-                      SzEngine.class.getMethod(
-                        "findPath", SzRecordKey.class, SzRecordKey.class, Integer.TYPE),
-                      Boolean.TRUE,
-                      (test, pre) -> arrayOf(CUSTOMER_ABC123, CUSTOMER_DEF456, 3));
+            addMethod(
+                handledMethods,
+                results,
+                (test, pre) -> test.env.getEngine(),
+                SzEngine.class.getMethod("findPath",
+                                         SzRecordKey.class,
+                                         SzRecordKey.class,
+                                         Integer.TYPE),
+                Boolean.TRUE,
+                (test, pre) -> arrayOf(CUSTOMER_ABC123, CUSTOMER_DEF456, 3));
 
-            addMethod(handledMethods,
-                      results,
-                      (test, pre) -> test.env.getEngine(),
-                      SzEngine.class.getMethod(
-                        "findNetwork", SzEntityIds.class, Integer.TYPE, Integer.TYPE, Integer.TYPE, Set.class),
-                      Boolean.TRUE,
-                      (test, pre) -> arrayOf(SzEntityIds.of(test.getEntityId(CUSTOMER_ABC123), 
-                                                       test.getEntityId(CUSTOMER_DEF456)),
-                                        3, 0, 10, SZ_FIND_NETWORK_ALL_FLAGS));
+            addMethod(
+                handledMethods,
+                results,
+                (test, pre) -> test.env.getEngine(),
+                SzEngine.class.getMethod("findNetwork",
+                                         SzEntityIds.class,
+                                         Integer.TYPE,
+                                         Integer.TYPE,
+                                         Integer.TYPE,
+                                         Set.class),
+                Boolean.TRUE,
+                (test, pre) -> arrayOf(
+                    SzEntityIds.of(test.getEntityId(CUSTOMER_ABC123),
+                                   test.getEntityId(CUSTOMER_DEF456)),
+                    3,
+                    0,
+                    10,
+                    SZ_FIND_NETWORK_ALL_FLAGS));
 
-            addMethod(handledMethods,
-                      results,
-                      (test, pre) -> test.env.getEngine(),
-                      SzEngine.class.getMethod(
-                        "findNetwork", SzEntityIds.class, Integer.TYPE, Integer.TYPE, Integer.TYPE),
-                      Boolean.TRUE,
-                      (test, pre) -> arrayOf(SzEntityIds.of(test.getEntityId(CUSTOMER_ABC123), 
-                                                       test.getEntityId(CUSTOMER_DEF456)),
-                                        3, 0, 10));
+            addMethod(
+                handledMethods,
+                results,
+                (test, pre) -> test.env.getEngine(),
+                SzEngine.class.getMethod("findNetwork",
+                                         SzEntityIds.class,
+                                         Integer.TYPE,
+                                         Integer.TYPE,
+                                         Integer.TYPE),
+                Boolean.TRUE,
+                (test, pre) -> arrayOf(
+                    SzEntityIds.of(test.getEntityId(CUSTOMER_ABC123),
+                                   test.getEntityId(CUSTOMER_DEF456)),
+                    3,
+                    0,
+                    10));
 
-            addMethod(handledMethods,
-                      results,
-                      (test, pre) -> test.env.getEngine(),
-                      SzEngine.class.getMethod(
-                        "findNetwork", SzRecordKeys.class, Integer.TYPE, Integer.TYPE, Integer.TYPE, Set.class),
-                      Boolean.TRUE,
-                      (test, pre) -> arrayOf(SzRecordKeys.of(CUSTOMER_ABC123, CUSTOMER_DEF456),
-                                        3, 0, 10, SZ_FIND_NETWORK_ALL_FLAGS));
+            addMethod(
+                handledMethods,
+                results,
+                (test, pre) -> test.env.getEngine(),
+                SzEngine.class.getMethod("findNetwork",
+                                         SzRecordKeys.class,
+                                         Integer.TYPE,
+                                         Integer.TYPE,
+                                         Integer.TYPE,
+                                         Set.class),
+                Boolean.TRUE,
+                (test, pre) -> arrayOf(
+                    SzRecordKeys.of(CUSTOMER_ABC123, CUSTOMER_DEF456),
+                    3,
+                    0,
+                    10,
+                    SZ_FIND_NETWORK_ALL_FLAGS));
 
-            addMethod(handledMethods,
-                      results,
-                      (test, pre) -> test.env.getEngine(),
-                      SzEngine.class.getMethod(
-                        "findNetwork", SzRecordKeys.class, Integer.TYPE, Integer.TYPE, Integer.TYPE),
-                      Boolean.TRUE,
-                      (test, pre) -> arrayOf(SzRecordKeys.of(CUSTOMER_ABC123, CUSTOMER_DEF456), 3, 0, 10));
+            addMethod(
+                handledMethods,
+                results,
+                (test, pre) -> test.env.getEngine(),
+                SzEngine.class.getMethod("findNetwork",
+                                         SzRecordKeys.class,
+                                         Integer.TYPE,
+                                         Integer.TYPE,
+                                         Integer.TYPE),
+                Boolean.TRUE,
+                (test, pre) -> arrayOf(
+                    SzRecordKeys.of(CUSTOMER_ABC123, CUSTOMER_DEF456),
+                    3,
+                    0,
+                    10));
 
-            addMethod(handledMethods,
-                      results,
-                      (test, pre) -> test.env.getEngine(),
-                      SzEngine.class.getMethod(
-                        "whyRecordInEntity", SzRecordKey.class, Set.class),
-                      Boolean.TRUE,
-                      (test, pre) -> arrayOf(test.getRecordKey(ABC123), SZ_WHY_RECORD_IN_ENTITY_ALL_FLAGS));
+            addMethod(
+                handledMethods,
+                results,
+                (test, pre) -> test.env.getEngine(),
+                SzEngine.class.getMethod("whyRecordInEntity",
+                                         SzRecordKey.class,
+                                         Set.class),
+                Boolean.TRUE,
+                (test, pre) -> arrayOf(test.getRecordKey(ABC123),
+                                       SZ_WHY_RECORD_IN_ENTITY_ALL_FLAGS));
 
-            addMethod(handledMethods,
-                      results,
-                      (test, pre) -> test.env.getEngine(),
-                      SzEngine.class.getMethod(
-                        "whyRecordInEntity", SzRecordKey.class),
-                      Boolean.TRUE,
-                      (test, pre) -> arrayOf(test.getRecordKey(ABC123)));
+            addMethod(
+                handledMethods,
+                results,
+                (test, pre) -> test.env.getEngine(),
+                SzEngine.class.getMethod("whyRecordInEntity",
+                                         SzRecordKey.class),
+                Boolean.TRUE,
+                (test, pre) -> arrayOf(test.getRecordKey(ABC123)));
 
-            addMethod(handledMethods,
-                      results,
-                      (test, pre) -> test.env.getEngine(),
-                      SzEngine.class.getMethod(
-                        "whyRecords", SzRecordKey.class, SzRecordKey.class, Set.class),
-                      Boolean.TRUE,
-                      (test, pre) -> arrayOf(test.getRecordKey(ABC123), CUSTOMER_DEF456, SZ_WHY_RECORDS_ALL_FLAGS));
+            addMethod(
+                handledMethods,
+                results,
+                (test, pre) -> test.env.getEngine(),
+                SzEngine.class.getMethod("whyRecords",
+                                         SzRecordKey.class,
+                                         SzRecordKey.class,
+                                         Set.class),
+                Boolean.TRUE,
+                (test, pre) -> arrayOf(test.getRecordKey(ABC123),
+                                       CUSTOMER_DEF456,
+                                       SZ_WHY_RECORDS_ALL_FLAGS));
 
-            addMethod(handledMethods,
-                      results,
-                      (test, pre) -> test.env.getEngine(),
-                      SzEngine.class.getMethod(
-                        "whyRecords", SzRecordKey.class, SzRecordKey.class),
-                      Boolean.TRUE,
-                      (test, pre) -> arrayOf(test.getRecordKey(ABC123), CUSTOMER_DEF456));
+            addMethod(
+                handledMethods,
+                results,
+                (test, pre) -> test.env.getEngine(),
+                SzEngine.class.getMethod("whyRecords",
+                                         SzRecordKey.class,
+                                         SzRecordKey.class),
+                Boolean.TRUE,
+                (test, pre) -> arrayOf(test.getRecordKey(ABC123),
+                                       CUSTOMER_DEF456));
 
-            addMethod(handledMethods,
-                      results,
-                      (test, pre) -> test.env.getEngine(),
-                      SzEngine.class.getMethod(
-                        "whyEntities", Long.TYPE, Long.TYPE, Set.class),
-                      Boolean.TRUE,
-                      (test, pre) -> arrayOf(test.getEntityId(CUSTOMER_ABC123), 
-                                        test.getEntityId(CUSTOMER_DEF456), 
-                                        SZ_WHY_ENTITIES_ALL_FLAGS),
-                      (test) -> test.env.mock(new SzConfigurationException("mock")),
-                      null);
+            addMethod(
+                handledMethods,
+                results,
+                (test, pre) -> test.env.getEngine(),
+                SzEngine.class.getMethod("whyEntities",
+                                         Long.TYPE,
+                                         Long.TYPE,
+                                         Set.class),
+                Boolean.TRUE,
+                (test, pre) -> arrayOf(test.getEntityId(CUSTOMER_ABC123),
+                                       test.getEntityId(CUSTOMER_DEF456),
+                                       SZ_WHY_ENTITIES_ALL_FLAGS),
+                (test) -> test.env.mock(new SzConfigurationException("mock")),
+                null);
 
-            addMethod(handledMethods,
-                      results,
-                      (test, pre) -> test.env.getEngine(),
-                      SzEngine.class.getMethod(
-                        "whyEntities", Long.TYPE, Long.TYPE),
-                      Boolean.TRUE,
-                      (test, pre) -> arrayOf(test.getEntityId(CUSTOMER_ABC123), 
-                                        test.getEntityId(CUSTOMER_DEF456)),
-                      (test) -> test.env.mock(new SzConfigurationException("mock")),
-                      null);
+            addMethod(
+                handledMethods,
+                results,
+                (test, pre) -> test.env.getEngine(),
+                SzEngine.class.getMethod("whyEntities", Long.TYPE, Long.TYPE),
+                Boolean.TRUE,
+                (test, pre) -> arrayOf(test.getEntityId(CUSTOMER_ABC123),
+                                       test.getEntityId(CUSTOMER_DEF456)),
+                (test) -> test.env.mock(new SzConfigurationException("mock")),
+                null);
 
-            addMethod(handledMethods,
-                      results,
-                      (test, pre) -> test.env.getEngine(),
-                      SzEngine.class.getMethod(
-                        "howEntity", Long.TYPE, Set.class),
-                      Boolean.TRUE,
-                      (test, pre) -> arrayOf(test.getEntityId(CUSTOMER_ABC123), 
-                                             SZ_HOW_ALL_FLAGS));
+            addMethod(
+                handledMethods,
+                results,
+                (test, pre) -> test.env.getEngine(),
+                SzEngine.class.getMethod("howEntity", Long.TYPE, Set.class),
+                Boolean.TRUE,
+                (test, pre) -> arrayOf(test.getEntityId(CUSTOMER_ABC123),
+                                       SZ_HOW_ALL_FLAGS));
 
-            addMethod(handledMethods,
-                      results,
-                      (test, pre) -> test.env.getEngine(),
-                      SzEngine.class.getMethod("howEntity", Long.TYPE),
-                      Boolean.TRUE,
-                      (test, pre) -> arrayOf(test.getEntityId(CUSTOMER_ABC123)));
+            addMethod(
+                handledMethods,
+                results,
+                (test, pre) -> test.env.getEngine(),
+                SzEngine.class.getMethod("howEntity", Long.TYPE),
+                Boolean.TRUE,
+                (test, pre) -> arrayOf(test.getEntityId(CUSTOMER_ABC123)));
 
-            addMethod(handledMethods,
-                      results,
-                      (test, pre) -> test.env.getEngine(),
-                      SzEngine.class.getMethod("getVirtualEntity", Set.class, Set.class),
-                      Boolean.TRUE,
-                      (test, pre) -> arrayOf(SzRecordKeys.of(test.getRecordKey(ABC123), CUSTOMER_DEF456), 
-                                     SZ_VIRTUAL_ENTITY_ALL_FLAGS));
+            addMethod(
+                handledMethods,
+                results,
+                (test, pre) -> test.env.getEngine(),
+                SzEngine.class.getMethod("getVirtualEntity",
+                                         Set.class,
+                                         Set.class),
+                Boolean.TRUE,
+                (test, pre) -> arrayOf(
+                    SzRecordKeys.of(test.getRecordKey(ABC123), CUSTOMER_DEF456),
+                    SZ_VIRTUAL_ENTITY_ALL_FLAGS));
 
-            addMethod(handledMethods,
-                      results,
-                      (test, pre) -> test.env.getEngine(),
-                      SzEngine.class.getMethod("getVirtualEntity", Set.class),
-                      Boolean.TRUE,
-                      (test, pre) -> arrayOf(SzRecordKeys.of(test.getRecordKey(ABC123), CUSTOMER_DEF456)));
+            addMethod(
+                handledMethods,
+                results,
+                (test, pre) -> test.env.getEngine(),
+                SzEngine.class.getMethod("getVirtualEntity", Set.class),
+                Boolean.TRUE,
+                (test, pre) -> arrayOf(
+                    SzRecordKeys.of(test.getRecordKey(ABC123),
+                                    CUSTOMER_DEF456)));
 
-            addMethod(handledMethods,
-                      results,
-                      (test, pre) -> test.env.getEngine(),
-                      SzEngine.class.getMethod("getRecord", SzRecordKey.class, Set.class),
-                      Boolean.TRUE,
-                      (test, pre) -> arrayOf(test.getRecordKey(ABC123), SZ_RECORD_ALL_FLAGS));
+            addMethod(
+                handledMethods,
+                results,
+                (test, pre) -> test.env.getEngine(),
+                SzEngine.class.getMethod("getRecord",
+                                         SzRecordKey.class,
+                                         Set.class),
+                Boolean.TRUE,
+                (test, pre) -> arrayOf(test.getRecordKey(ABC123),
+                                       SZ_RECORD_ALL_FLAGS));
 
             addMethod(handledMethods,
                       results,
@@ -1226,15 +1396,19 @@ public class ConfigRetryTest extends AbstractAutoCoreTest
                       Boolean.TRUE,
                       (test, pre) -> arrayOf(test.getRecordKey(ABC123)));
 
-            addMethod(handledMethods,
-                      results,
-                      (test, pre) -> test.env.getEngine(),
-                      SzEngine.class.getMethod("exportJsonEntityReport", Set.class),
-                      Boolean.TRUE,
-                      (test, pre) -> arrayOf(SZ_EXPORT_ALL_FLAGS),
-                      null,
-                      (test, pre, handle) -> { 
-                        if (handle != null) { test.env.getEngine().closeExportReport((Long) handle); }});
+            addMethod(
+                handledMethods,
+                results,
+                (test, pre) -> test.env.getEngine(),
+                SzEngine.class.getMethod("exportJsonEntityReport", Set.class),
+                Boolean.TRUE,
+                (test, pre) -> arrayOf(SZ_EXPORT_ALL_FLAGS),
+                null,
+                (test, pre, handle) -> {
+                    if (handle != null) {
+                        test.env.getEngine().closeExportReport((Long) handle);
+                    }
+                });
 
             addMethod(handledMethods,
                       results,
@@ -1243,28 +1417,41 @@ public class ConfigRetryTest extends AbstractAutoCoreTest
                       Boolean.TRUE,
                       EMPTY_GETTER,
                       null,
-                      (test, pre, handle) -> { 
-                        if (handle != null) { test.env.getEngine().closeExportReport((Long) handle); }});
+                      (test, pre, handle) -> {
+                if (handle != null) {
+                    test.env.getEngine().closeExportReport((Long) handle);
+                }
+            });
 
-            addMethod(handledMethods,
-                      results,
-                      (test, pre) -> test.env.getEngine(),
-                      SzEngine.class.getMethod("exportCsvEntityReport", String.class, Set.class),
-                      Boolean.TRUE,
-                      (test, pre) -> arrayOf("*", SZ_EXPORT_ALL_FLAGS),
-                      null,
-                      (test, pre, handle) -> { 
-                        if (handle != null) { test.env.getEngine().closeExportReport((Long) handle); }});
+            addMethod(
+                handledMethods,
+                results,
+                (test, pre) -> test.env.getEngine(),
+                SzEngine.class.getMethod("exportCsvEntityReport",
+                                         String.class,
+                                         Set.class),
+                Boolean.TRUE,
+                (test, pre) -> arrayOf("*", SZ_EXPORT_ALL_FLAGS),
+                null,
+                (test, pre, handle) -> {
+                    if (handle != null) {
+                        test.env.getEngine().closeExportReport((Long) handle);
+                    }
+                });
 
-            addMethod(handledMethods,
-                      results,
-                      (test, pre) -> test.env.getEngine(),
-                      SzEngine.class.getMethod("exportCsvEntityReport", String.class),
-                      Boolean.TRUE,
-                      (test, pre) -> arrayOf("*"),
-                      null,
-                      (test, pre, handle) -> { 
-                        if (handle != null) { test.env.getEngine().closeExportReport((Long) handle); }});
+            addMethod(
+                handledMethods,
+                results,
+                (test, pre) -> test.env.getEngine(),
+                SzEngine.class.getMethod("exportCsvEntityReport", String.class),
+                Boolean.TRUE,
+                (test, pre) -> arrayOf("*"),
+                null,
+                (test, pre, handle) -> {
+                    if (handle != null) {
+                        test.env.getEngine().closeExportReport((Long) handle);
+                    }
+                });
 
             addMethod(handledMethods,
                       results,
@@ -1289,102 +1476,128 @@ public class ConfigRetryTest extends AbstractAutoCoreTest
                       Boolean.FALSE,
                       EMPTY_GETTER);
 
-            addMethod(handledMethods,
-                      results,
-                      (test, pre) -> test.env.getEngine(),
-                      SzEngine.class.getMethod("getRedoRecord"),
-                      Boolean.TRUE,
-                      EMPTY_GETTER,
-                      (test) -> test.env.mock(new SzConfigurationException("mock")),
-                      null);
+            addMethod(
+                handledMethods,
+                results,
+                (test, pre) -> test.env.getEngine(),
+                SzEngine.class.getMethod("getRedoRecord"),
+                Boolean.TRUE,
+                EMPTY_GETTER,
+                (test) -> test.env.mock(new SzConfigurationException("mock")),
+                null);
 
-            addMethod(handledMethods,
-                      results,
-                      (test, pre) -> test.env.getEngine(),
-                      SzEngine.class.getMethod("processRedoRecord", String.class, Set.class),
-                      Boolean.TRUE,
-                      (test, pre) -> arrayOf(FAKE_REDO_RECORDS.next(), SZ_REDO_ALL_FLAGS),
-                      (test) -> test.env.mock(new SzConfigurationException("mock")),
-                      null);
+            addMethod(
+                handledMethods,
+                results,
+                (test, pre) -> test.env.getEngine(),
+                SzEngine.class.getMethod("processRedoRecord",
+                                         String.class,
+                                         Set.class),
+                Boolean.TRUE,
+                (test, pre) -> arrayOf(FAKE_REDO_RECORDS.next(),
+                                       SZ_REDO_ALL_FLAGS),
+                (test) -> test.env.mock(new SzConfigurationException("mock")),
+                null);
 
-            addMethod(handledMethods,
-                      results,
-                      (test, pre) -> test.env.getEngine(),
-                      SzEngine.class.getMethod("processRedoRecord", String.class),
-                      Boolean.TRUE,
-                      (test, pre) -> arrayOf(FAKE_REDO_RECORDS.next()),
-                      (test) -> test.env.mock(new SzConfigurationException("mock")),
-                      null);
+            addMethod(
+                handledMethods,
+                results,
+                (test, pre) -> test.env.getEngine(),
+                SzEngine.class.getMethod("processRedoRecord", String.class),
+                Boolean.TRUE,
+                (test, pre) -> arrayOf(FAKE_REDO_RECORDS.next()),
+                (test) -> test.env.mock(new SzConfigurationException("mock")),
+                null);
 
-            addMethod(handledMethods,
-                      results,
-                      (test, pre) -> test.env.getEngine(),
-                      SzEngine.class.getMethod("addRecord", SzRecordKey.class, String.class, Set.class),
-                      Boolean.TRUE,
-                      (test, pre) ->
-                        arrayOf(test.getRecordKey(ABC123), RECORD_ABC123, SZ_ADD_RECORD_ALL_FLAGS));
+            addMethod(
+                handledMethods,
+                results,
+                (test, pre) -> test.env.getEngine(),
+                SzEngine.class.getMethod("addRecord",
+                                         SzRecordKey.class,
+                                         String.class,
+                                         Set.class),
+                Boolean.TRUE,
+                (test, pre) -> arrayOf(test.getRecordKey(ABC123),
+                                       RECORD_ABC123,
+                                       SZ_ADD_RECORD_ALL_FLAGS));
 
-            addMethod(handledMethods,
-                      results,
-                      (test, pre) -> test.env.getEngine(),
-                      SzEngine.class.getMethod("addRecord", SzRecordKey.class, String.class),
-                      Boolean.TRUE,
-                      (test, pre) -> arrayOf(test.getRecordKey(DEF456), RECORD_DEF456));
+            addMethod(
+                handledMethods,
+                results,
+                (test, pre) -> test.env.getEngine(),
+                SzEngine.class.getMethod("addRecord",
+                                         SzRecordKey.class,
+                                         String.class),
+                Boolean.TRUE,
+                (test, pre) -> arrayOf(test.getRecordKey(DEF456),
+                                       RECORD_DEF456));
 
-            addMethod(handledMethods,
-                      results,
-                      (test, pre) -> test.env.getEngine(),
-                      SzEngine.class.getMethod("reevaluateRecord", SzRecordKey.class, Set.class),
-                      Boolean.TRUE,
-                      (test, pre) -> arrayOf(test.getRecordKey(ABC123), SZ_REEVALUATE_RECORD_ALL_FLAGS));
+            addMethod(
+                handledMethods,
+                results,
+                (test, pre) -> test.env.getEngine(),
+                SzEngine.class.getMethod("reevaluateRecord",
+                                         SzRecordKey.class,
+                                         Set.class),
+                Boolean.TRUE,
+                (test, pre) -> arrayOf(test.getRecordKey(ABC123),
+                                       SZ_REEVALUATE_RECORD_ALL_FLAGS));
 
-            addMethod(handledMethods,
-                      results,
-                      (test, pre) -> test.env.getEngine(),
-                      SzEngine.class.getMethod("reevaluateRecord", SzRecordKey.class),
-                      Boolean.TRUE,
-                      (test, pre) -> arrayOf(test.getRecordKey(DEF456)));
+            addMethod(
+                handledMethods,
+                results,
+                (test, pre) -> test.env.getEngine(),
+                SzEngine.class.getMethod("reevaluateRecord", SzRecordKey.class),
+                Boolean.TRUE,
+                (test, pre) -> arrayOf(test.getRecordKey(DEF456)));
 
-            addMethod(handledMethods,
-                      results,
-                      (test, pre) -> test.env.getEngine(),
-                      SzEngine.class.getMethod("reevaluateEntity", Long.TYPE, Set.class),
-                      Boolean.TRUE,
-                      (test, pre) -> arrayOf(test.getEntityId(CUSTOMER_ABC123), SZ_REEVALUATE_ENTITY_ALL_FLAGS),
-                      (test) -> test.env.mock(new SzConfigurationException("mock")),
-                      null);
+            addMethod(
+                handledMethods,
+                results,
+                (test, pre) -> test.env.getEngine(),
+                SzEngine.class.getMethod("reevaluateEntity",
+                                         Long.TYPE,
+                                         Set.class),
+                Boolean.TRUE,
+                (test, pre) -> arrayOf(test.getEntityId(CUSTOMER_ABC123),
+                                       SZ_REEVALUATE_ENTITY_ALL_FLAGS),
+                (test) -> test.env.mock(new SzConfigurationException("mock")),
+                null);
 
-            addMethod(handledMethods,
-                      results,
-                      (test, pre) -> test.env.getEngine(),
-                      SzEngine.class.getMethod("reevaluateEntity", Long.TYPE),
-                      Boolean.TRUE,
-                      (test, pre) -> arrayOf(test.getEntityId(CUSTOMER_DEF456)),
-                      (test) -> test.env.mock(new SzConfigurationException("mock")),
-                      null);
+            addMethod(
+                handledMethods,
+                results,
+                (test, pre) -> test.env.getEngine(),
+                SzEngine.class.getMethod("reevaluateEntity", Long.TYPE),
+                Boolean.TRUE,
+                (test, pre) -> arrayOf(test.getEntityId(CUSTOMER_DEF456)),
+                (test) -> test.env.mock(new SzConfigurationException("mock")),
+                null);
 
-            addMethod(handledMethods,
-                      results,
-                      (test, pre) -> test.env.getEngine(),
-                      SzEngine.class.getMethod("deleteRecord", SzRecordKey.class, Set.class),
-                      Boolean.TRUE,
-                      (test, pre) -> arrayOf(test.getRecordKey(ABC123), SZ_DELETE_RECORD_ALL_FLAGS));
+            addMethod(
+                handledMethods,
+                results,
+                (test, pre) -> test.env.getEngine(),
+                SzEngine.class.getMethod("deleteRecord",
+                                         SzRecordKey.class,
+                                         Set.class),
+                Boolean.TRUE,
+                (test, pre) -> arrayOf(test.getRecordKey(ABC123),
+                                       SZ_DELETE_RECORD_ALL_FLAGS));
 
-            addMethod(handledMethods,
-                      results,
-                      (test, pre) -> test.env.getEngine(),
-                      SzEngine.class.getMethod("deleteRecord", SzRecordKey.class),
-                      Boolean.TRUE,
-                      (test, pre) -> arrayOf(test.getRecordKey(DEF456)));
+            addMethod(
+                handledMethods,
+                results,
+                (test, pre) -> test.env.getEngine(),
+                SzEngine.class.getMethod("deleteRecord", SzRecordKey.class),
+                Boolean.TRUE,
+                (test, pre) -> arrayOf(test.getRecordKey(DEF456)));
 
             Method[] methods = SzEngine.class.getMethods();
             for (Method method : methods) {
-                addMethod(handledMethods, 
-                          results,
-                          (test, pre) -> null,
-                          method,
-                          null,
-                          null);
+                addMethod(handledMethods, results, (test, pre) -> null, method,
+                          null, null);
             }
         } catch (NoSuchMethodException e) {
             throw new RuntimeException(e);
@@ -1422,19 +1635,26 @@ public class ConfigRetryTest extends AbstractAutoCoreTest
     {
         this.performTest(() -> {
             try {
-                SzConfigRetryable retryable = method.getAnnotation(SzConfigRetryable.class);
+                SzConfigRetryable retryable = method.getAnnotation(
+                    SzConfigRetryable.class);
                 if (expectRetryable == null) {
-                    fail("Method from interface (" + method.getDeclaringClass().getSimpleName()
-                        + ") is " + (retryable == null ? "not " : "") 
-                        + "annotated and has no explicit config retryable test defined: "
-                        + method.toString());
+                    fail("Method from interface ("
+                         + method.getDeclaringClass().getSimpleName()
+                         + ") is " + (retryable == null ? "not " : "")
+                         + "annotated and has no explicit config retryable "
+                         + "test defined: " + method.toString());
                 }
-                
-                assertEquals(expectRetryable, (retryable != null),
-                            "Method from interface (" + method.getDeclaringClass().getSimpleName() 
-                            + ") is " + ((retryable == null) ? "not " : "") + "retryable but should "
-                            + ((retryable == null) ? "not " : "") + "be: " + method.toString());
-                
+
+                assertEquals(
+                    expectRetryable,
+                    (retryable != null),
+                    "Method from interface ("
+                    + method.getDeclaringClass().getSimpleName() + ") is "
+                    + ((retryable == null) ? "not " : "")
+                    + "retryable but should "
+                    + ((retryable == null) ? "not " : "") + "be: "
+                    + method.toString());
+
                 if (paramGetter == null) return;
 
                 // force the configs to be out of sync
@@ -1442,56 +1662,73 @@ public class ConfigRetryTest extends AbstractAutoCoreTest
                 String network = (String) this.objInputStream.readObject();
                 this.processNetwork(network);
 
-                Object preProcessResult = (preProcess == null) ? null : preProcess.process(this);
-                
+                Object preProcessResult = (preProcess == null)
+                    ? null : preProcess.process(this);
+
                 Object target = getter.get(this, preProcessResult);
-                
+
                 Object[] params = paramGetter.get(this, preProcessResult);
 
                 Object result = null;
                 int retriedCount1 = this.env.getRetriedCount();
-                int failedCount1  = this.env.getRetriedFailureCount();
+                int failedCount1 = this.env.getRetriedFailureCount();
                 int retriedCount2 = retriedCount1;
-                int failedCount2  = failedCount1;
+                int failedCount2 = failedCount1;
                 try {
                     // this may or may not succeed
                     result = method.invoke(target, params);
-
                 } catch (InvocationTargetException e) {
-                    fail((expectRetryable ? "Annotated" : "Non-annotated") + " method from " 
+                    fail(
+                        (expectRetryable ? "Annotated" : "Non-annotated")
+                        + " method from "
                         + method.getDeclaringClass().getSimpleName()
-                        + " got an exception: " + method.toString(), e);
-
+                        + " got an exception: " + method.toString(),
+                        e);
                 } finally {
                     retriedCount2 = this.env.getRetriedCount();
-                    failedCount2  = this.env.getRetriedFailureCount();
+                    failedCount2 = this.env.getRetriedFailureCount();
                     if (postProcess != null) {
                         postProcess.process(this, preProcessResult, result);
                     }
                 }
 
                 if (expectRetryable) {
-                    assertEquals(1, (retriedCount2-retriedCount1),
-                                 "Number of retried operations (" + retriedCount1 + " vs " + retriedCount2 
-                                 + ") did NOT increase by expected amount for annotated method from " 
-                                 + method.getDeclaringClass().getSimpleName() + ": " + method.toString());
-                                 
+                    assertEquals(
+                        1,
+                        (retriedCount2 - retriedCount1),
+                        "Number of retried operations (" + retriedCount1
+                        + " vs " + retriedCount2
+                        + ") did NOT increase by expected amount for "
+                        + "annotated method from "
+                        + method.getDeclaringClass().getSimpleName() + ": "
+                        + method.toString());
                 } else {
-                    assertEquals(0, (retriedCount2-retriedCount1),
-                                 "Number of retried operations (" + retriedCount1 + " vs " + retriedCount2 
-                                 + ") unexpectedly changed for annotated method from " 
-                                 + method.getDeclaringClass().getSimpleName() + ": " + method.toString());
+                    assertEquals(
+                        0,
+                        (retriedCount2 - retriedCount1),
+                        "Number of retried operations (" + retriedCount1
+                        + " vs " + retriedCount2
+                        + ") unexpectedly changed for annotated method from "
+                        + method.getDeclaringClass().getSimpleName() + ": "
+                        + method.toString());
                 }
 
-                assertEquals(0, (failedCount2-failedCount1),
-                                "Number of failed retried operations (" + failedCount1 + " vs "
-                                + failedCount2 + ") unexpectedly changed for "
-                                + (expectRetryable ? "annotated" : "non-annoated") + " method from "
-                                + method.getDeclaringClass().getSimpleName() + ": " + method.toString());
-                
+                assertEquals(
+                    0,
+                    (failedCount2 - failedCount1),
+                    "Number of failed retried operations (" + failedCount1
+                    + " vs " + failedCount2
+                    + ") unexpectedly changed for " + (expectRetryable
+                                                       ? "annotated"
+                                                       : "non-annoated")
+                    + " method from " + method.getDeclaringClass()
+                                              .getSimpleName()
+                    + ": " + method.toString());
             } catch (Exception e) {
-                fail("Method from " + method.getDeclaringClass().getSimpleName() 
-                    + " failed with exception: " + method.toString(), e);
+                fail(
+                    "Method from " + method.getDeclaringClass().getSimpleName()
+                    + " failed with exception: " + method.toString(),
+                    e);
             }
         });
     }
@@ -1531,7 +1768,7 @@ public class ConfigRetryTest extends AbstractAutoCoreTest
 
             if (!initFile.exists()) {
                 System.err.println("Settings file does not exist: "
-                    + initFilePath);
+                                   + initFilePath);
                 System.exit(1);
             }
 
@@ -1551,8 +1788,8 @@ public class ConfigRetryTest extends AbstractAutoCoreTest
                  ObjectOutputStream oos
                      = new ObjectOutputStream(socket.getOutputStream()))
             {
-                for (Integer iteration = (Integer) ois.readObject(); 
-                     iteration != null; 
+                for (Integer iteration = (Integer) ois.readObject();
+                     iteration != null;
                      iteration = (Integer) ois.readObject())
                 {
                     String dataSource = CUSTOMERS;
@@ -1568,19 +1805,19 @@ public class ConfigRetryTest extends AbstractAutoCoreTest
                     SzEngine engine = env.getEngine();
 
                     SzRecordKey recordKey1 = SzRecordKey.of(
-                        dataSource,
-                        EMPLOYEE_ABC123.recordId());
+                        dataSource, EMPLOYEE_ABC123.recordId());
                     SzRecordKey recordKey2 = SzRecordKey.of(
-                        dataSource,
-                        EMPLOYEE_DEF456.recordId());
+                        dataSource, EMPLOYEE_DEF456.recordId());
 
                     engine.addRecord(recordKey1, RECORD_ABC123);
                     engine.addRecord(recordKey2, RECORD_DEF456);
 
                     String network = engine.findNetwork(
                         SzRecordKeys.of(recordKey1, recordKey2),
-                                        2, 0, 0,
-                                        EnumSet.allOf(SzFlag.class));
+                        2,
+                        0,
+                        0,
+                        EnumSet.allOf(SzFlag.class));
 
                     oos.writeObject(network);
                     oos.flush();
