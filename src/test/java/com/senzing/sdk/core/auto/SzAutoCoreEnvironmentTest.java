@@ -561,6 +561,7 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest
         });
     }
 
+    @Test
     void testSubmitTaskFailingCallable()
     {
         this.performTest(() -> {
@@ -597,6 +598,7 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest
         });
     }
 
+    @Test
     void testSubmitTaskFailingRunnable()
     {
         this.performTest(() -> {
@@ -631,6 +633,7 @@ public class SzAutoCoreEnvironmentTest extends AbstractAutoCoreTest
         });
     }
 
+    @Test
     void testSubmitTaskFailingRunnableResult()
     {
         this.performTest(() -> {
