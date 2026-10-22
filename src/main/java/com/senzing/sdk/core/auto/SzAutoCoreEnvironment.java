@@ -406,13 +406,11 @@ public class SzAutoCoreEnvironment
      * @param <B> The {@link AbstractBuilder}-derived class of the
      *            implementation.
      */
-    // CSOFF
     public abstract static class AbstractBuilder<
         E extends SzAutoCoreEnvironment,
         B extends AbstractBuilder<E, B>>
         extends SzCoreEnvironment.AbstractBuilder<E, B> implements Initializer
     {
-        // CSON
         /**
          * The number of threads for executing, or
          * <code>null</code> if the thread pool is disabled.
