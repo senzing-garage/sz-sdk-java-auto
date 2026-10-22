@@ -73,6 +73,78 @@ public class ConcurrentRetryEngineReadTest extends EngineReadTest
     }
 
     /**
+     * The {@link SemanticVersion} of the installed Senzing build, or
+     * <code>null</code> if it could not be determined.
+     *
+     * <p>
+     * Resolved once at class initialization rather than per
+     * test invocation: this method source yields several hundred
+     * cases, and the JVM guarantees the initializer runs exactly
+     * once even though JUnit executes test classes concurrently.
+     * </p>
+     */
+    private static final SemanticVersion INSTALLED_BUILD_VERSION
+        = readInstalledBuildVersion();
+
+    /**
+     * Reads the build version of the Senzing installation
+     * under test from its <code>szBuildVersion.json</code>.
+     *
+     * <p>
+     * This deliberately fails open: if the version cannot be determined for any
+     * reason it returns <code>null</code>, which runs the gated test rather
+     * than silently suppressing it. A note is written to standard error so that
+     * an unreadable version file is not mistaken for a fixed build.
+     * </p>
+     *
+     * @return The {@link SemanticVersion} for the installed Senzing build, or
+     *         <code>null</code> if it cannot be determined.
+     */
+    private static SemanticVersion readInstalledBuildVersion()
+    {
+        String reason = null;
+        try {
+            InstallLocations locations = InstallLocations.findLocations();
+            File installDir = (locations == null)
+                ? null : locations.getInstallDirectory();
+
+            if (installDir == null) {
+                reason = "no Senzing installation was found";
+            } else {
+                File versionFile = new File(installDir, BUILD_VERSION_FILE);
+
+                if (!versionFile.exists()) {
+                    reason = versionFile + " does not exist";
+                } else {
+                    String jsonText = Files.readString(versionFile.toPath());
+
+                    JsonObject jsonObj = JsonUtilities.parseJsonObject(
+                        jsonText);
+
+                    String buildVersion = JsonUtilities.getString(
+                        jsonObj, BUILD_VERSION_KEY);
+
+                    if (buildVersion == null) {
+                        reason = "no " + BUILD_VERSION_KEY
+                            + " in " + versionFile;
+                    } else {
+                        return new SemanticVersion(buildVersion);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            reason = e.toString();
+        }
+
+        System.err.println(
+            "WARNING: could not determine the installed Senzing build "
+                + "version (" + reason + "); version-gated tests will run "
+                + "rather than be skipped.");
+
+        return null;
+    }
+
+    /**
      * Gets the {@link SemanticVersion} describing the build of the Senzing
      * installation under test, or <code>null</code> if it cannot be determined.
      *
@@ -81,30 +153,7 @@ public class ConcurrentRetryEngineReadTest extends EngineReadTest
      */
     protected static SemanticVersion getInstalledBuildVersion()
     {
-        try {
-            InstallLocations locations = InstallLocations.findLocations();
-            if (locations == null) return null;
-
-            File installDir = locations.getInstallDirectory();
-            if (installDir == null) return null;
-
-            File versionFile = new File(installDir, BUILD_VERSION_FILE);
-            if (!versionFile.exists()) return null;
-
-            String jsonText = Files.readString(versionFile.toPath());
-
-            JsonObject jsonObj = JsonUtilities.parseJsonObject(jsonText);
-
-            String buildVersion = JsonUtilities.getString(jsonObj,
-                                                          BUILD_VERSION_KEY);
-
-            return (buildVersion == null)
-                ? null : new SemanticVersion(buildVersion);
-        } catch (Exception e) {
-            // deliberately fail open so that an unreadable version file
-            // runs the test rather than silently suppressing it
-            return null;
-        }
+        return INSTALLED_BUILD_VERSION;
     }
 
     /**
