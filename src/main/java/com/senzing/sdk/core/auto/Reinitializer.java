@@ -70,6 +70,33 @@ class Reinitializer extends Thread
     }
 
     /**
+     * Converts the specified non-zero {@link Duration} to the number of
+     * milliseconds to wait between configuration refresh checks.
+     *
+     * <p>
+     * The result is never less than one. {@link Object#wait(long)} treats zero
+     * as "no timeout" and would park this thread until notified, silently
+     * disabling proactive refresh for the life of the environment. A positive
+     * {@link Duration} of under one millisecond would otherwise truncate to
+     * zero, because both terms of the conversion floor: such a duration has
+     * zero seconds, and integer division of its nanoseconds by one million
+     * discards anything below a millisecond.
+     * </p>
+     *
+     * @param duration The non-null, non-negative and non-zero {@link Duration}
+     *                 to convert.
+     *
+     * @return The number of milliseconds to wait, never less than one.
+     */
+    static long delayMillis(Duration duration)
+    {
+        long millis = (duration.getSeconds() * ONE_THOUSAND)
+            + (duration.getNano() / ONE_MILLION);
+
+        return (millis < 1L) ? 1L : millis;
+    }
+
+    /**
      * The run method implemented to periodically check if the active
      * configuration ID differs from the default configuration ID and if so,
      * reinitializes.
@@ -102,8 +129,7 @@ class Reinitializer extends Thread
                 }
 
                 // convert to milliseconds
-                long delay = duration.getSeconds() * ONE_THOUSAND
-                    + (duration.getNano() / ONE_MILLION);
+                long delay = delayMillis(duration);
 
                 try {
                     synchronized (this) {
