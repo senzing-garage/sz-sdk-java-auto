@@ -641,13 +641,41 @@ public class SzAutoCoreEnvironment
     static class CoreThread extends Thread
     {
         /**
-         * Constructs with the specified {@link Runnable}.
+         * The {@link SzAutoCoreEnvironment} whose thread pool owns this thread.
+         */
+        private final SzAutoCoreEnvironment owner;
+
+        /**
+         * Constructs with the owning {@link SzAutoCoreEnvironment} and the
+         * specified {@link Runnable}.
+         *
+         * @param owner The {@link SzAutoCoreEnvironment} whose thread pool owns
+         *              this thread.
          *
          * @param runnable The {@link Runnable} with which to construct with.
          */
-        CoreThread(Runnable runnable)
+        CoreThread(SzAutoCoreEnvironment owner, Runnable runnable)
         {
             super(runnable);
+            this.owner = owner;
+        }
+
+        /**
+         * Checks if the calling thread belongs to the thread pool of the
+         * specified {@link SzAutoCoreEnvironment}.
+         *
+         * @param env The {@link SzAutoCoreEnvironment} to check against.
+         *
+         * @return <code>true</code> if the calling thread is a pool thread
+         *         belonging to the specified {@link SzAutoCoreEnvironment},
+         *         otherwise <code>false</code>.
+         */
+        static boolean isOwnedBy(SzAutoCoreEnvironment env)
+        {
+            Thread current = Thread.currentThread();
+
+            return (current instanceof CoreThread)
+                && (((CoreThread) current).owner == env);
         }
     }
 
@@ -719,12 +747,6 @@ public class SzAutoCoreEnvironment
             return result;
         }
     }
-
-    /**
-     * The {@link ThreadFactory} to be used by instances of this class.
-     */
-    private static final ThreadFactory THREAD_FACTORY = (r) -> new CoreThread(
-        r);
 
     /**
      * Creates a new instance of {@link Builder} for setting up an instance of
@@ -887,9 +909,14 @@ public class SzAutoCoreEnvironment
             }
 
             // setup the executor service
+            // the factory stamps each pool thread with this instance so
+            // that doExecute() can recognize re-entrant calls; no thread is
+            // created until a task is submitted, which is after construction
+            ThreadFactory threadFactory = (r) -> new CoreThread(this, r);
+
             this.coreExecutor = (threadCount == 0)
                 ? null : Executors.newFixedThreadPool(threadCount,
-                                                      THREAD_FACTORY);
+                                                      threadFactory);
 
             // setup the background configuration refresh if needed
             if (this.refreshMode == RefreshMode.PROACTIVE) {
@@ -1554,6 +1581,16 @@ public class SzAutoCoreEnvironment
     {
         // check if we have a thread pool
         if (this.coreExecutor == null) return super.doExecute(task);
+
+        // Check if we are already running on one of our own pool threads.
+        // If so, execute inline rather than submitting a nested task and
+        // blocking on it. The pool is fixed-size, so a task that occupies a
+        // pool thread while waiting on another task of the same pool will
+        // deadlock once every thread is doing so -- the nested tasks can
+        // never be scheduled. Running inline is also correct for the
+        // thread-affinity this pool exists to provide, since the calling
+        // thread is itself a pool thread.
+        if (CoreThread.isOwnedBy(this)) return super.doExecute(task);
 
         // otherwise, use the executor
         Future<T> future = this.coreExecutor.submit(task);
