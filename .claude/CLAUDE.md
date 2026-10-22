@@ -161,3 +161,145 @@ Tests are organized in `src/test/java/com/senzing/sdk/core/auto/`:
 - `checkstyle`: Enables checkstyle validation with suppressions
 - `spotbugs`: Enables static analysis including FindSecBugs
 - `java-17` / `java-18+`: Handle Javadoc tag compatibility across Java versions
+
+## Java Coding Standards
+
+**IMPORTANT — apply when generating or modifying Java code:** All Java code
+(new and existing) in this repository must conform to the formatting rules in
+`.java-coding-standards/docs/java-coding-standards.md`. Apply these rules
+**from the start** — do not write code first and reformat afterward. When in
+doubt about a specific case (parameter alignment, method continuation,
+ternary tier, javadoc reflow), read the full standards document or search
+the FAQ:
+`mcp__sz-sdk-java-auto-faq__search_faqs(query="java formatting")`.
+
+### Quick reference
+
+- **80-character line limit** (enforced by checkstyle via `-Pcheckstyle`).
+  Lines beyond 80 chars must be wrapped.
+- **Allman braces** for class/interface/enum/method/constructor definitions
+  (opening `{` on its own line, left-aligned with the declaration).
+- **Same-line braces** for control flow: `if`/`else`/`for`/`while`/`do`/
+  `try`/`catch`/`finally`/`switch`/`synchronized`, lambdas, array
+  initializers, static init blocks.
+- **Multi-line conditions**: when an `if`/`catch`/etc. condition wraps to
+  multiple lines, the opening brace goes on its own line (Allman) to
+  visually separate condition from body.
+- **Method parameters** (priority order): single line if it fits; otherwise
+  paren-aligned with types/names aligned in columns; otherwise next-line
+  double-indented.
+- **`throws` clauses** go on their own line, single-indented.
+- **Continuation indentation**: +4 per wrap level (cumulating to
+  8 spaces of displacement for the typical double-wrap; see the
+  full standards doc for the per-level rule).
+- **Operators on continuation lines**: break **before** `+`, `&&`, `||`, `?`,
+  `:`, `.` (the operator starts the continuation line).
+- **Short-circuit `if`**: `if (cond) statement;` on one line is preferred
+  (Tier 1) when it fits; otherwise add braces.
+- **Javadoc**: reflow prose and `@param`/`@return`/`@throws` to fill lines
+  near 80 chars; do not leave 1-3 orphan words on a line.
+- **CSOFF/CSON**: only for deliberately aligned multi-line output
+  (column-formatted diagnostics, ASCII art, SQL DDL with aligned clauses)
+  — never a general escape hatch.
+
+### Verification
+
+Run checkstyle: `mvn -Pcheckstyle validate` (must report `BUILD SUCCESS`
+before opening a PR).
+
+### Bulk formatting
+
+`.java-coding-standards/tooling/scripts/format_file.py` is the
+single end-user entry point — a thin wrapper that invokes the
+tree-sitter-based AST formatter at `format_java.py` in-process.
+Accepts one or more file or directory targets (directories are
+recursively scanned for `.java` files):
+
+```bash
+# Format a single file in place.
+python3 .java-coding-standards/tooling/scripts/format_file.py path/to/File.java
+
+# Format every .java file under src/main/java/ in place.
+python3 .java-coding-standards/tooling/scripts/format_file.py src/main/java
+```
+
+The same script is wired to the VSCode `Format Java file to
+Senzing standards` task, the `emeraldwalk.runonsave` extension
+(format-on-save), and the Claude Code `PostToolUse` hook — so
+every save runs the canonical formatter. Same input → same
+output, regardless of caller. The `building/java-formatting-
+standards` FAQ summarizes day-to-day usage.
+
+## FAQ MCP Server
+
+This project ships a local FAQ MCP server registered in `.mcp.json` under
+the name `sz-sdk-java-auto-faq`. It serves both:
+
+- **Shared FAQs** from the standards-repo submodule
+  (`.java-coding-standards/docs/faqs/`) — coding standards, javadoc reflow
+  rules, system-stubs/ResourceLock test pattern, FAQ-authoring conventions.
+- **Project-local FAQs** from `.claude/faqs/<category>/<topic>.md` —
+  project-specific architecture, conventions, build/release notes,
+  troubleshooting.
+
+The server merges both into one BM25-ranked search index. Tool surface:
+
+- `mcp__sz-sdk-java-auto-faq__get_faq_categories`
+- `mcp__sz-sdk-java-auto-faq__search_faqs(query=...)`
+- `mcp__sz-sdk-java-auto-faq__get_faq(title=...)`
+
+**Use it BEFORE making design assumptions or troubleshooting.** Specifically:
+
+- Before changing build, test, or release configuration (`pom.xml`,
+  surefire, checkstyle, jacoco, spotbugs, release process), call
+  `search_faqs` for relevant topics.
+- Before modifying public APIs, search for any documented invariants or
+  rationale.
+- When a build, test, or dependency issue surfaces, search the
+  `troubleshooting` category first.
+- When unsure what is documented, call `get_faq_categories` to enumerate
+  what's available.
+
+**After resolving a non-obvious issue**, ask the user whether to capture
+the solution as a new FAQ. Project-specific lessons go in
+`.claude/faqs/<category>/<topic>.md`. Lessons about the standards
+themselves go via PR to the standards repo. Restart the session so the
+server re-indexes.
+
+FAQs are pulled on demand, so detail is cheap there. Keep CLAUDE.md lean
+and push operational/troubleshooting depth into FAQ files.
+
+## Testing Configuration
+
+Tests use JUnit Jupiter with parallel execution enabled (configured in
+`pom.xml` surefire plugin):
+
+- Classes run concurrently.
+- Methods within a class run in same thread (default).
+- Dynamic parallelism factor.
+
+### System Stubs, ExecutionMode, and ResourceLock
+
+Tests that **stub environment variables** or **capture stdout / stderr**
+must follow the project's `system-stubs` + `@Execution(SAME_THREAD)` +
+`@ResourceLock` pattern to avoid build-log noise and inter-class capture
+races. Before writing such a test, search the FAQ:
+`mcp__sz-sdk-java-auto-faq__search_faqs(query="system stubs")`.
+
+Headline rules:
+
+- Use `system-stubs-jupiter` **programmatically at the method level**
+  (`new EnvironmentVariables(...).execute(...)`, `new SystemOut().execute(...)`,
+  `new SystemErr().execute(...)`) — never the `@ExtendWith` annotation form.
+- Tag the test (or the class) with `@Execution(ExecutionMode.SAME_THREAD)`
+  — `System.setOut` / `setErr` are JVM-wide, so concurrent redirects race.
+- Add `@ResourceLock(Resources.SYSTEM_OUT)` and/or
+  `@ResourceLock(Resources.SYSTEM_ERR)` for cross-class mutual exclusion.
+  When both are present, **always declare `SYSTEM_OUT` first, `SYSTEM_ERR`
+  second** to avoid deadlock.
+- If the production code starts a background thread in its constructor,
+  place the `new ...()` call **inside** the `stub.execute(...)` lambda so
+  the redirect is active before the thread starts.
+
+Full pattern, examples, and the JVM-warning suppression details are in the
+shared `testing/system-stubs-and-output-capture` FAQ.
